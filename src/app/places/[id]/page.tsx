@@ -103,7 +103,7 @@ function getGalleryImages(place: Place): string[] {
   try {
     const parsed = JSON.parse(place.gallery || '[]');
     if (Array.isArray(parsed) && parsed.length > 0) {
-      images = parsed;
+      images = parsed.filter((img) => typeof img === 'string' && img.trim().length > 0);
     }
   } catch {
     // ignore
@@ -113,44 +113,11 @@ function getGalleryImages(place: Place): string[] {
     images.unshift(place.image_url);
   }
 
-  const categoryBackups: Record<string, string[]> = {
-    'Ancient Sites': [
-      'https://images.unsplash.com/photo-1593693411515-c20261bcad6e?w=1600&q=85',
-      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=1600&q=85',
-      'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=1600&q=85',
-    ],
-    'Mountains': [
-      'https://images.unsplash.com/photo-1576706374778-95a95efff7b1?w=1600&q=85',
-      'https://images.unsplash.com/photo-1535463731090-e34f4b5098c5?w=1600&q=85',
-      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&q=85',
-    ],
-    'Beaches': [
-      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=85',
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=85',
-      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1600&q=85',
-    ],
-    'Waterfalls': [
-      'https://images.unsplash.com/photo-1467173572719-f14b9fb86e5f?w=1600&q=85',
-      'https://images.unsplash.com/photo-1576706374778-95a95efff7b1?w=1600&q=85',
-      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1600&q=85',
-    ],
-    'Wildlife': [
-      'https://images.unsplash.com/photo-1615729947596-a598e5de0ab3?w=1600&q=85',
-      'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=1600&q=85',
-      'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=1600&q=85',
-    ],
-  };
-
-  const backups = categoryBackups[place.category] || [
-    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1600&q=85',
-    'https://images.unsplash.com/photo-1535463731090-e34f4b5098c5?w=1600&q=85',
-    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=85',
-  ];
-
-  for (const b of backups) {
-    if (images.length < 4 && !images.includes(b)) {
-      images.push(b);
-    }
+  // Only if the place has zero images at all, use a single scenic fallback
+  if (images.length === 0) {
+    images = [
+      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1600&q=85',
+    ];
   }
 
   return images;

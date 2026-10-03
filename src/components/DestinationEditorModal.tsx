@@ -204,7 +204,28 @@ export default function DestinationEditorModal({
     let url = newImageUrl.trim();
     if (!url) return;
 
-    // Convert Unsplash page link to direct CDN image if user pasted full page link
+    // 1. Google Drive direct image conversion
+    if (url.includes('drive.google.com')) {
+      const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        url = `https://lh3.googleusercontent.com/d/${match[1]}`;
+        setImageList((prev) => [...prev, url]);
+        setNewImageUrl('');
+        toast.success('Google Drive image link converted! ⚡');
+        return;
+      }
+    }
+
+    // 2. Google share / Google Photos album link warning
+    if (url.includes('share.google') || url.includes('photos.app.goo.gl') || url.includes('photos.google.com')) {
+      toast.error(
+        'Google Share links are web pages, not direct image files. Please save the photo to your device first, then upload it using the Drag & Drop box above!',
+        { duration: 7000 }
+      );
+      return;
+    }
+
+    // 3. Convert Unsplash page link to direct CDN image if user pasted full page link
     if (url.includes('unsplash.com/photos/')) {
       const parts = url.split('/photos/')[1]?.split('?')[0]?.split('/');
       const photoId = parts?.[parts.length - 1];
@@ -512,21 +533,32 @@ export default function DestinationEditorModal({
               </div>
 
               {/* Paste URL fallback */}
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex flex-col sm:flex-row items-center gap-3">
-                <input
-                  value={newImageUrl}
-                  onChange={(e) => setNewImageUrl(e.target.value)}
-                  placeholder="Or paste an image URL (e.g. Unsplash link)..."
-                  className="flex-1 w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:border-sky-500 focus:ring-1 focus:ring-sky-500/20 outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={addImageUrl}
-                  disabled={!newImageUrl.trim()}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-bold text-xs transition-all shadow-xs cursor-pointer"
-                >
-                  Add Image URL
-                </button>
+              <div className="space-y-1.5">
+                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 flex flex-col sm:flex-row items-center gap-3">
+                  <input
+                    value={newImageUrl}
+                    onChange={(e) => setNewImageUrl(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addImageUrl();
+                      }
+                    }}
+                    placeholder="Or paste direct image URL (e.g. Unsplash or direct .jpg / .webp link)..."
+                    className="flex-1 w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:border-sky-500 focus:ring-1 focus:ring-sky-500/20 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={addImageUrl}
+                    disabled={!newImageUrl.trim()}
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-bold text-xs transition-all shadow-xs cursor-pointer shrink-0"
+                  >
+                    Add Image URL
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-500 pl-1">
+                  💡 Tip: For 100% reliability, upload photos directly from your PC/phone using the Drag &amp; Drop zone above. Webpage share links (like Google Photos albums) cannot be displayed as images.
+                </p>
               </div>
 
               {/* Photo Reorder & Management Grid */}

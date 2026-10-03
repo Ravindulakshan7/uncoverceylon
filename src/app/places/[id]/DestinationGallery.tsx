@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize2, X, ImageOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface DestinationGalleryProps {
@@ -20,6 +20,15 @@ export default function DestinationGallery({
 }: DestinationGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [failedIndices, setFailedIndices] = useState<Set<number>>(new Set());
+
+  const handleImageError = (index: number) => {
+    setFailedIndices((prev) => {
+      const next = new Set(prev);
+      next.add(index);
+      return next;
+    });
+  };
 
   // Ensure we have at least 1 image
   const displayImages = images.length > 0
@@ -48,15 +57,26 @@ export default function DestinationGallery({
             className="absolute inset-0 cursor-pointer"
             onClick={() => setIsLightboxOpen(true)}
           >
-            <Image
-              src={displayImages[activeIndex]}
-              alt={`${title} - Photo ${activeIndex + 1}`}
-              fill
-              className="object-cover"
-              priority
-              quality={90}
-              unoptimized={true}
-            />
+            {failedIndices.has(activeIndex) ? (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 text-slate-400 p-6 text-center">
+                <ImageOff className="w-12 h-12 text-slate-600 mb-2" />
+                <p className="text-sm font-bold text-slate-300">Photo Unavailable</p>
+                <p className="text-xs text-slate-500 max-w-sm mt-1">
+                  This image could not be loaded. If this is a share or webpage link, please upload the image file directly from your device in Admin.
+                </p>
+              </div>
+            ) : (
+              <Image
+                src={displayImages[activeIndex]}
+                alt={`${title} - Photo ${activeIndex + 1}`}
+                fill
+                className="object-cover"
+                priority
+                quality={90}
+                unoptimized={true}
+                onError={() => handleImageError(activeIndex)}
+              />
+            )}
           </motion.div>
         </AnimatePresence>
 
@@ -122,15 +142,23 @@ export default function DestinationGallery({
                 activeIndex === idx
                   ? 'border-sky-500 scale-102 shadow-md ring-2 ring-sky-300'
                   : 'border-transparent opacity-70 hover:opacity-100'
-              }`}
+              } ${failedIndices.has(idx) ? 'bg-slate-800' : ''}`}
             >
-              <Image
-                src={img}
-                alt={`Thumbnail ${idx + 1}`}
-                fill
-                className="object-cover"
-                unoptimized={true}
-              />
+              {failedIndices.has(idx) ? (
+                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-800 text-slate-400 p-1 text-center">
+                  <ImageOff className="w-4 h-4 text-slate-500 mb-0.5" />
+                  <span className="text-[9px] text-slate-400 font-medium">Broken Link</span>
+                </div>
+              ) : (
+                <Image
+                  src={img}
+                  alt={`Thumbnail ${idx + 1}`}
+                  fill
+                  className="object-cover"
+                  unoptimized={true}
+                  onError={() => handleImageError(idx)}
+                />
+              )}
             </button>
           ))}
         </div>
@@ -168,14 +196,23 @@ export default function DestinationGallery({
             {/* Central Lightbox Image */}
             <div className="relative flex-1 my-4 flex items-center justify-center">
               <div className="relative w-full h-full max-h-[82vh]">
-                <Image
-                  src={displayImages[activeIndex]}
-                  alt={`${title} Fullscreen`}
-                  fill
-                  className="object-contain"
-                  quality={95}
-                  unoptimized={true}
-                />
+                {failedIndices.has(activeIndex) ? (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-6 text-center">
+                    <ImageOff className="w-16 h-16 text-slate-600 mb-3" />
+                    <p className="text-base font-bold text-slate-300">Photo Unavailable</p>
+                    <p className="text-xs text-slate-500 max-w-sm mt-1">This photo link could not be loaded.</p>
+                  </div>
+                ) : (
+                  <Image
+                    src={displayImages[activeIndex]}
+                    alt={`${title} Fullscreen`}
+                    fill
+                    className="object-contain"
+                    quality={95}
+                    unoptimized={true}
+                    onError={() => handleImageError(activeIndex)}
+                  />
+                )}
               </div>
 
               {displayImages.length > 1 && (
@@ -208,13 +245,20 @@ export default function DestinationGallery({
                       : 'border-white/20 opacity-50 hover:opacity-100'
                   }`}
                 >
-                  <Image
-                    src={img}
-                    alt={`Preview ${idx + 1}`}
-                    fill
-                    className="object-cover"
-                    unoptimized={true}
-                  />
+                  {failedIndices.has(idx) ? (
+                    <div className="w-full h-full flex items-center justify-center bg-slate-800 text-slate-500">
+                      <ImageOff className="w-3.5 h-3.5" />
+                    </div>
+                  ) : (
+                    <Image
+                      src={img}
+                      alt={`Preview ${idx + 1}`}
+                      fill
+                      className="object-cover"
+                      unoptimized={true}
+                      onError={() => handleImageError(idx)}
+                    />
+                  )}
                 </button>
               ))}
             </div>
