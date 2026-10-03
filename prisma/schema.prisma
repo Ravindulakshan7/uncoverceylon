@@ -1,0 +1,87 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model HeroSlide {
+  id         Int      @id @default(autoincrement())
+  image_url  String
+  location   String
+  province   String
+  sort_order Int      @default(0)
+  created_at DateTime @default(now())
+
+  @@map("hero_slides")
+}
+
+model Place {
+  id                Int      @id @default(autoincrement())
+  name              String
+  description       String   @db.Text
+  short_description String   @db.Text
+  location          String
+  province          String
+  category          String
+  lat               Float
+  lng               Float
+  image_url         String   @default("")
+  gallery           String   @default("[]") @db.Text
+  tips              String   @default("") @db.Text
+  best_time         String   @default("")
+  entry_fee         String   @default("Free")
+  distance_km       Int      @default(0)
+  rating            Float    @default(0)
+  review_count      Int      @default(0)
+  featured          Int      @default(0)
+  created_at        DateTime @default(now())
+  reviews           Review[]
+
+  @@map("places")
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  place_id   Int
+  place      Place    @relation(fields: [place_id], references: [id], onDelete: Cascade)
+  author     String
+  rating     Int
+  comment    String   @db.Text
+  status     String   @default("approved")
+  created_at DateTime @default(now())
+
+  @@map("reviews")
+}
+
+model RegionSlide {
+  id         Int      @id @default(autoincrement())
+  image_url  String
+  title      String
+  region     String
+  sort_order Int      @default(0)
+  created_at DateTime @default(now())
+
+  @@map("region_slides")
+}
+
+model SiteSetting {
+  key   String @id
+  value String @db.Text
+
+  @@map("site_settings")
+}
+
+model ActivityLog {
+  id          Int      @id @default(autoincrement())
+  action      String
+  entity_type String
+  entity_id   String   @default("")
+  details     String   @db.Text
+  actor       String   @default("Admin")
+  created_at  DateTime @default(now())
+
+  @@map("activity_logs")
+}
