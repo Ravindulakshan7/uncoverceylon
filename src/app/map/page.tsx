@@ -215,29 +215,29 @@ export default function MapPage() {
       {/* ━━━ MAIN WORKSPACE (SPLIT LAYOUT) ━━━ */}
       <div className="flex-1 flex overflow-hidden relative">
         
-        {/* ━━━━ LEFT SIDEBAR: FILTERS & PLACES LIST ━━━━ */}
+        {/* ━━━━ LEFT SIDEBAR: MINIMALIST DIRECTORY & PLACES LIST ━━━━ */}
         <aside
-          className={`w-full lg:w-[420px] xl:w-[460px] bg-white border-r border-slate-200 flex flex-col flex-shrink-0 z-20 h-full overflow-hidden transition-all duration-300 ${
+          className={`w-full lg:w-[380px] xl:w-[420px] bg-white border-r border-slate-200/80 flex flex-col flex-shrink-0 z-20 h-full overflow-hidden transition-all duration-300 ${
             mobileTab === 'list' ? 'block' : 'hidden lg:flex'
           }`}
         >
-          {/* Scrollable Filters Header Area */}
-          <div className="p-4 sm:p-5 border-b border-slate-200 space-y-4 overflow-y-auto max-h-[46%] bg-slate-50/80">
+          {/* Minimalist Filters Header Area */}
+          <div className="px-4 py-3.5 border-b border-slate-100 space-y-2.5 bg-white flex-shrink-0">
             
-            {/* 1. Search Bar */}
+            {/* 1. Search Bar (Clean, soft borderless pill) */}
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search spots, towns, districts..."
-                className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-9 py-2.5 text-base sm:text-sm text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all shadow-xs"
+                placeholder="Search places, towns, districts..."
+                className="w-full bg-slate-100/70 hover:bg-slate-100 focus:bg-white focus:ring-2 focus:ring-sky-500/20 rounded-xl pl-9 pr-8 py-2 text-xs text-slate-900 placeholder:text-slate-400 transition-all border-0 focus:outline-none"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 p-1"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 p-1"
                   aria-label="Clear search"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -245,15 +245,13 @@ export default function MapPage() {
               )}
             </div>
 
-            {/* 2. Category Dropdown */}
-            <div>
-              <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
-                Category
-              </label>
+            {/* 2. Compact Inline Filter Pills (Category, Province, Rating) */}
+            <div className="flex items-center gap-1.5">
+              {/* Category */}
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value as CategoryType)}
-                className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-base sm:text-xs font-bold text-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 focus:outline-none shadow-xs cursor-pointer"
+                className="flex-1 min-w-0 bg-slate-100/70 hover:bg-slate-100 text-slate-700 text-[11px] font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none cursor-pointer border-0 transition-colors truncate"
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat.label} value={cat.label}>
@@ -261,80 +259,68 @@ export default function MapPage() {
                   </option>
                 ))}
               </select>
-            </div>
 
-            {/* Dual Row: Province & Rating Filter */}
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              {/* 3. Province Filter */}
-              <div>
-                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
-                  Province
-                </label>
-                <select
-                  value={selectedProvince}
-                  onChange={(e) => setSelectedProvince(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-base sm:text-xs font-bold text-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 focus:outline-none shadow-xs"
-                >
-                  {PROVINCES.map((prov) => (
-                    <option key={prov} value={prov}>
-                      {prov}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Province */}
+              <select
+                value={selectedProvince}
+                onChange={(e) => setSelectedProvince(e.target.value)}
+                className="flex-1 min-w-0 bg-slate-100/70 hover:bg-slate-100 text-slate-700 text-[11px] font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none cursor-pointer border-0 transition-colors truncate"
+              >
+                {PROVINCES.map((prov) => (
+                  <option key={prov} value={prov}>
+                    {prov === 'All Provinces' ? 'All Provinces' : prov.replace(' Province', '')}
+                  </option>
+                ))}
+              </select>
 
-              {/* 4. Rating Filter */}
-              <div>
-                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
-                  Min Rating
-                </label>
-                <select
-                  value={minRating}
-                  onChange={(e) => setMinRating(parseFloat(e.target.value))}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-base sm:text-xs font-bold text-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 focus:outline-none shadow-xs"
-                >
-                  {RATING_FILTERS.map((r) => (
-                    <option key={r.value} value={r.value}>
-                      {r.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {/* Rating */}
+              <select
+                value={minRating}
+                onChange={(e) => setMinRating(parseFloat(e.target.value))}
+                className="bg-slate-100/70 hover:bg-slate-100 text-slate-700 text-[11px] font-semibold rounded-lg px-2 py-1.5 focus:outline-none cursor-pointer border-0 transition-colors shrink-0"
+              >
+                {RATING_FILTERS.map((r) => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
           </div>
 
-          {/* 5. Featured Places & Search Results List */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            <div className="flex items-center justify-between px-1 mb-1">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                {searchQuery || selectedCategory !== 'All' || selectedProvince !== 'All Provinces'
-                  ? `Matching Results (${filteredPlaces.length})`
-                  : `Destinations (${filteredPlaces.length})`}
+          {/* Subheader: Result Count & Featured Tag */}
+          <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100/80 bg-slate-50/50 flex-shrink-0">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              {searchQuery || selectedCategory !== 'All' || selectedProvince !== 'All Provinces'
+                ? `Results (${filteredPlaces.length})`
+                : `Destinations (${filteredPlaces.length})`}
+            </span>
+            
+            {featuredInView.length > 0 && !isFiltered && (
+              <span className="text-[10px] text-amber-700 bg-amber-50 font-bold px-2 py-0.5 rounded-full">
+                ★ {featuredInView.length} Featured
               </span>
-              
-              {featuredInView.length > 0 && !isFiltered && (
-                <span className="text-[10px] bg-amber-500/15 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-300">
-                  ★ {featuredInView.length} Featured
-                </span>
-              )}
-            </div>
+            )}
+          </div>
 
+          {/* 5. Minimalist Destination Items List (No heavy box borders!) */}
+          <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1">
             {loading ? (
               <div className="py-16 text-center text-slate-500">
-                <Loader2 className="w-6 h-6 animate-spin text-sky-600 mx-auto mb-2" />
+                <Loader2 className="w-5 h-5 animate-spin text-sky-600 mx-auto mb-2" />
                 <span className="text-xs font-semibold">Loading destinations...</span>
               </div>
             ) : filteredPlaces.length === 0 ? (
-              <div className="py-16 text-center bg-slate-50 rounded-2xl border border-slate-200 p-6">
-                <Search className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <h4 className="text-sm font-bold text-slate-900 mb-1">No spots found</h4>
-                <p className="text-xs text-slate-500 mb-3">
-                  Try adjusting your filters or category choice.
+              <div className="py-12 text-center p-6">
+                <Search className="w-7 h-7 text-slate-300 mx-auto mb-2" />
+                <h4 className="text-xs font-bold text-slate-700 mb-1">No spots found</h4>
+                <p className="text-[11px] text-slate-400 mb-2.5">
+                  Try adjusting your filters or search term.
                 </p>
                 <button
                   onClick={resetAllFilters}
-                  className="text-xs font-bold text-sky-600 hover:underline"
+                  className="text-xs font-bold text-sky-600 hover:underline cursor-pointer"
                 >
                   Reset all filters
                 </button>
@@ -351,14 +337,19 @@ export default function MapPage() {
                         setMobileTab('map');
                       }
                     }}
-                    className={`group cursor-pointer rounded-2xl p-3 border transition-all duration-200 flex items-center gap-3.5 ${
+                    className={`group relative cursor-pointer p-2.5 rounded-xl transition-all duration-150 flex items-center gap-3 ${
                       isSelected
-                        ? 'bg-sky-50 border-sky-500 shadow-md ring-2 ring-sky-500/20'
-                        : 'bg-white border-slate-200 hover:border-sky-300 hover:shadow-md'
+                        ? 'bg-sky-50 text-sky-900'
+                        : 'hover:bg-slate-50 text-slate-800'
                     }`}
                   >
-                    {/* Thumbnail */}
-                    <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 relative">
+                    {/* Active Accent Indicator */}
+                    {isSelected && (
+                      <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-sky-600" />
+                    )}
+
+                    {/* Clean Thumbnail */}
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0 relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={place.image_url || 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&q=80'}
@@ -369,42 +360,40 @@ export default function MapPage() {
                         }}
                       />
                       {place.featured === 1 && (
-                        <span className="absolute top-1 left-1 bg-amber-400 text-slate-950 text-[9px] font-extrabold px-1.5 py-0.2 rounded shadow-xs">
+                        <span className="absolute top-1 left-1 bg-amber-400 text-slate-950 text-[8.5px] font-bold px-1 rounded shadow-xs">
                           ★
                         </span>
                       )}
                     </div>
 
-                    {/* Metadata */}
+                    {/* Metadata & Typography */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-100">
-                          {place.category}
-                        </span>
-                        <span className="text-[10px] text-slate-500 truncate">
-                          {place.province}
-                        </span>
+                      {/* Category & Province inline */}
+                      <div className="flex items-center gap-1.5 text-[11px] mb-0.5 truncate">
+                        <span className="font-semibold text-sky-600 truncate">{place.category}</span>
+                        <span className="text-slate-300">·</span>
+                        <span className="text-slate-400 truncate">{place.province.replace(' Province', '')}</span>
                       </div>
 
-                      <h4 className="font-extrabold text-slate-900 text-sm group-hover:text-sky-600 transition-colors truncate">
+                      <h4 className="font-bold text-slate-900 text-[13px] group-hover:text-sky-600 transition-colors truncate leading-tight">
                         {place.name}
                       </h4>
 
-                      <div className="flex items-center gap-1 text-slate-500 text-xs mt-0.5">
-                        <MapPin size={11} className="text-sky-600 flex-shrink-0" />
-                        <span className="truncate text-[11px]">{place.location}</span>
+                      <div className="flex items-center gap-1 text-slate-400 text-[11px] mt-0.5">
+                        <MapPin size={10} className="text-slate-400 flex-shrink-0" />
+                        <span className="truncate">{place.location}</span>
                       </div>
 
-                      <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-100">
+                      <div className="flex items-center justify-between mt-1 text-[11px]">
                         <div className="flex items-center gap-1">
-                          <Star size={12} className="fill-amber-400 text-amber-400" />
-                          <span className="text-xs font-black text-slate-900">{place.rating}</span>
-                          <span className="text-[10px] text-slate-500">({place.review_count})</span>
+                          <Star size={11} className="fill-amber-400 text-amber-400" />
+                          <span className="font-bold text-slate-800 text-[11px]">{place.rating}</span>
+                          <span className="text-[10px] text-slate-400">({place.review_count})</span>
                         </div>
 
-                        <span className="text-[11px] font-bold text-sky-600 flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
-                          <span>Pin on map</span>
-                          <Navigation size={10} />
+                        <span className="text-[11px] font-medium text-slate-400 group-hover:text-sky-600 flex items-center gap-0.5 transition-colors">
+                          <span>Pin</span>
+                          <Navigation size={9} />
                         </span>
                       </div>
                     </div>
