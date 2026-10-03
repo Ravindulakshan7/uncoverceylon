@@ -161,12 +161,12 @@ async function migrate() {
     }
 
     // 6. Reset PostgreSQL auto-increment sequences
+   // 6. Reset PostgreSQL auto-increment sequences
     console.log('⚡ Resetting auto-increment sequences...');
-    await prisma.$executeRawUnsafe(`
-      SELECT setval(pg_get_serial_sequence('places', 'id'), COALESCE(MAX(id), 1)) FROM places;
-      SELECT setval(pg_get_serial_sequence('reviews', 'id'), COALESCE(MAX(id), 1)) FROM reviews;
-      SELECT setval(pg_get_serial_sequence('hero_slides', 'id'), COALESCE(MAX(id), 1)) FROM hero_slides;
-      SELECT setval(pg_get_serial_sequence('region_slides', 'id'), COALESCE(MAX(id), 1)) FROM region_slides;
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('places', 'id'), COALESCE(MAX(id), 1)) FROM places;`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('reviews', 'id'), COALESCE(MAX(id), 1)) FROM reviews;`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('hero_slides', 'id'), COALESCE(MAX(id), 1)) FROM hero_slides;`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('region_slides', 'id'), COALESCE(MAX(id), 1)) FROM region_slides;`);
     `);
 
     console.log('✅ Migration to PostgreSQL completed with 0 data loss!');
