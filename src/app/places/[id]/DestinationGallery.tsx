@@ -55,7 +55,7 @@ export default function DestinationGallery({
               className="object-cover"
               priority
               quality={90}
-              unoptimized={displayImages[activeIndex].startsWith('http')}
+              unoptimized={true}
             />
           </motion.div>
         </AnimatePresence>
@@ -129,7 +129,7 @@ export default function DestinationGallery({
                 alt={`Thumbnail ${idx + 1}`}
                 fill
                 className="object-cover"
-                unoptimized={img.startsWith('http')}
+                unoptimized={true}
               />
             </button>
           ))}
@@ -174,7 +174,7 @@ export default function DestinationGallery({
                   fill
                   className="object-contain"
                   quality={95}
-                  unoptimized={displayImages[activeIndex].startsWith('http')}
+                  unoptimized={true}
                 />
               </div>
 
@@ -213,7 +213,7 @@ export default function DestinationGallery({
                     alt={`Preview ${idx + 1}`}
                     fill
                     className="object-cover"
-                    unoptimized={img.startsWith('http')}
+                    unoptimized={true}
                   />
                 </button>
               ))}

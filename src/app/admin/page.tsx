@@ -1527,17 +1527,25 @@ export default function AdminPage() {
 
                             {/* 1. Thumbnail */}
                             <td className="py-3.5 px-4">
-                              <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0">
+                              <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0 flex items-center justify-center">
                                 {isValidImageUrl(place.image_url) ? (
-                                  /* eslint-disable-next-line @next/next/no-img-element */
-                                  <img
-                                    src={place.image_url}
-                                    alt={place.name}
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      (e.target as HTMLElement).style.display = 'none';
-                                    }}
-                                  />
+                                  <>
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={place.image_url}
+                                      alt={place.name}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        const target = e.target as HTMLElement;
+                                        target.style.display = 'none';
+                                        const fallback = target.nextElementSibling as HTMLElement;
+                                        if (fallback) fallback.style.display = 'flex';
+                                      }}
+                                    />
+                                    <div style={{ display: 'none' }} className="w-full h-full items-center justify-center text-slate-400">
+                                      <MapPin className="w-4 h-4" />
+                                    </div>
+                                  </>
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center text-slate-400">
                                     <MapPin className="w-4 h-4" />

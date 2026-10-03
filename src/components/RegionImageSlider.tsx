@@ -101,7 +101,7 @@ export default function RegionImageSlider() {
             sizes="(max-width: 1024px) 100vw, 45vw"
             className="object-cover"
             priority={currentIndex === 0}
-            unoptimized={imageSrc.startsWith('http')}
+            unoptimized={true}
           />
         </motion.div>
       </AnimatePresence>

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Place } from '@/types';
 import {
-  X, Save, Upload, Loader2, MapPin, Image as ImageIcon,
+  X, Save, Upload, Loader2, MapPin, Image as ImageIcon, ImageOff,
   FileText, Globe, Star, CheckCircle2, AlertCircle, ArrowLeft, ArrowRight,
   MoveUp, MoveDown, Trash2, Eye, ExternalLink, HelpCircle
 } from 'lucide-react';
@@ -172,9 +172,12 @@ export default function DestinationEditorModal({
 
   // PC File Upload Handler
   const handleFileUpload = async (file: File) => {
+    const previewUrl = URL.createObjectURL(file);
+    setImageList((prev) => [previewUrl, ...prev]);
+    setUploadingImage(true);
+
     const data = new FormData();
     data.append('file', file);
-    setUploadingImage(true);
 
     try {
       const res = await fetch('/api/upload', {
@@ -184,9 +187,13 @@ export default function DestinationEditorModal({
       const resData = await res.json();
       if (!res.ok) throw new Error(resData.error || 'Upload failed');
 
-      setImageList((prev) => [resData.url, ...prev]);
+      // Replace temporary blob URL with persistent server URL
+      setImageList((prev) =>
+        prev.map((img) => (img === previewUrl ? resData.url : img))
+      );
       toast.success('Photo uploaded from PC! 📸');
     } catch (err: unknown) {
+      setImageList((prev) => prev.filter((img) => img !== previewUrl));
       toast.error(err instanceof Error ? err.message : 'Upload failed');
     } finally {
       setUploadingImage(false);
@@ -194,8 +201,19 @@ export default function DestinationEditorModal({
   };
 
   const addImageUrl = () => {
-    if (!newImageUrl.trim()) return;
-    setImageList((prev) => [...prev, newImageUrl.trim()]);
+    let url = newImageUrl.trim();
+    if (!url) return;
+
+    // Convert Unsplash page link to direct CDN image if user pasted full page link
+    if (url.includes('unsplash.com/photos/')) {
+      const parts = url.split('/photos/')[1]?.split('?')[0]?.split('/');
+      const photoId = parts?.[parts.length - 1];
+      if (photoId) {
+        url = `https://images.unsplash.com/photo-${photoId}?auto=format&fit=crop&w=1600&q=80`;
+      }
+    }
+
+    setImageList((prev) => [...prev, url]);
     setNewImageUrl('');
     toast.success('Image added to gallery!');
   };
@@ -538,18 +556,29 @@ export default function DestinationEditorModal({
                         }`}
                       >
                         {/* Thumbnail */}
-                        <div className="relative h-40 w-full bg-slate-100">
+                        <div className="relative h-40 w-full bg-slate-100 flex items-center justify-center overflow-hidden">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={img}
                             alt={`Gallery image ${idx + 1}`}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              (e.target as HTMLElement).style.display = 'none';
+                              const target = e.target as HTMLElement;
+                              target.style.display = 'none';
+                              const fallback = target.nextElementSibling as HTMLElement;
+                              if (fallback) fallback.style.display = 'flex';
                             }}
                           />
+                          <div
+                            style={{ display: 'none' }}
+                            className="absolute inset-0 flex-col items-center justify-center p-3 text-center bg-slate-100 text-slate-500"
+                          >
+                            <ImageOff className="w-7 h-7 mb-1 text-slate-400" />
+                            <span className="text-[11px] font-semibold text-slate-600">Failed to load preview</span>
+                            <span className="text-[9px] text-slate-400 truncate max-w-full px-2 mt-0.5 font-mono">{img}</span>
+                          </div>
                           {idx === 0 && (
-                            <span className="absolute top-2.5 left-2.5 bg-[#0a192f] text-amber-400 text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-md">
+                            <span className="absolute top-2.5 left-2.5 bg-[#0a192f] text-amber-400 text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-md z-10">
                               Primary Cover
                             </span>
                           )}

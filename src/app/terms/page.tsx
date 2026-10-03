@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowLeft, FileText, AlertTriangle, Compass, CheckCircle2, Shield, HeartHandshake } from 'lucide-react';
+import { ArrowLeft, FileText, AlertTriangle, CheckCircle2, Shield, HeartHandshake } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Terms of Service — UncoverCeylon | Serandib Co.',

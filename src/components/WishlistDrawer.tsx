@@ -143,7 +143,7 @@ export default function WishlistDrawer() {
                           fill
                           sizes="80px"
                           className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          unoptimized={place.image_url.startsWith('http')}
+                          unoptimized={true}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">

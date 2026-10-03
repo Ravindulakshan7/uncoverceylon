@@ -59,7 +59,7 @@ export default function PlaceCard({ place, index = 0, variant = 'grid' }: PlaceC
                   : '(max-width: 768px) 50vw, 33vw'
               }
               className="object-cover transition duration-700 ease-out group-hover:scale-108"
-              unoptimized={place.image_url.startsWith('http')}
+              unoptimized={true}
             />
           ) : null}
 
