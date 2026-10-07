@@ -3,52 +3,43 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Heart, ArrowRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Menu, X, Heart, Sparkles, Search } from 'lucide-react';
 import { useWishlist } from '@/context/WishlistContext';
-import { useLanguage } from '@/context/LanguageContext';
-import LanguageSelector from '@/components/LanguageSelector';
+import CurrencySelector from '@/components/CurrencySelector';
 
 export default function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'destinations' | 'map' | 'about'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'destinations' | 'map'>('home');
+  const [scrolled, setScrolled] = useState(false);
+  const [navSearchQuery, setNavSearchQuery] = useState('');
   const pathname = usePathname();
   const { savedCount, setIsDrawerOpen } = useWishlist();
-  const { t } = useLanguage();
-
-  const navLinks = [
-    { href: '/', label: t('nav.home'), id: 'home' },
-    { href: '/#explore', label: t('nav.destinations'), id: 'destinations' },
-    { href: '/map', label: t('nav.map'), id: 'map' },
-    { href: '/about', label: t('nav.about'), id: 'about' },
-  ];
 
   useEffect(() => {
-    const updateActiveTab = () => {
+    const handleScroll = () => {
       if (typeof window === 'undefined') return;
+      
+      // Toggle sticky transform when scrolling past hero search bar
+      setScrolled(window.scrollY > 220);
+
+      // Active tab detection
       const currentPath = window.location.pathname;
       const currentHash = window.location.hash;
-
-      if (currentPath.startsWith('/about')) {
-        setActiveTab('about');
-        return;
-      }
 
       if (currentPath.startsWith('/map')) {
         setActiveTab('map');
         return;
       }
 
-      if (currentHash === '#explore') {
+      if (currentHash === '#destinations' || currentHash === '#explore') {
         setActiveTab('destinations');
         return;
       }
 
       if (currentPath === '/') {
-        const exploreElement = document.getElementById('explore');
-        if (exploreElement) {
-          const rect = exploreElement.getBoundingClientRect();
+        const destElement = document.getElementById('destinations') || document.getElementById('explore');
+        if (destElement) {
+          const rect = destElement.getBoundingClientRect();
           if (rect.top <= 250 && rect.bottom >= 150) {
             setActiveTab('destinations');
             return;
@@ -59,124 +50,195 @@ export default function Navbar() {
           return;
         }
       }
-
-      if (currentPath === '/') {
-        setActiveTab('home');
-      }
     };
 
-    updateActiveTab();
-
-    const onScroll = () => {
-      setScrolled(window.scrollY > 20);
-      updateActiveTab();
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('popstate', updateActiveTab);
-    window.addEventListener('hashchange', updateActiveTab);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('popstate', handleScroll);
+    window.addEventListener('hashchange', handleScroll);
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('popstate', updateActiveTab);
-      window.removeEventListener('hashchange', updateActiveTab);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('popstate', handleScroll);
+      window.removeEventListener('hashchange', handleScroll);
     };
   }, [pathname]);
 
   if (pathname?.startsWith('/admin')) return null;
 
-  const isActive = (id: string) => activeTab === id;
+  const scrollToDestinations = (e?: React.MouseEvent) => {
+    if (e && pathname === '/') {
+      e.preventDefault();
+    }
+    setActiveTab('destinations');
+    setMobileOpen(false);
+    const el = document.getElementById('destinations') || document.getElementById('explore');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      window.location.href = '/#destinations';
+    }
+  };
 
-  const handleNavClick = (id: string) => {
-    setActiveTab(id as typeof activeTab);
-    if (id === 'destinations' && typeof window !== 'undefined' && window.location.pathname === '/') {
-      window.dispatchEvent(new CustomEvent('uc:filter-category', { detail: { category: 'All' } }));
-      const exploreEl = document.getElementById('explore');
-      if (exploreEl) {
-        exploreEl.scrollIntoView({ behavior: 'smooth' });
+  const handleNavSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (typeof window !== 'undefined') {
+      const el = document.getElementById('destinations') || document.getElementById('explore');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
       }
+      window.dispatchEvent(
+        new CustomEvent('uc:filter-category', {
+          detail: {
+            category: 'All',
+            search: navSearchQuery.trim(),
+          },
+        })
+      );
+    }
+  };
+
+  const handleSubCategoryClick = (category: string) => {
+    if (typeof window !== 'undefined') {
+      const el = document.getElementById('destinations') || document.getElementById('explore');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+      window.dispatchEvent(
+        new CustomEvent('uc:filter-category', {
+          detail: {
+            category: category,
+            search: '',
+          },
+        })
+      );
+    }
+  };
+
+  const openAiModal = () => {
+    setMobileOpen(false);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('uc:open-ai-modal'));
     }
   };
 
   return (
     <header
-      className={`fixed top-0 inset-x-0 z-[9999] transition-all duration-300 ${
+      className={`sticky top-0 inset-x-0 z-[9999] bg-white text-[#002b11] transition-all duration-200 ${
         scrolled
-          ? 'bg-white/95 text-slate-900 border-b border-slate-200/80 shadow-[0_4px_24px_rgba(15,23,42,0.06)] backdrop-blur-xl'
-          : 'bg-gradient-to-b from-[#07111e]/90 via-[#07111e]/50 to-transparent text-white border-b border-white/15 backdrop-blur-[4px]'
+          ? 'border-b border-slate-200/90 shadow-[0_2px_14px_rgba(0,0,0,0.05)]'
+          : 'border-b-0'
       }`}
     >
       <nav className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
-
-          {/* ━━━ BRAND LOGO (MINIMALIST TYPOGRAPHIC, NO COMPASS) ━━━ */}
-          <Link
-            href="/"
-            onClick={() => setActiveTab('home')}
-            className="group flex items-center gap-2.5 transition-transform active:scale-95 py-1"
-          >
-            <div className="flex flex-col leading-none">
-              <span className={`text-[19px] sm:text-[21px] font-bold tracking-tight ${scrolled ? 'text-slate-900' : 'text-white'}`}>
-                Uncover
-                <span className={`font-extrabold ml-0.5 ${scrolled ? 'text-sky-600' : 'text-sky-400'}`}>
-                  Ceylon
-                </span>
-              </span>
-              <span className={`text-[8.5px] sm:text-[9px] tracking-[0.24em] uppercase font-semibold mt-1 ${scrolled ? 'text-slate-400' : 'text-white/60'}`}>
-                Island Travel Guide
-              </span>
-            </div>
-          </Link>
-
-          {/* ━━━ DESKTOP NAVIGATION (SLEEK MINIMALIST LINE AESTHETIC) ━━━ */}
-          <div className="hidden md:flex items-center gap-1 sm:gap-2">
-            {navLinks.map((link) => {
-              const active = isActive(link.id);
-              return (
-                <Link
-                  key={link.id}
-                  href={link.href}
-                  onClick={() => handleNavClick(link.id)}
-                  className={`relative px-4 py-2 text-[14px] font-medium transition-all duration-200 rounded-lg ${
-                    active
-                      ? scrolled
-                        ? 'text-sky-600 font-semibold'
-                        : 'text-amber-300 font-semibold'
-                      : scrolled
-                      ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                      : 'text-white/80 hover:text-white hover:bg-white/5'
-                  }`}
+        
+        {/* ━━━ TIER 1: MAIN NAV BAR ROW ━━━ */}
+        <div className="flex items-center justify-between h-16 sm:h-[70px]">
+          
+          {/* 1. BRAND LOGO + TRIPADVISOR SCROLLED SEARCH PILL */}
+          <div className="flex items-center gap-3 sm:gap-4 md:gap-6 min-w-0">
+            <Link
+              href="/"
+              onClick={() => setActiveTab('home')}
+              className="group flex items-center gap-2.5 transition-transform active:scale-95 py-1 shrink-0"
+            >
+              {/* TripAdvisor-style Binocular / Compass Icon */}
+              <div className="flex items-center shrink-0">
+                <svg
+                  className="w-8 h-8 sm:w-9 sm:h-9 text-[#002b11] transition-transform group-hover:scale-105"
+                  viewBox="0 0 36 36"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  {link.label}
-                  {active && (
-                    <motion.span
-                      layoutId="nav-active"
-                      className={`absolute inset-x-3 -bottom-1 h-[2px] rounded-full ${
-                        scrolled ? 'bg-sky-600' : 'bg-amber-400'
-                      }`}
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                </Link>
-              );
-            })}
+                  <circle cx="11" cy="18" r="9" stroke="#002b11" strokeWidth="3" />
+                  <circle cx="11" cy="18" r="4.5" fill="#00aa6c" />
+                  <circle cx="11" cy="18" r="2" fill="#002b11" />
+                  <circle cx="25" cy="18" r="9" stroke="#002b11" strokeWidth="3" />
+                  <circle cx="25" cy="18" r="4.5" fill="#00aa6c" />
+                  <circle cx="25" cy="18" r="2" fill="#002b11" />
+                  <path d="M17 14C17.5 12.5 18.5 12.5 19 14" stroke="#002b11" strokeWidth="2.8" strokeLinecap="round" />
+                  <path d="M7 10L10 12" stroke="#002b11" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d="M29 10L26 12" stroke="#002b11" strokeWidth="2.5" strokeLinecap="round" />
+                </svg>
+              </div>
+
+              {/* Logo Text: Solid #002b11, Bold Trip-Sans style */}
+              <span className="text-[20px] sm:text-[23px] font-black tracking-[-0.04em] text-[#002b11] shrink-0">
+                Uncoverceylon
+              </span>
+            </Link>
+
+            {/* ━━━ TRIPADVISOR COMPACT SEARCH PILL (Appears on scroll right next to logo) ━━━ */}
+            {scrolled && (
+              <form
+                onSubmit={handleNavSearchSubmit}
+                className="hidden sm:flex items-center gap-2 bg-white border border-slate-300 hover:border-slate-400 focus-within:!border-[#00aa6c] focus-within:ring-2 focus-within:ring-emerald-500/20 rounded-full px-3.5 py-1.5 w-40 md:w-52 lg:w-64 transition-all shadow-xs animate-in fade-in slide-in-from-left-2 duration-200"
+              >
+                <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Search"
+                  value={navSearchQuery}
+                  onChange={(e) => setNavSearchQuery(e.target.value)}
+                  className="w-full bg-transparent text-xs sm:text-[13px] font-semibold text-[#002b11] placeholder:text-slate-400 outline-none min-w-0"
+                />
+              </form>
+            )}
+
+            {/* ━━━ 2. GLOWING "PLAN WITH AI" PILL (TripAdvisor signature) ━━━ */}
+            <button
+              type="button"
+              onClick={openAiModal}
+              className="hidden lg:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f2faf5] hover:bg-[#e6f7ee] text-[#002b11] text-xs sm:text-[13px] font-bold border border-[#00aa6c]/50 shadow-[0_0_16px_rgba(0,170,108,0.25)] hover:shadow-[0_0_22px_rgba(0,170,108,0.4)] transition-all cursor-pointer active:scale-95 shrink-0"
+            >
+              <Sparkles className="w-4 h-4 text-[#00aa6c]" />
+              <span>Plan with AI</span>
+            </button>
           </div>
 
-          {/* ━━━ RIGHT ACTION ITEMS ━━━ */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Multi-Language Selector */}
-            <LanguageSelector scrolled={scrolled} />
+          {/* ━━━ 3. CENTER / RIGHT NAV LINKS ━━━ */}
+          <div className="hidden md:flex items-center gap-1.5">
+            <button
+              onClick={scrollToDestinations}
+              className={`px-3.5 py-2 text-[14px] font-semibold rounded-full transition-colors cursor-pointer ${
+                activeTab === 'destinations'
+                  ? 'text-[#002b11] font-bold bg-slate-100'
+                  : 'text-slate-700 hover:text-[#002b11] hover:bg-slate-50'
+              }`}
+            >
+              Destinations
+            </button>
+            <Link
+              href="/map"
+              onClick={() => setActiveTab('map')}
+              className={`px-3.5 py-2 text-[14px] font-semibold rounded-full transition-colors ${
+                activeTab === 'map'
+                  ? 'text-[#002b11] font-bold bg-slate-100'
+                  : 'text-slate-700 hover:text-[#002b11] hover:bg-slate-50'
+              }`}
+            >
+              Map
+            </Link>
+            <Link
+              href="/about"
+              className="px-3.5 py-2 text-[14px] font-semibold text-slate-700 hover:text-[#002b11] hover:bg-slate-50 rounded-full transition-colors"
+            >
+              About
+            </Link>
+          </div>
+
+          {/* ━━━ 4. RIGHT CONTROLS: [USD] [Wishlist] [Solid Black Sign in Pill] ━━━ */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            
+            {/* Currency Selector */}
+            <CurrencySelector scrolled={true} />
 
             {/* Saved Wishlist Heart */}
             <button
               onClick={() => setIsDrawerOpen(true)}
-              className={`relative p-2.5 rounded-full transition-all duration-200 cursor-pointer ${
-                scrolled
-                  ? 'text-slate-700 hover:bg-slate-100 hover:text-rose-600'
-                  : 'text-white/90 hover:bg-white/10 hover:text-rose-400'
-              }`}
+              className="relative p-2 sm:p-2.5 rounded-full text-slate-700 hover:text-rose-600 hover:bg-slate-100 transition-colors cursor-pointer"
               aria-label="View Saved Destinations"
-              title={t('nav.savedPlaces')}
+              title="Saved places"
             >
               <Heart
                 className={`w-5 h-5 transition-transform hover:scale-110 ${
@@ -184,119 +246,143 @@ export default function Navbar() {
                 }`}
               />
               {savedCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4.5 h-4.5 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center shadow-md animate-in fade-in zoom-in duration-200">
+                <span className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center shadow-xs">
                   {savedCount > 9 ? '9+' : savedCount}
                 </span>
               )}
             </button>
 
-            {/* Premium Minimal Explore Button */}
+            {/* TripAdvisor-style Solid Black "Sign in" Pill */}
             <Link
-              href="/#explore"
-              onClick={() => handleNavClick('destinations')}
-              className={`hidden sm:inline-flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-full transition-all duration-200 active:scale-[0.97] cursor-pointer ${
-                scrolled
-                  ? 'bg-sky-600 hover:bg-sky-500 text-white shadow-sm shadow-sky-600/25'
-                  : 'bg-white/10 hover:bg-white/20 text-white border border-white/25 backdrop-blur-sm'
-              }`}
+              href="/admin"
+              className="hidden sm:inline-flex items-center justify-center px-5 py-2 rounded-full font-bold text-xs sm:text-sm bg-[#002b11] hover:bg-[#001f0c] text-white shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
             >
-              <span>{t('nav.explore')}</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              Sign in
             </Link>
 
-            {/* Mobile Menu Burger */}
+            {/* Mobile Plan with AI Pill */}
+            <button
+              type="button"
+              onClick={openAiModal}
+              className="lg:hidden p-2 rounded-full text-emerald-800 bg-emerald-50 border border-emerald-200"
+              aria-label="Plan with AI"
+            >
+              <Sparkles className="w-4 h-4 text-[#00aa6c]" />
+            </button>
+
+            {/* Mobile Menu Hamburger */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Menu"
-              className={`md:hidden p-2 rounded-xl transition-all duration-200 cursor-pointer ${
-                scrolled
-                  ? 'text-slate-800 hover:bg-slate-100'
-                  : 'text-white hover:bg-white/10'
-              }`}
+              aria-label="Toggle navigation menu"
+              className="md:hidden p-2 rounded-xl text-slate-800 hover:bg-slate-100 cursor-pointer"
             >
-              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* ━━━ MOBILE DROPDOWN MENU ━━━ */}
-        <AnimatePresence>
-          {mobileOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className={`md:hidden overflow-hidden border-t transition-colors duration-300 ${
-                scrolled
-                  ? 'border-slate-200 bg-white text-slate-900 shadow-xl'
-                  : 'border-white/15 bg-[#07111e]/98 text-white shadow-2xl backdrop-blur-2xl'
-              }`}
+        {/* ━━━ TIER 2: TRIPADVISOR SUB-NAV ROW (Appears on scroll - exact match to user screenshot) ━━━ */}
+        {scrolled && (
+          <div className="border-t border-slate-100 py-2.5 overflow-x-auto no-scrollbar flex items-center gap-6 sm:gap-8 text-xs sm:text-[13px] font-bold text-slate-600 animate-in fade-in slide-in-from-top-1 duration-200">
+            <button
+              type="button"
+              onClick={() => handleSubCategoryClick('Mountains')}
+              className="hover:text-[#002b11] transition-colors cursor-pointer shrink-0"
             >
-              <div className="py-4 space-y-1.5">
-                {navLinks.map((link) => {
-                  const active = isActive(link.id);
-                  return (
-                    <Link
-                      key={link.id}
-                      href={link.href}
-                      onClick={() => {
-                        handleNavClick(link.id);
-                        setMobileOpen(false);
-                      }}
-                      className={`flex items-center min-h-[44px] px-4 py-2.5 rounded-xl text-[15px] transition-all active:scale-[0.98] ${
-                        active
-                          ? scrolled
-                            ? 'text-sky-600 bg-sky-50 font-bold border-l-3 border-sky-600'
-                            : 'text-amber-400 bg-white/10 font-bold border-l-3 border-amber-400'
-                          : scrolled
-                          ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium'
-                          : 'text-white/85 hover:text-white hover:bg-white/10 font-medium'
-                      }`}
-                    >
-                      {link.label}
-                    </Link>
-                  );
-                })}
+              Things to Do
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSubCategoryClick('Beaches')}
+              className="hover:text-[#002b11] transition-colors cursor-pointer shrink-0"
+            >
+              Hotels & Beaches
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSubCategoryClick('Historical')}
+              className="hover:text-[#002b11] transition-colors cursor-pointer shrink-0"
+            >
+              Restaurants & Food
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSubCategoryClick('Mountains')}
+              className="hover:text-[#002b11] transition-colors cursor-pointer shrink-0"
+            >
+              Highlands & Tea
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSubCategoryClick('Ancient Sites')}
+              className="hover:text-[#002b11] transition-colors cursor-pointer shrink-0"
+            >
+              Ancient Citadels
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSubCategoryClick('Wildlife')}
+              className="hover:text-[#002b11] transition-colors cursor-pointer shrink-0"
+            >
+              Safaris
+            </button>
+            <button
+              type="button"
+              onClick={() => handleSubCategoryClick('Hidden Gems')}
+              className="hover:text-[#002b11] transition-colors cursor-pointer shrink-0"
+            >
+              Hidden Gems
+            </button>
+          </div>
+        )}
 
-                {/* Mobile Saved Places Button */}
-                <button
-                  onClick={() => {
-                    setMobileOpen(false);
-                    setIsDrawerOpen(true);
-                  }}
-                  className={`w-full flex items-center justify-between min-h-[44px] px-4 py-2.5 rounded-xl text-[15px] font-medium transition-all active:scale-[0.98] cursor-pointer ${
-                    scrolled
-                      ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
-                      : 'text-white/85 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <Heart className={`w-4.5 h-4.5 ${savedCount > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
-                    <span>{t('nav.savedPlaces')}</span>
-                  </span>
-                  {savedCount > 0 && (
-                    <span className="bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                      {savedCount}
-                    </span>
-                  )}
-                </button>
+        {/* ━━━ MOBILE DROPDOWN MENU ━━━ */}
+        {mobileOpen && (
+          <div className="md:hidden border-t border-slate-100 py-3.5 space-y-1.5 bg-white animate-in slide-in-from-top-2 duration-200">
+            <button
+              onClick={openAiModal}
+              className="w-full text-left px-3.5 py-3 rounded-2xl font-bold text-sm bg-emerald-50 text-emerald-950 border border-emerald-200/80 flex items-center justify-between"
+            >
+              <span className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#00aa6c]" />
+                <span>Plan with Ceylon AI</span>
+              </span>
+              <span className="text-[11px] bg-emerald-200/70 text-emerald-900 font-bold px-2 py-0.5 rounded-full">New</span>
+            </button>
 
-                <Link
-                  href="/#explore"
-                  onClick={() => {
-                    handleNavClick('destinations');
-                    setMobileOpen(false);
-                  }}
-                  className="mt-3 flex items-center justify-center gap-2 min-h-[44px] py-2.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-[14px] font-bold active:scale-[0.98] transition-all shadow-md shadow-sky-600/30 cursor-pointer"
-                >
-                  <span>{t('hero.exploreBtn')}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            <button
+              onClick={scrollToDestinations}
+              className="w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm text-slate-800 hover:bg-slate-50 flex items-center justify-between"
+            >
+              <span>Destinations</span>
+              <span className="text-xs text-[#00aa6c] font-semibold">Explore</span>
+            </button>
+            <Link
+              href="/map"
+              onClick={() => setMobileOpen(false)}
+              className="w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm text-slate-800 hover:bg-slate-50 flex items-center justify-between"
+            >
+              <span>Interactive Map</span>
+              <span className="text-xs text-slate-400">9 Provinces</span>
+            </Link>
+            <Link
+              href="/about"
+              onClick={() => setMobileOpen(false)}
+              className="w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm text-slate-800 hover:bg-slate-50 flex items-center justify-between"
+            >
+              <span>About Serandib Co.</span>
+            </Link>
+            <div className="pt-2 px-1">
+              <Link
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+                className="w-full inline-flex items-center justify-center py-2.5 rounded-full bg-[#002b11] text-white font-bold text-xs shadow-xs"
+              >
+                Sign in to Admin
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
     </header>
   );

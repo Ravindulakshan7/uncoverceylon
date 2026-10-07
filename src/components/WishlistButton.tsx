@@ -53,7 +53,7 @@ export default function WishlistButton({
       className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer border ${
         saved
           ? 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100'
-          : 'bg-white border-slate-200 text-slate-800 hover:border-sky-500 hover:text-sky-600'
+          : 'bg-white border-slate-200 text-slate-800 hover:border-[#00aa6c] hover:text-[#00aa6c]'
       } ${className}`}
     >
       <Heart className={`w-4 h-4 transition-transform ${saved ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />

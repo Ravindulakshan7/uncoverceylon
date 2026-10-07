@@ -73,7 +73,7 @@ export default function LanguageSelector({ scrolled = false }: LanguageSelectorP
                     }}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                       isActive
-                        ? 'bg-sky-50 text-sky-600 font-bold'
+                        ? 'bg-emerald-50 text-[#00aa6c] font-bold'
                         : 'text-slate-800 hover:bg-slate-50'
                     }`}
                   >
@@ -81,7 +81,7 @@ export default function LanguageSelector({ scrolled = false }: LanguageSelectorP
                       <span className="text-base">{item.flag}</span>
                       <span>{item.nativeLabel}</span>
                     </span>
-                    {isActive && <Check className="w-3.5 h-3.5 text-sky-600" />}
+                    {isActive && <Check className="w-3.5 h-3.5 text-[#00aa6c]" />}
                   </button>
                 );
               })}

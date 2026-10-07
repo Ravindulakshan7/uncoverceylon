@@ -1,265 +1,287 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ChevronLeft, ChevronRight, MapPin, Search, X } from 'lucide-react';
-import { useLanguage } from '@/context/LanguageContext';
+import { motion } from 'framer-motion';
+import {
+  Search, Sparkles, Waves, Mountain,
+  Landmark, Compass, Camera, PawPrint
+} from 'lucide-react';
 
-interface HeroSlide {
-  id: number;
-  image_url: string;
-  location: string;
-  province: string;
+interface CategoryTab {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+  placeholder: string;
+  category: string;
 }
 
-const fallbackSlides: HeroSlide[] = [
-  { id: 1, image_url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1920&q=90', location: 'Sigiriya Rock Fortress', province: 'Central Province' },
-  { id: 2, image_url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=90', location: 'Southern Coastline', province: 'Southern Province' },
-  { id: 3, image_url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1920&q=90', location: 'Knuckles Mountain Range', province: 'Central Province' },
+const TABS: CategoryTab[] = [
+  { id: 'all', label: 'Search All', icon: Compass, placeholder: 'Places to go, things to do, hotels, beaches...', category: 'All' },
+  { id: 'things', label: 'Things to Do', icon: Camera, placeholder: 'Safaris, scenic hikes, surf lessons, tea trails...', category: 'Mountains' },
+  { id: 'beaches', label: 'Beaches & Bays', icon: Waves, placeholder: 'Mirissa, Hiriketiya, surfing spots, coral reefs...', category: 'Beaches' },
+  { id: 'highlands', label: 'Highlands & Tea', icon: Mountain, placeholder: 'Ella train, misty peaks, waterfalls, Nuwara Eliya...', category: 'Mountains' },
+  { id: 'heritage', label: 'Ancient Heritage', icon: Landmark, placeholder: 'Sigiriya Rock, cave temples, ancient ruins...', category: 'Ancient Sites' },
+  { id: 'safaris', label: 'Wild Safaris', icon: PawPrint, placeholder: 'Yala leopards, Udawalawe elephants, wildlife...', category: 'Wildlife' },
 ];
 
-// Helper to ensure each landmark's main subject/object is clearly visible on mobile portrait screens
-// while keeping PC/desktop positioning completely unchanged (md:object-center)
-function getSlideObjectPosition(slide: HeroSlide): string {
-  const loc = (slide.location || '').toLowerCase();
-  const prov = (slide.province || '').toLowerCase();
-  const url = (slide.image_url || '').toLowerCase();
+// ━━━ 4 TILES MATCHING TRIPADVISOR PIC 5 EXACTLY ("Outdoors", "Food", "Culture", "Water") ━━━
+const INTEREST_TILES = [
+  {
+    id: 'outdoors',
+    title: 'Outdoors',
+    category: 'Mountains',
+    searchVal: 'Hike, Safari, Mountain',
+    image: 'https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?w=800&q=85',
+  },
+  {
+    id: 'food',
+    title: 'Food',
+    category: 'Historical',
+    searchVal: 'Tea, Flavors, Cuisine',
+    image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&q=85',
+  },
+  {
+    id: 'culture',
+    title: 'Culture',
+    category: 'Ancient Sites',
+    searchVal: 'Sigiriya, Temple, Heritage',
+    image: 'https://images.unsplash.com/photo-1588598198321-9735fd52455b?w=800&q=85',
+  },
+  {
+    id: 'water',
+    title: 'Water',
+    category: 'Beaches',
+    searchVal: 'Beach, Coast, Waterfall',
+    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=85',
+  },
+];
 
-  // 1. Dalada Maligawa (Temple of the Tooth) - Octagonal pavilion (Paththirippuwa) is illuminated on the right
-  if (loc.includes('tooth') || loc.includes('maligawa') || url.includes('h42kvh')) {
-    return 'object-[74%_center] md:object-center';
-  }
-
-  // 2. Southern Coast Stilt Fishermen - Fisherman sitting on wooden stilt is on the center-right
-  if (loc.includes('coast') || loc.includes('koggala') || loc.includes('ahangama') || loc.includes('weligama') || loc.includes('fish') || url.includes('e4wb41')) {
-    return 'object-[68%_center] md:object-center';
-  }
-
-  // 3. Colombo Lotus Tower - Tall vertical tower with glowing flower petals & spire
-  if (loc.includes('lotus') || loc.includes('tower') || url.includes('2j91lg')) {
-    return 'object-[center_28%] md:object-center';
-  }
-
-  // 4. Ruwanwelisaya - Majestic white dome & golden pinnacle spire are in center-right
-  if (loc.includes('ruwanweli') || loc.includes('stupa') || loc.includes('dagoba') || url.includes('lxjshq')) {
-    return 'object-[68%_center] md:object-center';
-  }
-
-  // Sigiriya Rock Fortress
-  if (loc.includes('sigiriya')) {
-    return 'object-[center_35%] md:object-center';
-  }
-
-  // Southern / Mirissa Coast
-  if (loc.includes('mirissa') || prov.includes('southern')) {
-    return 'object-[60%_center] md:object-center';
-  }
-
-  return 'object-center md:object-center';
-}
+const TRENDING_SEARCHES = [
+  { label: 'Sigiriya Rock', category: 'Ancient Sites' },
+  { label: 'Nine Arch Bridge', category: 'Hidden Gems' },
+  { label: 'Mirissa Beach', category: 'Beaches' },
+  { label: 'Yala Safari', category: 'Wildlife' },
+  { label: 'Ella Rock', category: 'Mountains' },
+];
 
 export default function HeroSection() {
-  const [slides, setSlides] = useState<HeroSlide[]>(fallbackSlides);
-  const [current, setCurrent] = useState(0);
-  const [query, setQuery] = useState('');
-  const active = slides[current] ?? fallbackSlides[0];
-  const { t } = useLanguage();
+  const [activeTab, setActiveTab] = useState<CategoryTab>(TABS[0]);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    fetch('/api/hero-slides')
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.slides?.length) setSlides(data.slides);
-      })
-      .catch(() => undefined);
-  }, []);
+  const handleSearchSubmit = (e?: React.FormEvent, customQuery?: string) => {
+    if (e) e.preventDefault();
+    const query = customQuery !== undefined ? customQuery : searchQuery.trim();
 
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setCurrent((value) => (value + 1) % slides.length);
-    }, 6000);
-    return () => window.clearInterval(timer);
-  }, [slides.length]);
+    if (typeof window !== 'undefined') {
+      const destEl = document.getElementById('destinations') || document.getElementById('explore');
+      if (destEl) {
+        destEl.scrollIntoView({ behavior: 'smooth' });
+      }
 
-  const goTo = (direction: number) => {
-    setCurrent((value) => (value + direction + slides.length) % slides.length);
+      window.dispatchEvent(
+        new CustomEvent('uc:filter-category', {
+          detail: {
+            category: activeTab.category === 'All' ? 'All' : activeTab.category,
+            search: query,
+          },
+        })
+      );
+    }
+  };
+
+  const handleInterestClick = (category: string, searchVal = '') => {
+    if (typeof window !== 'undefined') {
+      const destEl = document.getElementById('destinations') || document.getElementById('explore');
+      if (destEl) {
+        destEl.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      window.dispatchEvent(
+        new CustomEvent('uc:filter-category', {
+          detail: {
+            category: category,
+            search: searchVal,
+          },
+        })
+      );
+    }
+  };
+
+  const openAiModal = () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('uc:open-ai-modal'));
+    }
   };
 
   return (
-    <section className="relative isolate min-h-screen min-h-[100vh] sm:min-h-[100dvh] w-full max-w-full overflow-hidden bg-[#0a192f] text-white">
-      {/* ━━━ SEAMLESS CINEMATIC IMAGE SLIDER (Fast GPU-accelerated rendering for iOS 15 & all devices) ━━━ */}
-      <div className="absolute inset-0 -z-20 overflow-hidden bg-[#07111e]">
-        <AnimatePresence initial={false}>
-          <motion.div
-            key={active.id}
-            initial={{ opacity: 0, scale: 1.02 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: 'easeInOut' }}
-            className="absolute inset-0 transform-gpu will-change-transform"
-            style={{ WebkitBackfaceVisibility: 'hidden', backfaceVisibility: 'hidden' }}
+    <section className="relative w-full bg-white text-slate-900 pt-6 sm:pt-10 pb-12 sm:pb-16 overflow-hidden">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* ━━━ 1. TRIPADVISOR SIGNATURE "Where to?" HEADLINE ━━━ */}
+        <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-8">
+          <motion.h1
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="text-5xl sm:text-6xl md:text-7xl font-black text-[#002b11] tracking-[-0.04em] leading-[1.05]"
           >
-            <Image
-              src={active.image_url}
-              alt={active.location}
-              fill
-              priority
-              sizes="(max-width: 768px) 100vw, 100vw"
-              className={`object-cover ${getSlideObjectPosition(active)} transition-[object-position] duration-500`}
-              unoptimized={true}
-            />
-          </motion.div>
-        </AnimatePresence>
-      </div>
+            Where to?
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.08 }}
+            className="text-slate-500 text-sm sm:text-base font-medium mt-2 max-w-xl mx-auto"
+          >
+            Explore sun-drenched coasts, misty tea mountains, ancient citadels and wild safaris across Sri Lanka.
+          </motion.p>
+        </div>
 
-      {/* Atmospheric Overlays:
-          - Mobile: top vignette for navbar/text readability + bright translucent center so landmark object is crystal-clear
-          - Desktop (md:): exact original 90deg oceanic linear gradient strictly unchanged */}
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-[#07111e]/85 via-[#07111e]/30 to-[#0a192f]/95 md:bg-[linear-gradient(90deg,rgba(10,25,47,0.76)_0%,rgba(10,25,47,0.48)_50%,rgba(10,25,47,0.22)_100%)]" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#0a192f] via-[#0a192f]/50 to-transparent pointer-events-none" />
-
-      {/* ━━━ CENTER HERO CONTENT (Responsive, zero horizontal overflow on small screens) ━━━ */}
-      <div className="mx-auto flex min-h-screen min-h-[100vh] sm:min-h-[100dvh] w-full max-w-4xl flex-col items-center justify-center px-4 pt-24 pb-28 text-center sm:px-8 sm:pt-24 sm:pb-32 overflow-hidden">
-        <motion.p
-          initial={{ opacity: 0, y: -16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.65, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-3 sm:mb-6 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-[#f59e0b]"
-        >
-          {t('hero.badge')}
-        </motion.p>
-
-        <motion.h1
-          initial={{ opacity: 0, y: -24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.75, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full max-w-3xl text-[26px] xs:text-[32px] sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.18] sm:leading-[1.05] tracking-tight break-words px-2"
-        >
-          <span>{t('hero.title1')} </span>
-          <span className="text-[#fbbf24] font-bold">{t('hero.title2')}</span>
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: -16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.38, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-3 sm:mt-6 max-w-xl text-[13px] sm:text-base lg:text-lg leading-relaxed text-white/90 px-2"
-        >
-          {t('hero.subtitle')}
-        </motion.p>
-
-        <motion.form
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          onSubmit={(event) => {
-            event.preventDefault();
-            window.location.href = query.trim()
-              ? `/?search=${encodeURIComponent(query.trim())}#explore`
-              : '#explore';
-          }}
-          className="mt-6 sm:mt-11 w-full max-w-xl px-1 sm:px-0 min-w-0"
-        >
-          <div className="group relative flex items-center border-b border-white/35 focus-within:!border-amber-400 hover:border-white/60 pb-2.5 sm:pb-3 transition-colors duration-300">
-            <label className="sr-only" htmlFor="destination-search">Search destinations</label>
-            <Search className="h-4.5 w-4.5 sm:h-6 sm:w-6 text-white/60 group-focus-within:text-amber-400 transition-colors shrink-0 mr-2.5 sm:mr-3.5" />
-            <input
-              id="destination-search"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={t('hero.searchPlaceholder')}
-              className="w-full min-w-0 flex-1 bg-transparent text-white placeholder:text-white/50 text-sm sm:text-lg font-light tracking-wide focus:outline-none"
-            />
-            {query && (
+        {/* ━━━ 2. CATEGORY TABS (TripAdvisor clean line navigation) ━━━ */}
+        <div className="flex items-center justify-start sm:justify-center gap-1 sm:gap-2 overflow-x-auto pb-3 mb-6 no-scrollbar">
+          {TABS.map((tab) => {
+            const isActive = activeTab.id === tab.id;
+            const Icon = tab.icon;
+            return (
               <button
+                key={tab.id}
                 type="button"
-                onClick={() => setQuery('')}
-                className="p-1 text-white/50 hover:text-white transition-colors mr-1 sm:mr-2 cursor-pointer shrink-0"
-                aria-label="Clear search"
+                onClick={() => {
+                  setActiveTab(tab);
+                  if (tab.category !== 'All') {
+                    handleInterestClick(tab.category);
+                  }
+                }}
+                className={`relative flex items-center gap-2 px-3.5 sm:px-4 py-2 text-xs sm:text-[14px] font-bold rounded-full transition-all cursor-pointer shrink-0 ${
+                  isActive
+                    ? 'text-[#002b11] bg-slate-100'
+                    : 'text-slate-600 hover:text-[#002b11] hover:bg-slate-50'
+                }`}
               >
-                <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-[#00aa6c]' : 'text-slate-400'}`} />
+                <span>{tab.label}</span>
+                {isActive && (
+                  <motion.div
+                    layoutId="active-trip-pill"
+                    className="absolute -bottom-1 inset-x-4 h-[2.5px] bg-[#00aa6c] rounded-full"
+                    transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                  />
+                )}
               </button>
-            )}
+            );
+          })}
+        </div>
+
+        {/* ━━━ 3. TRIPADVISOR ICONIC LARGE PILL SEARCH BAR ━━━ */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: 0.12 }}
+          className="max-w-4xl mx-auto"
+        >
+          <form
+            onSubmit={handleSearchSubmit}
+            className="w-full bg-white border border-slate-300 hover:border-slate-400 focus-within:!border-[#00aa6c] focus-within:ring-4 focus-within:ring-emerald-500/10 rounded-full p-2 pl-5 sm:pl-6 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.1)] flex items-center gap-3 transition-all duration-200"
+          >
+            {/* Search Icon */}
+            <Search className="w-5 h-5 text-slate-400 shrink-0" />
+            
+            {/* Input field */}
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={activeTab.placeholder}
+              className="flex-1 w-full bg-transparent border-0 outline-none text-[#002b11] placeholder:text-slate-400 text-sm sm:text-base font-semibold min-w-0"
+            />
+            
+            {/* Ask AI Pill Button */}
+            <button
+              type="button"
+              onClick={openAiModal}
+              className="hidden sm:inline-flex items-center gap-1.5 bg-slate-50 hover:bg-emerald-50 border border-slate-300 hover:border-emerald-300 text-slate-800 hover:text-emerald-950 text-xs sm:text-[13px] font-bold px-4 py-2 rounded-full transition-all cursor-pointer shrink-0 shadow-xs"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#00aa6c]" />
+              <span>Ask AI</span>
+            </button>
+
+            {/* Search Primary Green Button (TripAdvisor green) */}
             <button
               type="submit"
-              aria-label="Search destinations"
-              className="inline-flex items-center gap-1 sm:gap-1.5 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs sm:text-sm tracking-wide transition-all active:scale-95 shadow-md shadow-amber-400/20 cursor-pointer shrink-0"
+              className="inline-flex items-center justify-center bg-[#00aa6c] hover:bg-[#008f5a] text-white text-xs sm:text-sm font-extrabold px-6 sm:px-7 py-2.5 rounded-full shadow-md shadow-emerald-600/20 active:scale-95 transition-all cursor-pointer shrink-0"
             >
-              <span>{t('hero.searchBtn')}</span>
-              <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              Search
             </button>
-          </div>
-        </motion.form>
+          </form>
 
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.65, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-5 sm:mt-7 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm font-semibold"
-        >
-          <Link
-            href="/#explore"
-            className="inline-flex items-center gap-1.5 sm:gap-2 border-b-2 border-amber-400 pb-1 text-white hover:text-amber-300 transition-colors"
-          >
-            {t('hero.exploreBtn')} <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          </Link>
-          <Link href="/map" className="text-white/80 hover:text-white transition-colors">
-            {t('nav.map')}
-          </Link>
+          {/* ━━━ Trending Quick Suggestions Row ━━━ */}
+          <div className="flex items-center justify-center gap-2 flex-wrap mt-3.5 text-xs text-slate-500 font-medium">
+            <span className="font-bold text-slate-400">Trending in Ceylon:</span>
+            {TRENDING_SEARCHES.map((item, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => {
+                  setSearchQuery(item.label);
+                  handleInterestClick(item.category, item.label);
+                }}
+                className="hover:text-[#002b11] hover:underline cursor-pointer"
+              >
+                {item.label}
+                {idx < TRENDING_SEARCHES.length - 1 && <span className="ml-2 text-slate-300">•</span>}
+              </button>
+            ))}
+          </div>
         </motion.div>
-      </div>
 
-      {/* ━━━ BOTTOM NAVIGATION & LOCATION BAR (Safe flex layout, never clips or overflows) ━━━ */}
-      <div className="absolute bottom-4 sm:bottom-8 inset-x-0 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between border-t border-white/20 pt-2.5 sm:pt-4 gap-3">
-          
-          {/* Location details with safe truncate */}
-          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-            <MapPin className="h-4 sm:h-5 w-4 sm:w-5 shrink-0 text-amber-400" />
-            <div className="min-w-0 flex-1 text-left">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={active.id}
-                  initial={{ opacity: 0, y: 3 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -3 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <p className="truncate text-xs sm:text-sm font-bold text-white tracking-wide">
-                    {active.location}
-                  </p>
-                  <p className="truncate text-[10px] sm:text-xs text-amber-400/90 font-medium">
-                    {active.province}
-                  </p>
-                </motion.div>
-              </AnimatePresence>
-            </div>
+        {/* ━━━ 4. CATEGORY TILES (MATCHING PIC 5 EXACTLY: "Outdoors", "Food", "Culture", "Water") ━━━ */}
+        <div className="mt-12 sm:mt-16">
+          <div className="mb-5 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-black text-[#002b11] tracking-tight">
+              Find things to do by interest
+            </h2>
+            <p className="text-slate-500 text-xs sm:text-sm font-medium mt-0.5">
+              Whatever you&apos;re into, we&apos;ve got it
+            </p>
           </div>
 
-          {/* Navigation Controls */}
-          <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
-            <span className="text-[11px] sm:text-sm font-mono font-medium text-white/70 tracking-wider">
-              {String(current + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}
-            </span>
-            <button
-              onClick={() => goTo(-1)}
-              aria-label="Previous image"
-              className="p-1 text-white/80 hover:text-white active:scale-90 transition-all cursor-pointer"
-            >
-              <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-            </button>
-            <button
-              onClick={() => goTo(1)}
-              aria-label="Next image"
-              className="p-1 text-amber-400 hover:text-amber-300 active:scale-90 transition-all cursor-pointer"
-            >
-              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
-            </button>
-          </div>
+          {/* 4 Cards with exact clean edges from Pic 5 (rounded-2xl / 16px) */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4.5">
+            {INTEREST_TILES.map((tile, idx) => (
+              <motion.button
+                key={tile.id}
+                type="button"
+                onClick={() => handleInterestClick(tile.category, tile.searchVal)}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35, delay: 0.06 * idx }}
+                className="group relative aspect-square sm:aspect-[4/4.2] w-full rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 text-left cursor-pointer bg-slate-950"
+              >
+                {/* Authentic Photo */}
+                <Image
+                  src={tile.image}
+                  alt={tile.title}
+                  fill
+                  sizes="(max-width: 640px) 50vw, 25vw"
+                  className="object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
+                  unoptimized
+                />
 
+                {/* Smooth Dark Gradient Overlay for razor-sharp typography */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent pointer-events-none group-hover:from-black/90 transition-all" />
+
+                {/* Minimalist Bold Title at Bottom-Left (Exact match to Pic 5) */}
+                <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 z-10 flex flex-col justify-end">
+                  <h3 className="text-xl sm:text-2xl md:text-[26px] font-black text-white tracking-tight leading-none drop-shadow-md">
+                    {tile.title}
+                  </h3>
+                </div>
+              </motion.button>
+            ))}
+          </div>
         </div>
+
       </div>
     </section>
   );

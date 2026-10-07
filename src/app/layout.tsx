@@ -10,6 +10,7 @@ import { LocationProvider } from "@/context/LocationContext";
 import WishlistDrawer from "@/components/WishlistDrawer";
 import GoogleTranslator from "@/components/GoogleTranslator";
 import PWARegister from "@/components/PWARegister";
+import AiTravelModal from "@/components/AiTravelModal";
 
 export const viewport: Viewport = {
   themeColor: "#07111e",
@@ -90,8 +91,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark" data-scroll-behavior="smooth">
-      <body className="min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-sky-600 selection:text-white">
+    <html lang="en" data-scroll-behavior="smooth">
+      <body className="min-h-screen bg-white text-slate-900 antialiased selection:bg-[#00aa6c] selection:text-white">
         <LanguageProvider>
           <CurrencyProvider>
             <LocationProvider>
@@ -101,6 +102,7 @@ export default function RootLayout({
                 <WishlistDrawer />
                 <GoogleTranslator />
                 <PWARegister />
+                <AiTravelModal />
                 <Footer />
                 <Toaster
                   position="bottom-right"

@@ -39,7 +39,7 @@ export default function PlaceCard({ place, index = 0, variant = 'grid' }: PlaceC
     >
       <Link
         href={`/places/${place.id}`}
-        className={`group flex h-full flex-col overflow-hidden rounded-xl sm:rounded-2xl border border-slate-200/90 bg-white transition-all duration-300 hover:border-sky-300 hover:shadow-xl hover:shadow-sky-500/10 active:scale-[0.99] ${
+        className={`group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white transition-all duration-300 hover:border-[#00aa6c]/50 hover:shadow-xl hover:shadow-emerald-950/5 active:scale-[0.99] ${
           horizontal ? 'sm:flex-row' : ''
         }`}
       >
@@ -64,62 +64,77 @@ export default function PlaceCard({ place, index = 0, variant = 'grid' }: PlaceC
           ) : null}
 
           {/* Category Tag */}
-          <span className="absolute left-2 top-2 sm:left-3 sm:top-3 bg-white/95 backdrop-blur-xs px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9.5px] sm:text-[11px] font-bold text-sky-700 rounded-md sm:rounded shadow-xs border border-sky-100">
+          <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 bg-white/95 backdrop-blur-xs px-2.5 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-[11px] font-extrabold text-emerald-800 rounded-lg shadow-xs border border-emerald-100/80">
             {place.category}
           </span>
 
           {/* Wishlist Heart Button */}
-          <div className="absolute right-2 top-2 sm:right-3 sm:top-3 z-10">
+          <div className="absolute right-2.5 top-2.5 sm:right-3 sm:top-3 z-10">
             <WishlistButton placeId={place.id} placeName={place.name} variant="icon" />
           </div>
 
           {/* Seasonality / Best Month Badge */}
           {place.best_time && (
-            <span className="absolute left-2 bottom-2 sm:left-3 sm:bottom-3 bg-black/65 backdrop-blur-md text-white/95 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10px] font-semibold rounded-md flex items-center gap-1 border border-white/15 shadow-xs">
+            <span className="absolute left-2.5 bottom-2.5 sm:left-3 sm:bottom-3 bg-black/70 backdrop-blur-md text-white/95 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-[10px] font-semibold rounded-lg flex items-center gap-1 border border-white/15 shadow-xs">
               <span className="text-amber-300">☀️</span>
-              <span className="truncate max-w-[130px] sm:max-w-[150px]">{place.best_time}</span>
+              <span className="truncate max-w-[130px] sm:max-w-[160px]">{place.best_time}</span>
             </span>
           )}
         </div>
 
-        <div className="flex flex-1 flex-col justify-between p-2.5 sm:p-5">
+        <div className="flex flex-1 flex-col justify-between p-3.5 sm:p-5">
           <div>
-            <div className="flex items-center justify-between gap-1 text-[10px] sm:text-xs font-medium text-slate-500 mb-1 sm:mb-1.5">
+            <div className="flex items-center justify-between gap-1 text-[10px] sm:text-xs font-medium text-slate-500 mb-1.5">
               <div className="flex items-center gap-1 sm:gap-1.5 truncate">
-                <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 text-sky-600" />
-                <span className="truncate">{place.location}</span>
+                <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0 text-[#00aa6c]" />
+                <span className="truncate font-semibold text-slate-600">{place.location}</span>
               </div>
               <span
                 className={`text-[9.5px] sm:text-[11px] shrink-0 font-bold px-1.5 py-0.5 rounded ${
                   distanceInfo.isLive
-                    ? 'bg-sky-50 text-sky-700 border border-sky-200/60'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/60'
                     : 'text-slate-400'
                 }`}
               >
                 {distanceInfo.text}
               </span>
             </div>
-            <h3 className="text-xs sm:text-lg font-bold leading-snug sm:leading-tight text-slate-900 group-hover:text-sky-600 line-clamp-1 transition-colors">
+            <h3 className="text-sm sm:text-lg font-black leading-snug sm:leading-tight text-slate-900 group-hover:text-[#00aa6c] line-clamp-1 transition-colors">
               {place.name}
             </h3>
-            <p className="hidden sm:block mt-2 line-clamp-2 text-xs sm:text-sm leading-6 text-slate-600">
+            <p className="hidden sm:block mt-1.5 line-clamp-2 text-xs sm:text-sm leading-relaxed text-slate-600 font-medium">
               {place.short_description}
             </p>
           </div>
 
-          <div className="mt-2.5 sm:mt-4 flex items-center justify-between border-t border-slate-100 pt-2 sm:pt-3">
+          <div className="mt-3 sm:mt-4 flex items-center justify-between border-t border-slate-100 pt-2.5 sm:pt-3">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="flex items-center gap-0.5 sm:gap-1 text-xs sm:text-sm font-bold text-slate-700">
-                <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-amber-400 text-amber-400" />
-                {place.rating.toFixed(1)}
-              </span>
+              {/* TripAdvisor Green Rating Bubble Dot + Score */}
+              <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5">
+                  <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#00aa6c] inline-block" />
+                  <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#00aa6c] inline-block" />
+                  <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#00aa6c] inline-block" />
+                  <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#00aa6c] inline-block" />
+                  <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#00aa6c]/50 inline-block" />
+                </div>
+                <span className="text-xs sm:text-sm font-black text-slate-900 ml-1">
+                  {place.rating.toFixed(1)}
+                </span>
+                {place.review_count ? (
+                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium hidden sm:inline">
+                    ({place.review_count.toLocaleString()})
+                  </span>
+                ) : null}
+              </div>
+
               {place.entry_fee && (
-                <span className="text-[10px] sm:text-[11.5px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
+                <span className="text-[9.5px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
                   {convertFee(place.entry_fee)}
                 </span>
               )}
             </div>
-            <span className="flex items-center gap-0.5 sm:gap-1 text-[11px] sm:text-sm font-bold text-sky-600">
+            <span className="flex items-center gap-0.5 sm:gap-1 text-[11px] sm:text-sm font-bold text-[#00aa6c]">
               <span>{t('card.view')}</span>
               <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 transition-transform group-hover:translate-x-1" />
             </span>

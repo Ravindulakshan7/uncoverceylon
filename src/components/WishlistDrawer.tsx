@@ -110,8 +110,8 @@ export default function WishlistDrawer() {
                 </div>
               ) : savedPlaces.length === 0 ? (
                 <div className="py-20 text-center flex flex-col items-center justify-center px-4 space-y-4">
-                  <div className="w-16 h-16 rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-center text-slate-500">
-                    <Heart className="w-8 h-8 text-sky-600" />
+                  <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-slate-500">
+                    <Heart className="w-8 h-8 text-[#00aa6c]" />
                   </div>
                   <div>
                     <h4 className="text-base font-bold text-slate-900">{t('wishlist.emptyTitle')}</h4>
@@ -120,9 +120,9 @@ export default function WishlistDrawer() {
                     </p>
                   </div>
                   <Link
-                    href="/#explore"
+                    href="/#destinations"
                     onClick={() => setIsDrawerOpen(false)}
-                    className="inline-flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all shadow-sm"
+                    className="inline-flex items-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold text-xs px-5 py-2.5 rounded-xl transition-all shadow-sm"
                   >
                     <span>{t('wishlist.browseBtn')}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -132,7 +132,7 @@ export default function WishlistDrawer() {
                 savedPlaces.map((place) => (
                   <div
                     key={place.id}
-                    className="bg-white rounded-2xl border border-slate-200 p-3 shadow-xs hover:border-sky-300 transition-all flex gap-3 group relative"
+                    className="bg-white rounded-2xl border border-slate-200 p-3 shadow-xs hover:border-[#00aa6c]/50 transition-all flex gap-3 group relative"
                   >
                     {/* Thumbnail */}
                     <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
@@ -156,7 +156,7 @@ export default function WishlistDrawer() {
                     <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
                       <div>
                         <div className="flex items-center justify-between gap-1">
-                          <span className="text-[10px] font-bold text-sky-700 uppercase tracking-wider">
+                          <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">
                             {place.category}
                           </span>
                           <span className="flex items-center gap-0.5 text-[11px] font-bold text-amber-500">
@@ -164,11 +164,11 @@ export default function WishlistDrawer() {
                             {place.rating.toFixed(1)}
                           </span>
                         </div>
-                        <h4 className="text-sm font-bold text-slate-900 truncate group-hover:text-sky-600 transition-colors">
+                        <h4 className="text-sm font-bold text-slate-900 truncate group-hover:text-[#00aa6c] transition-colors">
                           {place.name}
                         </h4>
                         <p className="text-[11px] text-slate-500 flex items-center gap-1 truncate mt-0.5">
-                          <MapPin className="w-3 h-3 text-sky-600 flex-shrink-0" />
+                          <MapPin className="w-3 h-3 text-[#00aa6c] flex-shrink-0" />
                           <span className="truncate">{place.location}</span>
                         </p>
                       </div>
@@ -177,7 +177,7 @@ export default function WishlistDrawer() {
                         <Link
                           href={`/places/${place.id}`}
                           onClick={() => setIsDrawerOpen(false)}
-                          className="text-xs font-bold text-sky-600 hover:underline flex items-center gap-1"
+                          className="text-xs font-bold text-[#00aa6c] hover:underline flex items-center gap-1"
                         >
                           <span>{t('card.view')}</span>
                           <ArrowRight className="w-3 h-3" />
@@ -208,7 +208,7 @@ export default function WishlistDrawer() {
                 <button
                   type="button"
                   onClick={() => setIsOfflineModalOpen(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-sky-600/25 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold py-3 rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-emerald-950/20 cursor-pointer"
                 >
                   <Printer className="w-4 h-4 text-amber-300" />
                   <span>{t('wishlist.exportPdf')}</span>
@@ -219,7 +219,7 @@ export default function WishlistDrawer() {
                   onClick={() => setIsDrawerOpen(false)}
                   className="w-full flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-800 border border-slate-200 font-bold py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-xs"
                 >
-                  <MapPin className="w-4 h-4 text-sky-600" />
+                  <MapPin className="w-4 h-4 text-[#00aa6c]" />
                   <span>{t('wishlist.viewOnMap')}</span>
                 </Link>
               </div>

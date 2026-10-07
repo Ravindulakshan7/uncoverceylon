@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useCurrency, CURRENCIES, CurrencyCode } from '@/context/CurrencyContext';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CurrencySelectorProps {
@@ -31,19 +31,16 @@ export default function CurrencySelector({ scrolled = false }: CurrencySelectorP
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        aria-label="Change currency"
-        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
-          scrolled
-            ? 'text-slate-800 hover:bg-slate-50 border border-slate-200'
-            : 'text-white hover:bg-white/10 border border-white/20'
-        }`}
+        aria-label="Change currency & region"
+        title="Currency & Region"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer shadow-xs bg-white text-slate-800 hover:bg-slate-50 border border-slate-200 hover:border-slate-300"
       >
-        <span className="text-sm">{currencyInfo.flag}</span>
-        <span className="font-mono font-bold tracking-tight">{currencyInfo.code}</span>
+        <Globe className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+        <span className="font-mono font-bold tracking-tight text-slate-900">{currencyInfo.code}</span>
         <ChevronDown
-          className={`w-3.5 h-3.5 transition-transform duration-200 ${
+          className={`w-3 h-3 transition-transform duration-200 ${
             isOpen ? 'rotate-180' : ''
-          } ${scrolled ? 'text-slate-500' : 'text-white/70'}`}
+          } text-slate-400`}
         />
       </button>
 
