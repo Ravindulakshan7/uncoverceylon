@@ -1,21 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, logActivity } from '@/lib/db';
+import { prisma, logActivity } from '@/lib/db';
 import { verifyAdminPassword } from '@/lib/auth';
 
-export interface HeroSlide {
-  id: number;
-  image_url: string;
-  location: string;
-  province: string;
-  sort_order: number;
-  created_at: string;
-}
-
-// GET all hero slides
 export async function GET() {
   try {
-    const db = getDb();
-    const slides = db.prepare('SELECT * FROM hero_slides ORDER BY sort_order ASC').all() as HeroSlide[];
+    const slides = await prisma.heroSlide.findMany({
+      orderBy: { sort_order: 'asc' },
+    });
     return NextResponse.json({ slides });
   } catch (error) {
     console.error('GET /api/hero-slides error:', error);
@@ -23,7 +14,6 @@ export async function GET() {
   }
 }
 
-// POST — add a new slide
 export async function POST(request: NextRequest) {
   try {
     const { image_url, location, province, password } = await request.json();
@@ -36,24 +26,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'image_url and location are required' }, { status: 400 });
     }
 
-    const db = getDb();
-    const maxOrder = (db.prepare('SELECT MAX(sort_order) as m FROM hero_slides').get() as { m: number | null }).m ?? -1;
+    const maxSlide = await prisma.heroSlide.findFirst({
+      orderBy: { sort_order: 'desc' },
+      select: { sort_order: true },
+    });
 
-    const result = db.prepare(
-      'INSERT INTO hero_slides (image_url, location, province, sort_order) VALUES (?, ?, ?, ?)'
-    ).run(image_url, location, province || '', maxOrder + 1);
+    const nextOrder = (maxSlide?.sort_order ?? -1) + 1;
 
-    const slideId = result.lastInsertRowid;
-    logActivity('CREATE_HERO_SLIDE', 'slides', slideId, `Added hero slide for "${location}" (${province || 'Sri Lanka'})`);
+    const newSlide = await prisma.heroSlide.create({
+      data: {
+        image_url,
+        location,
+        province: province || '',
+        sort_order: nextOrder,
+      },
+    });
 
-    return NextResponse.json({ id: slideId, message: 'Slide added!' }, { status: 201 });
+    await logActivity('CREATE_HERO_SLIDE', 'slides', newSlide.id, `Added hero slide for "${location}"`);
+
+    return NextResponse.json({ id: newSlide.id, message: 'Slide added!' }, { status: 201 });
   } catch (error) {
     console.error('POST /api/hero-slides error:', error);
     return NextResponse.json({ error: 'Failed to add slide' }, { status: 500 });
   }
 }
 
-// DELETE — remove a slide
 export async function DELETE(request: NextRequest) {
   try {
     const { id, password } = await request.json();
@@ -62,12 +59,17 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const db = getDb();
-    const slide = db.prepare('SELECT location FROM hero_slides WHERE id = ?').get(id) as { location: string } | undefined;
-    const loc = slide ? slide.location : `Slide #${id}`;
+    const slideId = parseInt(id, 10);
+    const existing = await prisma.heroSlide.findUnique({
+      where: { id: slideId },
+      select: { location: true },
+    });
 
-    db.prepare('DELETE FROM hero_slides WHERE id = ?').run(id);
-    logActivity('DELETE_HERO_SLIDE', 'slides', id, `Deleted hero slide for "${loc}" (ID #${id})`);
+    await prisma.heroSlide.delete({
+      where: { id: slideId },
+    });
+
+    await logActivity('DELETE_HERO_SLIDE', 'slides', slideId, `Deleted hero slide for "${existing?.location || slideId}"`);
 
     return NextResponse.json({ message: 'Slide deleted!' });
   } catch (error) {

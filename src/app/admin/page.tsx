@@ -2503,19 +2503,21 @@ export default function AdminPage() {
                               )}
                             </div>
                             <span className="text-xs text-slate-400">
-                              {(() => {
-                                try {
-                                  return new Date(rev.created_at).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'short',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                  });
-                                } catch {
-                                  return rev.created_at;
-                                }
-                              })()}
+                                {(() => {
+                                  try {
+                                    return rev.created_at
+                                      ? new Date(rev.created_at).toLocaleDateString('en-US', {
+                                          year: 'numeric',
+                                          month: 'short',
+                                          day: 'numeric',
+                                          hour: '2-digit',
+                                          minute: '2-digit',
+                                        })
+                                      : 'Recently';
+                                  } catch {
+                                    return String(rev.created_at || 'Recently');
+                                  }
+                                })()}
                             </span>
                           </div>
                         </div>

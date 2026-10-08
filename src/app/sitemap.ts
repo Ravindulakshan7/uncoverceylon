@@ -1,23 +1,22 @@
 import { MetadataRoute } from 'next';
-import { getDb } from '@/lib/db';
+import { prisma } from '@/lib/db';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://uncoverceylon.com';
 
-  let places: { id: number; created_at?: string }[] = [];
+  let places: { id: number; created_at: Date }[] = [];
   try {
-    const db = getDb();
-    places = db.prepare('SELECT id, created_at FROM places ORDER BY id DESC').all() as {
-      id: number;
-      created_at?: string;
-    }[];
+    places = await prisma.place.findMany({
+      select: { id: true, created_at: true },
+      orderBy: { id: 'desc' },
+    });
   } catch (error) {
     console.error('Error fetching places for sitemap:', error);
   }
 
   const destinationUrls: MetadataRoute.Sitemap = places.map((place) => ({
     url: `${baseUrl}/places/${place.id}`,
-    lastModified: place.created_at ? new Date(place.created_at) : new Date(),
+    lastModified: place.created_at,
     changeFrequency: 'weekly',
     priority: 0.85,
   }));

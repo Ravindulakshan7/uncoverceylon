@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getDb } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { Place, Review } from '@/types';
 import ReviewSection from './ReviewSection';
 import DestinationGallery from './DestinationGallery';
@@ -24,8 +24,10 @@ interface PlacePageProps {
 export async function generateMetadata({ params }: PlacePageProps): Promise<Metadata> {
   const { id } = await params;
   try {
-    const db = getDb();
-    const place = db.prepare('SELECT * FROM places WHERE id = ?').get(id) as Place | undefined;
+    const numericId = parseInt(id, 10);
+    const place = isNaN(numericId)
+      ? null
+      : ((await prisma.place.findUnique({ where: { id: numericId } })) as Place | null);
     if (!place) {
       return {
         title: 'Destination Not Found — UncoverCeylon',
@@ -76,21 +78,47 @@ async function getPlaceDetails(id: string): Promise<{
   nearbyAttractions: Place[];
 } | null> {
   try {
-    const db = getDb();
-    const place = db.prepare('SELECT * FROM places WHERE id = ?').get(id) as Place | undefined;
-    if (!place) return null;
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) return null;
 
-    const reviews = db.prepare(
-      'SELECT * FROM reviews WHERE place_id = ? ORDER BY created_at DESC'
-    ).all(id) as Review[];
+    const rawPlace = await prisma.place.findUnique({
+      where: { id: numericId },
+    });
+    if (!rawPlace) return null;
 
-    const relatedPlaces = db.prepare(
-      'SELECT * FROM places WHERE category = ? AND id != ? ORDER BY rating DESC LIMIT 3'
-    ).all(place.category, id) as Place[];
+    const place: Place = {
+      ...rawPlace,
+      created_at: rawPlace.created_at.toISOString(),
+    };
 
-    const nearbyAttractions = db.prepare(
-      'SELECT * FROM places WHERE province = ? AND id != ? ORDER BY rating DESC LIMIT 3'
-    ).all(place.province, id) as Place[];
+    const rawReviews = await prisma.review.findMany({
+      where: { place_id: numericId, status: 'approved' },
+      orderBy: { created_at: 'desc' },
+    });
+    const reviews: Review[] = rawReviews.map((r) => ({
+      ...r,
+      created_at: r.created_at.toISOString(),
+    }));
+
+    const rawRelated = await prisma.place.findMany({
+      where: { category: place.category, NOT: { id: numericId } },
+      orderBy: { rating: 'desc' },
+      take: 3,
+    });
+    const relatedPlaces: Place[] = rawRelated.map((p) => ({
+      ...p,
+      created_at: p.created_at.toISOString(),
+    }));
+
+    const rawNearby = await prisma.place.findMany({
+      where: { province: place.province, NOT: { id: numericId } },
+      orderBy: { rating: 'desc' },
+      take: 3,
+    });
+    const nearbyAttractions: Place[] = rawNearby.map((p) => ({
+      ...p,
+      created_at: p.created_at.toISOString(),
+    }));
 
     return { place, reviews, relatedPlaces, nearbyAttractions };
   } catch {

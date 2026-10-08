@@ -8,9 +8,6 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import { LocationProvider } from "@/context/LocationContext";
 import WishlistDrawer from "@/components/WishlistDrawer";
-import GoogleTranslator from "@/components/GoogleTranslator";
-import PWARegister from "@/components/PWARegister";
-import AiTravelModal from "@/components/AiTravelModal";
 
 export const viewport: Viewport = {
   themeColor: "#07111e",
@@ -100,9 +97,6 @@ export default function RootLayout({
                 <Navbar />
                 <main>{children}</main>
                 <WishlistDrawer />
-                <GoogleTranslator />
-                <PWARegister />
-                <AiTravelModal />
                 <Footer />
                 <Toaster
                   position="bottom-right"

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, logActivity } from '@/lib/db';
-import { Place } from '@/types';
+import { prisma, logActivity } from '@/lib/db';
 import { verifyAdminPassword } from '@/lib/auth';
 
 export async function GET(
@@ -9,16 +8,27 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const db = getDb();
-    const place = db.prepare('SELECT * FROM places WHERE id = ?').get(id) as Place | undefined;
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) {
+      return NextResponse.json({ error: 'Invalid place ID' }, { status: 400 });
+    }
+
+    const place = await prisma.place.findUnique({
+      where: { id: numericId },
+      include: {
+        reviews: {
+          where: { status: 'approved' },
+          orderBy: { created_at: 'desc' },
+        },
+      },
+    });
 
     if (!place) {
       return NextResponse.json({ error: 'Place not found' }, { status: 404 });
     }
 
-    const reviews = db.prepare('SELECT * FROM reviews WHERE place_id = ? ORDER BY created_at DESC').all(id);
-
-    return NextResponse.json({ place, reviews });
+    const { reviews, ...placeData } = place;
+    return NextResponse.json({ place: placeData, reviews });
   } catch (error) {
     console.error('GET /api/places/[id] error:', error);
     return NextResponse.json({ error: 'Failed to fetch place' }, { status: 500 });
@@ -31,6 +41,11 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) {
+      return NextResponse.json({ error: 'Invalid place ID' }, { status: 400 });
+    }
+
     const body = await request.json();
     const { password, ...data } = body;
 
@@ -38,26 +53,28 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const db = getDb();
-    const result = db.prepare(`
-      UPDATE places SET
-        name = ?, description = ?, short_description = ?,
-        location = ?, province = ?, category = ?,
-        lat = ?, lng = ?, image_url = ?, gallery = ?,
-        tips = ?, best_time = ?, entry_fee = ?,
-        distance_km = ?, featured = ?
-      WHERE id = ?
-    `).run(
-      data.name, data.description, data.short_description,
-      data.location, data.province, data.category,
-      data.lat, data.lng, data.image_url, JSON.stringify(data.gallery || []),
-      data.tips, data.best_time, data.entry_fee,
-      data.distance_km, data.featured ? 1 : 0, id
-    );
+    await prisma.place.update({
+      where: { id: numericId },
+      data: {
+        name: data.name,
+        description: data.description,
+        short_description: data.short_description,
+        location: data.location,
+        province: data.province,
+        category: data.category,
+        lat: Number(data.lat),
+        lng: Number(data.lng),
+        image_url: data.image_url,
+        gallery: typeof data.gallery === 'string' ? data.gallery : JSON.stringify(data.gallery || []),
+        tips: data.tips,
+        best_time: data.best_time,
+        entry_fee: data.entry_fee,
+        distance_km: Number(data.distance_km || 0),
+        featured: data.featured ? 1 : 0,
+      },
+    });
 
-    if (result.changes > 0) {
-      logActivity('UPDATE_PLACE', 'places', id, `Updated destination "${data.name}" (ID #${id})`);
-    }
+    await logActivity('UPDATE_PLACE', 'places', numericId, `Updated destination "${data.name}"`);
 
     return NextResponse.json({ message: 'Place updated successfully!' });
   } catch (error) {
@@ -72,21 +89,27 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) {
+      return NextResponse.json({ error: 'Invalid place ID' }, { status: 400 });
+    }
+
     const { password } = await request.json();
 
     if (!verifyAdminPassword(password)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const db = getDb();
-    const existing = db.prepare('SELECT name FROM places WHERE id = ?').get(id) as { name: string } | undefined;
-    const placeName = existing ? existing.name : `Destination #${id}`;
+    const existing = await prisma.place.findUnique({
+      where: { id: numericId },
+      select: { name: true },
+    });
 
-    // Delete associated reviews
-    db.prepare('DELETE FROM reviews WHERE place_id = ?').run(id);
-    db.prepare('DELETE FROM places WHERE id = ?').run(id);
+    await prisma.place.delete({
+      where: { id: numericId },
+    });
 
-    logActivity('DELETE_PLACE', 'places', id, `Deleted destination "${placeName}" (ID #${id})`);
+    await logActivity('DELETE_PLACE', 'places', numericId, `Deleted destination "${existing?.name || numericId}"`);
 
     return NextResponse.json({ message: 'Place deleted successfully!' });
   } catch (error) {

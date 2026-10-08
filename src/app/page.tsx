@@ -1,4 +1,4 @@
-import { getDb } from '@/lib/db';
+import { prisma } from '@/lib/db';
 import { Place } from '@/types';
 import HeroSection from '@/components/HeroSection';
 import PlacesGrid from '@/components/PlacesGrid';
@@ -10,7 +10,16 @@ export const revalidate = 60;
 
 async function getPlaces(): Promise<Place[]> {
   try {
-    return getDb().prepare('SELECT * FROM places ORDER BY featured DESC, rating DESC').all() as Place[];
+    const rawPlaces = await prisma.place.findMany({
+      orderBy: [
+        { featured: 'desc' },
+        { rating: 'desc' },
+      ],
+    });
+    return rawPlaces.map((p) => ({
+      ...p,
+      created_at: p.created_at.toISOString(),
+    }));
   } catch (error) {
     console.error('Error fetching places:', error);
     return [];

@@ -27,7 +27,7 @@ export interface Review {
   author: string;
   rating: number;
   comment: string;
-  status?: 'approved' | 'pending' | 'spam';
+  status?: 'approved' | 'pending' | 'spam' | string;
   created_at: string;
 }
 
@@ -51,4 +51,3 @@ export interface ActivityLog {
   actor: string;
   created_at: string;
 }
-

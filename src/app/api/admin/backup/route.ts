@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb, logActivity } from '@/lib/db';
+import { prisma, logActivity } from '@/lib/db';
 import { verifyAdminPassword } from '@/lib/auth';
-import fs from 'fs';
-import path from 'path';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,32 +13,39 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized access to database backup' }, { status: 401 });
     }
 
-    const db = getDb();
-    // Flush WAL to ensure main SQLite file has the absolute latest committed writes
-    try {
-      db.pragma('wal_checkpoint(TRUNCATE)');
-    } catch (e) {
-      console.warn('WAL checkpoint warning during backup:', e);
-    }
+    const [places, heroSlides, reviews, settings] = await Promise.all([
+      prisma.place.findMany({ orderBy: { id: 'asc' } }),
+      prisma.heroSlide.findMany({ orderBy: { sort_order: 'asc' } }),
+      prisma.review.findMany({ orderBy: { id: 'asc' } }),
+      prisma.siteSetting.findMany(),
+    ]);
 
-    const dbPath = path.join(process.cwd(), 'data', 'uncoverceylon.db');
-    if (!fs.existsSync(dbPath)) {
-      return NextResponse.json({ error: 'Database file not found' }, { status: 404 });
-    }
+    const backupData = {
+      timestamp: new Date().toISOString(),
+      platform: 'Supabase PostgreSQL',
+      counts: {
+        places: places.length,
+        heroSlides: heroSlides.length,
+        reviews: reviews.length,
+        settings: settings.length,
+      },
+      places,
+      heroSlides,
+      reviews,
+      settings,
+    };
 
-    const fileBuffer = fs.readFileSync(dbPath);
+    const jsonStr = JSON.stringify(backupData, null, 2);
     const dateStr = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const filename = `uncoverceylon-backup-${dateStr}.db`;
+    const filename = `uncoverceylon-supabase-backup-${dateStr}.json`;
 
-    // Record activity log
-    logActivity('BACKUP_DOWNLOAD', 'database', 'uncoverceylon.db', `One-click database backup downloaded (${(fileBuffer.length / 1024).toFixed(1)} KB)`);
+    await logActivity('BACKUP_DOWNLOAD', 'database', 'supabase', `Cloud database JSON backup exported (${places.length} places)`);
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(jsonStr, {
       status: 200,
       headers: {
-        'Content-Type': 'application/vnd.sqlite3',
+        'Content-Type': 'application/json',
         'Content-Disposition': `attachment; filename="${filename}"`,
-        'Content-Length': fileBuffer.length.toString(),
         'Cache-Control': 'no-store, no-cache, must-revalidate',
       },
     });

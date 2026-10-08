@@ -119,7 +119,8 @@ export default function ReviewSection({ placeId, initialReviews }: ReviewSection
     }
   };
 
-  const formatDate = (dateStr: string) => {
+  const formatDate = (dateStr?: string | Date) => {
+    if (!dateStr) return 'Recently';
     try {
       return new Date(dateStr).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -127,7 +128,7 @@ export default function ReviewSection({ placeId, initialReviews }: ReviewSection
         day: 'numeric',
       });
     } catch {
-      return dateStr;
+      return String(dateStr);
     }
   };
 
