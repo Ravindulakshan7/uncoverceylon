@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Heart, Sparkles, Search } from 'lucide-react';
+import { Menu, X, Heart, Sparkles, Search, ChevronDown, LogOut, ShieldCheck, User as UserIcon } from 'lucide-react';
 import { useWishlist } from '@/context/WishlistContext';
+import { useAuth } from '@/context/AuthContext';
 import CurrencySelector from '@/components/CurrencySelector';
 
 export default function Navbar() {
@@ -14,6 +15,19 @@ export default function Navbar() {
   const [navSearchQuery, setNavSearchQuery] = useState('');
   const pathname = usePathname();
   const { savedCount, setIsDrawerOpen } = useWishlist();
+  const { user, openAuthModal, logout } = useAuth();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -67,17 +81,10 @@ export default function Navbar() {
   if (pathname?.startsWith('/admin')) return null;
 
   const scrollToDestinations = (e?: React.MouseEvent) => {
-    if (e && pathname === '/') {
-      e.preventDefault();
-    }
+    if (e) e.preventDefault();
     setActiveTab('destinations');
     setMobileOpen(false);
-    const el = document.getElementById('destinations') || document.getElementById('explore');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      window.location.href = '/#destinations';
-    }
+    window.location.href = '/destinations';
   };
 
   const handleNavSearchSubmit = (e: React.FormEvent) => {
@@ -252,13 +259,85 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* TripAdvisor-style Solid Black "Sign in" Pill */}
-            <Link
-              href="/admin"
-              className="hidden sm:inline-flex items-center justify-center px-5 py-2 rounded-full font-bold text-xs sm:text-sm bg-[#002b11] hover:bg-[#001f0c] text-white shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
-            >
-              Sign in
-            </Link>
+            {/* Customer Sign In / Account Dropdown */}
+            {!user ? (
+              <button
+                type="button"
+                onClick={() => openAuthModal('signin')}
+                className="hidden sm:inline-flex items-center justify-center px-5 py-2 rounded-full font-bold text-xs sm:text-sm bg-[#002b11] hover:bg-[#001f0c] text-white shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
+              >
+                Sign in
+              </button>
+            ) : (
+              <div ref={userMenuRef} className="relative hidden sm:block">
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200/80 text-[#002b11] text-xs sm:text-[13px] font-bold border border-slate-200 transition-all cursor-pointer active:scale-95"
+                >
+                  {user.image ? (
+                    <img
+                      src={user.image}
+                      alt={user.name}
+                      className="w-7 h-7 rounded-full object-cover ring-1 ring-[#00aa6c]/50"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-[#00aa6c] text-white flex items-center justify-center text-[11px] font-black">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <span className="max-w-[100px] truncate">{user.name.split(' ')[0]}</span>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+                </button>
+
+                {/* Dropdown Card */}
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="px-4 py-2.5 border-b border-slate-100">
+                      <p className="text-xs font-bold text-slate-900 truncate">{user.name}</p>
+                      <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
+                    </div>
+
+                    <div className="py-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          setIsDrawerOpen(true);
+                        }}
+                        className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-[#00aa6c] flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <Heart className="w-3.5 h-3.5" />
+                        <span>Saved Places ({savedCount})</span>
+                      </button>
+
+                      {user.role === 'admin' && (
+                        <Link
+                          href="/admin"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-emerald-700 flex items-center gap-2.5 transition-colors"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Admin Portal</span>
+                        </Link>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          logout();
+                        }}
+                        className="w-full text-left px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Mobile Plan with AI Pill */}
             <button
@@ -373,13 +452,56 @@ export default function Navbar() {
               <span>About Serandib Co.</span>
             </Link>
             <div className="pt-2 px-1">
-              <Link
-                href="/admin"
-                onClick={() => setMobileOpen(false)}
-                className="w-full inline-flex items-center justify-center py-2.5 rounded-full bg-[#002b11] text-white font-bold text-xs shadow-xs"
-              >
-                Sign in to Admin
-              </Link>
+              {!user ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    openAuthModal('signin');
+                  }}
+                  className="w-full inline-flex items-center justify-center py-2.5 rounded-full bg-[#002b11] text-white font-bold text-xs shadow-xs cursor-pointer active:scale-95"
+                >
+                  Sign in / Create Account
+                </button>
+              ) : (
+                <div className="space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    {user.image ? (
+                      <img src={user.image} alt={user.name} className="w-8 h-8 rounded-full object-cover ring-1 ring-[#00aa6c]" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-[#00aa6c] text-white flex items-center justify-center text-xs font-bold">
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-slate-900 truncate">{user.name}</p>
+                      <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-1">
+                    {user.role === 'admin' && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex-1 py-1.5 px-3 rounded-xl bg-slate-200/80 text-[11px] font-bold text-slate-800 text-center"
+                      >
+                        Admin Portal
+                      </Link>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        logout();
+                      }}
+                      className="flex-1 py-1.5 px-3 rounded-xl bg-rose-50 text-rose-600 text-[11px] font-bold text-center cursor-pointer"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

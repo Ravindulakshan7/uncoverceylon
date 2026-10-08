@@ -48,13 +48,31 @@ model Review {
   id         Int      @id @default(autoincrement())
   place_id   Int
   place      Place    @relation(fields: [place_id], references: [id], onDelete: Cascade)
+  user_id    String?
+  user       User?    @relation(fields: [user_id], references: [id], onDelete: SetNull)
   author     String
+  user_image String?  @default("")
   rating     Int
   comment    String   @db.Text
   status     String   @default("approved")
   created_at DateTime @default(now())
 
   @@map("reviews")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password_hash String?
+  image         String?   @default("")
+  provider      String    @default("email")
+  role          String    @default("customer")
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  reviews       Review[]
+
+  @@map("users")
 }
 
 model RegionSlide {

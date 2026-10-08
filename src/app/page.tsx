@@ -1,81 +1,23 @@
 import { prisma } from '@/lib/db';
-import { Place } from '@/types';
 import HeroSection from '@/components/HeroSection';
-import PlacesGrid from '@/components/PlacesGrid';
-import PlaceCard from '@/components/PlaceCard';
+import InterestsSection from '@/components/InterestsSection';
 import Link from 'next/link';
-import { ArrowRight, Map, MapPin, Sparkles, Compass, ShieldCheck, Sun, Train, WifiOff } from 'lucide-react';
+import { ArrowRight, Map, Compass, Sun, Train, ShieldCheck } from 'lucide-react';
 
 export const revalidate = 60;
 
-async function getPlaces(): Promise<Place[]> {
-  try {
-    const rawPlaces = await prisma.place.findMany({
-      orderBy: [
-        { featured: 'desc' },
-        { rating: 'desc' },
-      ],
-    });
-    return rawPlaces.map((p) => ({
-      ...p,
-      created_at: p.created_at.toISOString(),
-    }));
-  } catch (error) {
-    console.error('Error fetching places:', error);
-    return [];
-  }
-}
-
 export default async function HomePage() {
-  const places = await getPlaces();
-  const hiddenGems = places.filter((place) => place.category === 'Hidden Gems').slice(0, 2);
-
   return (
     <div className="min-h-screen w-full max-w-none bg-white text-slate-900 font-sans">
       
-      {/* ━━━ 1. TRIPADVISOR-INFLUENCED HERO (Where to? + Pill Search + 4 Interest Cards) ━━━ */}
+      {/* ━━━ 1. WANDER.LK EDITORIAL HERO (Matching User's DeepSeek Design) ━━━ */}
       <HeroSection />
 
-      {/* ━━━ 2. CURATED EDITOR'S COLLECTION (TripAdvisor "Top Experiences" Style) ━━━ */}
-      {hiddenGems.length > 0 && (
-        <section id="curated" className="py-12 sm:py-20 bg-[#f8fafc] border-b border-slate-200/80 scroll-mt-20">
-          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 sm:mb-12 gap-4">
-              <div>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-[#00aa6c] text-[11px] font-black uppercase tracking-wider border border-emerald-200">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Curated Collection
-                </span>
-                <h2 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight mt-2.5">
-                  Remarkable places, thoughtfully collected
-                </h2>
-                <p className="text-slate-500 text-xs sm:text-base font-medium mt-1 max-w-xl">
-                  A slower, clearer way to explore Sri Lanka: secret viewpoints, ancient legends, and verified traveler notes.
-                </p>
-              </div>
-              <Link
-                href="/?category=Hidden+Gems#destinations"
-                className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#00aa6c] hover:text-[#008f5a] hover:underline shrink-0"
-              >
-                <span>View all hidden gems</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
+      {/* ━━━ 2. BROWSE BY MOOD / UNCOVER CEYLON BY INTEREST (4 Cards Grid) ━━━ */}
+      <InterestsSection />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8">
-              {hiddenGems.map((place, index) => (
-                <PlaceCard key={place.id} place={place} index={index} variant="horizontal" />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ━━━ 3. POPULAR DESTINATIONS (Core Places Filter & Dynamic Grid) ━━━ */}
-      <PlacesGrid initialPlaces={places} />
-
-      {/* ━━━ 4. ISLAND ROUTE PLANNER BANNER (Interactive Map Preview) ━━━ */}
-      <section id="map-banner" className="py-12 sm:py-20 bg-white border-t border-slate-200/80">
+      {/* ━━━ 3. ISLAND ROUTE PLANNER BANNER (Interactive Map Preview) ━━━ */}
+      <section id="map-banner" className="py-12 sm:py-20 bg-slate-50 border-t border-slate-200/80">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-[32px] bg-gradient-to-br from-slate-950 via-[#06261c] to-slate-950 border border-slate-800 p-7 sm:p-12 lg:p-14 text-white shadow-xl shadow-slate-950/10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative overflow-hidden">
             
@@ -148,7 +90,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ━━━ 5. TRAVELER ESSENTIALS & LOCAL INSIGHTS (TripAdvisor style value props) ━━━ */}
+      {/* ━━━ 4. TRAVELER ESSENTIALS & LOCAL INSIGHTS ━━━ */}
       <section className="py-12 sm:py-20 bg-white border-t border-slate-200/80">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
@@ -181,36 +123,36 @@ export default async function HomePage() {
                 Iconic Blue Mountain Trains
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                The famous train ride from Kandy to Ella crosses pine-scented mountains, tea pickers, and the Nine Arch Bridge. Book 30 days in advance or jump on 2nd class unreserved.
+                The famous train ride from Kandy to Ella crosses pine-scented mountains, tea pickers, and the Nine Arch Bridge. Book in advance or grab a 2nd class window seat.
               </p>
             </div>
 
             <div className="p-6 sm:p-8 rounded-3xl bg-[#f8fafc] border border-slate-200/80 space-y-3">
               <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-[#00aa6c] flex items-center justify-center font-bold">
-                <WifiOff className="w-6 h-6" />
+                <ShieldCheck className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-black text-slate-900">
-                100% Offline PWA Ready
+                Verified Local Insights
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Uncover Ceylon works completely offline without costly roaming SIMs. Save your favorite destinations and routes to access maps and facts in remote jungle locations.
+                Curated coordinates, entry fees, and timing tips verified weekly across all 9 provinces so you can explore authentic Sri Lanka with total peace of mind.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ━━━ 6. BOTTOM TEASER ━━━ */}
+      {/* ━━━ 5. BOTTOM TEASER ━━━ */}
       <section className="border-t border-slate-200 bg-[#f8fafc] py-6 sm:py-8">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 sm:px-6 sm:flex-row sm:items-center sm:justify-between lg:px-8">
           <div className="flex items-center gap-3">
             <Compass className="h-5 w-5 text-[#00aa6c] shrink-0" />
             <p className="text-xs sm:text-sm text-slate-600 font-medium">
-              Curated and verified weekly across all 9 provinces by Serandib Co.
+              Curated across all 9 provinces by Serandib Co.
             </p>
           </div>
-          <Link href="/about" className="text-xs sm:text-sm font-bold text-[#00aa6c] hover:underline">
-            Learn more about Serandib Co. →
+          <Link href="/destinations" className="text-xs sm:text-sm font-bold text-[#00aa6c] hover:underline">
+            Explore All 60+ Destinations →
           </Link>
         </div>
       </section>

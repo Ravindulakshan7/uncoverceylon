@@ -24,11 +24,22 @@ export interface Review {
   id: number;
   place_id: number;
   place_name?: string;
+  user_id?: string | null;
+  user_image?: string | null;
   author: string;
   rating: number;
   comment: string;
   status?: 'approved' | 'pending' | 'spam' | string;
   created_at: string;
+}
+
+export interface UserSession {
+  id: string;
+  name: string;
+  email: string;
+  image?: string | null;
+  provider?: string;
+  role: 'customer' | 'admin' | string;
 }
 
 export type CategoryType =

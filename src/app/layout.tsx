@@ -4,10 +4,12 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Toaster } from "react-hot-toast";
 import { WishlistProvider } from "@/context/WishlistContext";
+import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { CurrencyProvider } from "@/context/CurrencyContext";
 import { LocationProvider } from "@/context/LocationContext";
 import WishlistDrawer from "@/components/WishlistDrawer";
+import AuthModal from "@/components/AuthModal";
 
 export const viewport: Viewport = {
   themeColor: "#07111e",
@@ -93,28 +95,31 @@ export default function RootLayout({
         <LanguageProvider>
           <CurrencyProvider>
             <LocationProvider>
-              <WishlistProvider>
-                <Navbar />
-                <main>{children}</main>
-                <WishlistDrawer />
-                <Footer />
-                <Toaster
-                  position="bottom-right"
-                  toastOptions={{
-                    style: {
-                      background: "#0a192f",
-                      color: "#f8fafc",
-                      border: "1px solid rgba(255, 255, 255, 0.12)",
-                      boxShadow: "0 20px 35px -5px rgba(0,0,0,0.5)",
-                      borderRadius: "14px",
-                      fontFamily: "'Inter', sans-serif",
-                      fontWeight: 600,
-                      fontSize: "13.5px",
-                      padding: "12px 18px",
-                    },
-                  }}
-                />
-              </WishlistProvider>
+              <AuthProvider>
+                <WishlistProvider>
+                  <Navbar />
+                  <main>{children}</main>
+                  <WishlistDrawer />
+                  <AuthModal />
+                  <Footer />
+                  <Toaster
+                    position="bottom-right"
+                    toastOptions={{
+                      style: {
+                        background: "#0a192f",
+                        color: "#f8fafc",
+                        border: "1px solid rgba(255, 255, 255, 0.12)",
+                        boxShadow: "0 20px 35px -5px rgba(0,0,0,0.5)",
+                        borderRadius: "14px",
+                        fontFamily: "'Inter', sans-serif",
+                        fontWeight: 600,
+                        fontSize: "13.5px",
+                        padding: "12px 18px",
+                      },
+                    }}
+                  />
+                </WishlistProvider>
+              </AuthProvider>
             </LocationProvider>
           </CurrencyProvider>
         </LanguageProvider>

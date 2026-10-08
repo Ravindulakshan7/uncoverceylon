@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, logActivity } from '@/lib/db';
+import { getUserFromRequest } from '@/lib/auth';
 
 async function updatePlaceReviewStats(placeId: number) {
   const reviews = await prisma.review.findMany({
@@ -84,7 +85,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const cleanAuthor = String(author).trim();
+    const sessionUser = getUserFromRequest(request);
+
+    const cleanAuthor = sessionUser ? sessionUser.name : String(author).trim();
+    const cleanImage = sessionUser?.image || body.user_image || '';
     const cleanComment = String(comment).trim();
     const numRating = Number(rating);
     const numPlaceId = Number(place_id);
@@ -92,6 +96,8 @@ export async function POST(request: NextRequest) {
     const newReview = await prisma.review.create({
       data: {
         place_id: numPlaceId,
+        user_id: sessionUser?.id || null,
+        user_image: cleanImage,
         author: cleanAuthor,
         rating: numRating,
         comment: cleanComment,
