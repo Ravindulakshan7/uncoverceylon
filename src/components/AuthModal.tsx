@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { X, Mail, Lock, User, Eye, EyeOff, Loader2, ArrowLeft, Check, Key, ExternalLink, ShieldCheck } from 'lucide-react';
+import { X, Mail, Lock, User, Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AuthModal() {
@@ -16,8 +16,8 @@ export default function AuthModal() {
     refreshSession,
   } = useAuth();
 
-  // 'main' (TripAdvisor screen), 'email' (Email sign in / create account), 'google_setup' (Google Cloud setup guide if Client ID not set)
-  const [view, setView] = useState<'main' | 'email' | 'google_setup'>('main');
+  // 'main' (TripAdvisor screen), 'email' (Email sign in / create account)
+  const [view, setView] = useState<'main' | 'email'>('main');
   const [emailTab, setEmailTab] = useState<'signin' | 'signup'>('signin');
 
   // Form fields for Email
@@ -26,11 +26,6 @@ export default function AuthModal() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  // Google Setup Form fields (for adding real Google OAuth credentials)
-  const [inputClientId, setInputClientId] = useState('');
-  const [inputClientSecret, setInputClientSecret] = useState('');
-  const [savingGoogleCreds, setSavingGoogleCreds] = useState(false);
 
   // Check URL parameters for OAuth redirect results
   useEffect(() => {
@@ -93,50 +88,8 @@ export default function AuthModal() {
   };
 
   const handleRealGoogleClick = () => {
-    const configuredClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-
-    if (configuredClientId && configuredClientId.trim() !== '') {
-      // Redirect to official Google OAuth 2.0 authorization dialog (accounts.google.com)
-      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
-      window.location.href = `/api/auth/google/login?return_to=${encodeURIComponent(currentPath)}`;
-    } else {
-      // Show Google Cloud Credentials setup view
-      setView('google_setup');
-    }
-  };
-
-  const handleSaveGoogleCredentials = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputClientId.trim()) {
-      toast.error('Please enter your Google Client ID.');
-      return;
-    }
-
-    setSavingGoogleCreds(true);
-    try {
-      const res = await fetch('/api/admin/google-credentials', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          clientId: inputClientId.trim(),
-          clientSecret: inputClientSecret.trim(),
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to save Google credentials');
-
-      toast.success('Google OAuth connected! Opening Google Sign-In...');
-      // Launch Google OAuth immediately
-      setTimeout(() => {
-        const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
-        window.location.href = `/api/auth/google/login?return_to=${encodeURIComponent(currentPath)}`;
-      }, 500);
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : 'Failed to save credentials');
-    } finally {
-      setSavingGoogleCreds(false);
-    }
+    const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+    window.location.href = `/api/auth/google/login?return_to=${encodeURIComponent(currentPath)}`;
   };
 
   return (
@@ -349,114 +302,6 @@ export default function AuthModal() {
           </div>
         )}
 
-        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            VIEW 3: REAL GOOGLE OAUTH CREDENTIALS SETUP (ONE-TIME)
-           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-        {view === 'google_setup' && (
-          <div className="p-7 sm:p-9 animate-in fade-in duration-150">
-            {/* Top Back Nav */}
-            <button
-              type="button"
-              onClick={() => setView('main')}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-black mb-4 cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back</span>
-            </button>
-
-            <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
-                <Key className="w-5 h-5" />
-              </div>
-              <h4 className="text-lg font-black text-slate-900">Connect Real Google Sign-In</h4>
-            </div>
-
-            <p className="text-xs text-slate-600 mb-4 leading-relaxed">
-              Customer ලාට YouTube හෝ TripAdvisor වල වගේ <b>Google හි real accounts</b> (accounts.google.com) හරහා log
-              වෙන්න Google Cloud OAuth Client ID එකක් අවශ්‍යයි.
-            </p>
-
-            <form onSubmit={handleSaveGoogleCredentials} className="space-y-3 mb-5">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Google Client ID *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="xxxxx.apps.googleusercontent.com"
-                  value={inputClientId}
-                  onChange={(e) => setInputClientId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Google Client Secret <span className="text-slate-400 font-normal">(Optional for GSI)</span>
-                </label>
-                <input
-                  type="password"
-                  placeholder="GOCSPX-xxxx..."
-                  value={inputClientSecret}
-                  onChange={(e) => setInputClientSecret(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={savingGoogleCreds}
-                className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                {savingGoogleCreds ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Check className="w-4 h-4" />
-                )}
-                <span>Save & Launch Real Google Login</span>
-              </button>
-            </form>
-
-            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 space-y-1.5">
-              <div className="font-bold text-slate-800 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                <span>How to get Free Google Client ID:</span>
-              </div>
-              <ol className="list-decimal pl-4 space-y-1 text-slate-600">
-                <li>
-                  Go to{' '}
-                  <a
-                    href="https://console.cloud.google.com/apis/credentials"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-blue-600 underline font-semibold inline-flex items-center gap-0.5"
-                  >
-                    Google Cloud Console <ExternalLink className="w-2.5 h-2.5" />
-                  </a>
-                </li>
-                <li>Create <b>OAuth 2.0 Client ID</b> (Web application)</li>
-                <li>
-                  Add Authorized Redirect URI:{' '}
-                  <code className="bg-slate-200/80 px-1 py-0.5 rounded text-[10px] text-slate-800 font-mono">
-                    http://localhost:3000/api/auth/google/callback
-                  </code>
-                </li>
-                <li>Copy the Client ID and paste it above!</li>
-              </ol>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-slate-100 flex justify-center">
-              <button
-                type="button"
-                onClick={() => setView('email')}
-                className="text-xs font-bold text-slate-600 hover:text-black underline cursor-pointer"
-              >
-                Sign in with Email instead →
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
