@@ -85,8 +85,23 @@ async function getFoodDestinations(): Promise<Place[]> {
   }
 }
 
+async function getFoodItems() {
+  try {
+    const dbFoods = await prisma.foodItem.findMany({
+      orderBy: [{ sort_order: 'asc' }, { id: 'asc' }],
+    });
+    if (dbFoods.length > 0) return dbFoods;
+  } catch (e) {
+    console.error('Error fetching foods from DB:', e);
+  }
+  return FOOD_HIGHLIGHTS;
+}
+
 export default async function FoodPage() {
-  const foodPlaces = await getFoodDestinations();
+  const [foods, foodPlaces] = await Promise.all([
+    getFoodItems(),
+    getFoodDestinations(),
+  ]);
 
   return (
     <div className="min-h-screen bg-white text-slate-900 pb-20">
@@ -132,7 +147,7 @@ export default async function FoodPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {FOOD_HIGHLIGHTS.map((item, idx) => (
+          {foods.map((item, idx) => (
             <div
               key={idx}
               className="group rounded-3xl bg-white border border-slate-200/90 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"

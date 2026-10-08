@@ -83,8 +83,23 @@ async function getCulturalDestinations(): Promise<Place[]> {
   }
 }
 
+async function getCultureItems() {
+  try {
+    const dbCultures = await prisma.cultureItem.findMany({
+      orderBy: [{ sort_order: 'asc' }, { id: 'asc' }],
+    });
+    if (dbCultures.length > 0) return dbCultures;
+  } catch (e) {
+    console.error('Error fetching culture items from DB:', e);
+  }
+  return HERITAGE_PILLARS;
+}
+
 export default async function CulturePage() {
-  const culturalPlaces = await getCulturalDestinations();
+  const [cultures, culturalPlaces] = await Promise.all([
+    getCultureItems(),
+    getCulturalDestinations(),
+  ]);
 
   return (
     <div className="min-h-screen bg-white text-slate-900 pb-20">
@@ -130,7 +145,7 @@ export default async function CulturePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {HERITAGE_PILLARS.map((item, idx) => (
+          {cultures.map((item, idx) => (
             <div
               key={idx}
               className="group rounded-3xl bg-white border border-slate-200/90 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"

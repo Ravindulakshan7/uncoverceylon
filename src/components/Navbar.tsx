@@ -80,12 +80,6 @@ export default function Navbar() {
 
   if (pathname?.startsWith('/admin')) return null;
 
-  const scrollToDestinations = (e?: React.MouseEvent) => {
-    if (e) e.preventDefault();
-    setActiveTab('destinations');
-    setMobileOpen(false);
-    window.location.href = '/destinations';
-  };
 
   const handleNavSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -205,16 +199,17 @@ export default function Navbar() {
 
           {/* ━━━ 3. CENTER / RIGHT NAV LINKS ━━━ */}
           <div className="hidden md:flex items-center gap-1.5">
-            <button
-              onClick={scrollToDestinations}
-              className={`px-3.5 py-2 text-[14px] font-semibold rounded-full transition-colors cursor-pointer ${
+            <Link
+              href="/destinations"
+              onClick={() => setActiveTab('destinations')}
+              className={`px-3.5 py-2 text-[14px] font-semibold rounded-full transition-colors ${
                 activeTab === 'destinations'
                   ? 'text-[#002b11] font-bold bg-slate-100'
                   : 'text-slate-700 hover:text-[#002b11] hover:bg-slate-50'
               }`}
             >
               Destinations
-            </button>
+            </Link>
             <Link
               href="/map"
               onClick={() => setActiveTab('map')}
@@ -264,12 +259,12 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => openAuthModal('signin')}
-                className="hidden sm:inline-flex items-center justify-center px-5 py-2 rounded-full font-bold text-xs sm:text-sm bg-[#002b11] hover:bg-[#001f0c] text-white shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
+                className="inline-flex items-center justify-center px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full font-bold text-xs sm:text-sm bg-[#002b11] hover:bg-[#001f0c] text-white shadow-xs transition-all active:scale-95 cursor-pointer shrink-0"
               >
                 Sign in
               </button>
             ) : (
-              <div ref={userMenuRef} className="relative hidden sm:block">
+              <div ref={userMenuRef} className="relative block">
                 <button
                   type="button"
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
@@ -429,13 +424,17 @@ export default function Navbar() {
               <span className="text-[11px] bg-emerald-200/70 text-emerald-900 font-bold px-2 py-0.5 rounded-full">New</span>
             </button>
 
-            <button
-              onClick={scrollToDestinations}
+            <Link
+              href="/destinations"
+              onClick={() => {
+                setActiveTab('destinations');
+                setMobileOpen(false);
+              }}
               className="w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm text-slate-800 hover:bg-slate-50 flex items-center justify-between"
             >
               <span>Destinations</span>
               <span className="text-xs text-[#00aa6c] font-semibold">Explore</span>
-            </button>
+            </Link>
             <Link
               href="/map"
               onClick={() => setMobileOpen(false)}

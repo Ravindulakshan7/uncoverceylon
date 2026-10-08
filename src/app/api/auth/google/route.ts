@@ -28,13 +28,34 @@ export async function POST(request: NextRequest) {
     let picture = '';
 
     if (body.credential && typeof body.credential === 'string') {
-      const parsed = parseGoogleJwt(body.credential);
-      if (!parsed || !parsed.email) {
-        return NextResponse.json({ error: 'Invalid Google credential.' }, { status: 400 });
+      try {
+        const verifyRes = await fetch(
+          `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(body.credential)}`
+        );
+        if (verifyRes.ok) {
+          const verified = await verifyRes.json();
+          email = verified.email;
+          name = verified.name || verified.email?.split('@')[0] || '';
+          picture = verified.picture || '';
+        } else {
+          // Fallback to local JWT decode
+          const parsed = parseGoogleJwt(body.credential);
+          if (!parsed || !parsed.email) {
+            return NextResponse.json({ error: 'Invalid Google credential token.' }, { status: 400 });
+          }
+          email = parsed.email;
+          name = parsed.name || parsed.email.split('@')[0];
+          picture = parsed.picture || '';
+        }
+      } catch {
+        const parsed = parseGoogleJwt(body.credential);
+        if (!parsed || !parsed.email) {
+          return NextResponse.json({ error: 'Failed to parse Google credential.' }, { status: 400 });
+        }
+        email = parsed.email;
+        name = parsed.name || parsed.email.split('@')[0];
+        picture = parsed.picture || '';
       }
-      email = parsed.email;
-      name = parsed.name || parsed.email.split('@')[0];
-      picture = parsed.picture || '';
     } else if (body.email && body.name) {
       email = String(body.email).trim().toLowerCase();
       name = String(body.name).trim();

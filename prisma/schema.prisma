@@ -104,3 +104,45 @@ model ActivityLog {
 
   @@map("activity_logs")
 }
+
+model FoodItem {
+  id         Int      @id @default(autoincrement())
+  title      String
+  tagline    String   @default("")
+  desc       String   @db.Text
+  image      String   @default("")
+  badge      String   @default("Must Try")
+  regions    String   @default("")
+  sort_order Int      @default(0)
+  created_at DateTime @default(now())
+
+  @@map("food_items")
+}
+
+model CultureItem {
+  id         Int      @id @default(autoincrement())
+  title      String
+  tagline    String   @default("")
+  desc       String   @db.Text
+  image      String   @default("")
+  badge      String   @default("Heritage")
+  period     String   @default("")
+  sort_order Int      @default(0)
+  created_at DateTime @default(now())
+
+  @@map("culture_items")
+}
+
+model ExperienceItem {
+  id         Int      @id @default(autoincrement())
+  title      String
+  tagline    String   @default("")
+  desc       String   @db.Text
+  image      String   @default("")
+  badge      String   @default("Popular")
+  seasons    String   @default("")
+  sort_order Int      @default(0)
+  created_at DateTime @default(now())
+
+  @@map("experience_items")
+}

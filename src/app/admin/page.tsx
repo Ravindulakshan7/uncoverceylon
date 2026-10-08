@@ -10,10 +10,14 @@ import {
   ArrowLeft, AlertCircle, Map, Gem, Search,
   Filter, Check, ArrowUpRight, ArrowUpDown, ChevronLeft, ChevronRight,
   Edit, AlertTriangle, CheckSquare, Square, MessageSquare,
-  Database, History, Tag, Download
+  Database, History, Tag, Download, Utensils, Landmark, Compass, Users
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import DestinationEditorModal from '@/components/DestinationEditorModal';
+import AdminFoodsTab from '@/components/admin/AdminFoodsTab';
+import AdminCultureTab from '@/components/admin/AdminCultureTab';
+import AdminExperiencesTab from '@/components/admin/AdminExperiencesTab';
+import AdminUsersTab from '@/components/admin/AdminUsersTab';
 
 interface HeroSlide {
   id: number;
@@ -83,8 +87,16 @@ export default function AdminPage() {
   const [adminPassword, setAdminPassword] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // Active tab: 'places' | 'slides' | 'region' | 'reviews' | 'logs'
-  const [activeTab, setActiveTab] = useState<'places' | 'slides' | 'region' | 'reviews' | 'logs'>('places');
+  // Active tab: 'places' | 'slides' | 'region' | 'foods' | 'culture' | 'experiences' | 'reviews' | 'customers' | 'logs'
+  const [activeTab, setActiveTab] = useState<'places' | 'slides' | 'region' | 'foods' | 'culture' | 'experiences' | 'reviews' | 'customers' | 'logs'>('places');
+
+  // Section Counts (Foods, Culture, Experiences, Customers)
+  const [sectionCounts, setSectionCounts] = useState({
+    foods: 0,
+    culture: 0,
+    experiences: 0,
+    users: 0,
+  });
 
   // Activity Logs State
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
@@ -238,6 +250,29 @@ export default function AdminPage() {
     }
   }, []);
 
+  const fetchSectionCounts = async () => {
+    try {
+      const [fRes, cRes, eRes, uRes] = await Promise.all([
+        fetch('/api/foods'),
+        fetch('/api/culture'),
+        fetch('/api/experiences'),
+        fetch(`/api/admin/users?admin_password=${encodeURIComponent(adminPassword || (typeof window !== 'undefined' ? sessionStorage.getItem(ADMIN_PASS_KEY) || '' : ''))}`),
+      ]);
+      const fData = await fRes.json().catch(() => ({}));
+      const cData = await cRes.json().catch(() => ({}));
+      const eData = await eRes.json().catch(() => ({}));
+      const uData = await uRes.json().catch(() => ({}));
+      setSectionCounts({
+        foods: Array.isArray(fData.foods) ? fData.foods.length : 0,
+        culture: Array.isArray(cData.cultures) ? cData.cultures.length : 0,
+        experiences: Array.isArray(eData.experiences) ? eData.experiences.length : 0,
+        users: Array.isArray(uData.users) ? uData.users.length : 0,
+      });
+    } catch {
+      // ignore
+    }
+  };
+
   // Fetch data on auth
   useEffect(() => {
     if (isAuth) {
@@ -246,8 +281,9 @@ export default function AdminPage() {
       fetchRegionData();
       fetchReviews();
       fetchLogs();
+      fetchSectionCounts();
     }
-  }, [isAuth]);
+  }, [isAuth, adminPassword]);
 
   const fetchPlaces = async () => {
     setLoadingPlaces(true);
@@ -988,6 +1024,7 @@ export default function AdminPage() {
                 fetchRegionData();
                 fetchReviews();
                 fetchLogs();
+                fetchSectionCounts();
                 toast.success('Dashboard data synced!');
               }}
               title="Refresh Data"
@@ -1125,7 +1162,7 @@ export default function AdminPage() {
           <div className="flex flex-wrap items-center bg-slate-100 p-1.5 rounded-2xl border border-slate-200 w-fit gap-1">
             <button
               onClick={() => setActiveTab('places')}
-              className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === 'places'
                   ? 'bg-white text-sky-600 shadow-sm'
                   : 'text-slate-500 hover:text-slate-900'
@@ -1136,8 +1173,44 @@ export default function AdminPage() {
             </button>
 
             <button
+              onClick={() => setActiveTab('foods')}
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                activeTab === 'foods'
+                  ? 'bg-white text-sky-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <Utensils className="w-4 h-4" />
+              <span>Foods ({sectionCounts.foods})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('culture')}
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                activeTab === 'culture'
+                  ? 'bg-white text-sky-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <Landmark className="w-4 h-4" />
+              <span>Culture ({sectionCounts.culture})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('experiences')}
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                activeTab === 'experiences'
+                  ? 'bg-white text-sky-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <Compass className="w-4 h-4" />
+              <span>Experiences ({sectionCounts.experiences})</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('slides')}
-              className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === 'slides'
                   ? 'bg-white text-sky-600 shadow-sm'
                   : 'text-slate-500 hover:text-slate-900'
@@ -1149,19 +1222,19 @@ export default function AdminPage() {
 
             <button
               onClick={() => setActiveTab('region')}
-              className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === 'region'
                   ? 'bg-white text-sky-600 shadow-sm'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               <MapPin className="w-4 h-4" />
-              <span>Explore by Region ({regionSlides.length})</span>
+              <span>Regions ({regionSlides.length})</span>
             </button>
 
             <button
               onClick={() => setActiveTab('reviews')}
-              className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === 'reviews'
                   ? 'bg-white text-sky-600 shadow-sm'
                   : 'text-slate-500 hover:text-slate-900'
@@ -1177,15 +1250,27 @@ export default function AdminPage() {
             </button>
 
             <button
+              onClick={() => setActiveTab('customers')}
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                activeTab === 'customers'
+                  ? 'bg-white text-sky-600 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              <span>Customers ({sectionCounts.users})</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('logs')}
-              className={`flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === 'logs'
                   ? 'bg-white text-sky-600 shadow-sm'
                   : 'text-slate-500 hover:text-slate-900'
               }`}
             >
               <History className="w-4 h-4" />
-              <span>Activity Logs ({activityLogs.length})</span>
+              <span>Logs ({activityLogs.length})</span>
             </button>
           </div>
 
@@ -1216,7 +1301,7 @@ export default function AdminPage() {
               {showRegionSlideForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
               <span>{showRegionSlideForm ? 'Close Form' : 'Add Region Slide'}</span>
             </button>
-          ) : (
+          ) : activeTab === 'reviews' ? (
             <button
               onClick={fetchReviews}
               disabled={loadingReviews}
@@ -1225,7 +1310,16 @@ export default function AdminPage() {
               <RefreshCw className={`w-4 h-4 ${loadingReviews ? 'animate-spin' : ''}`} />
               <span>Refresh Reviews</span>
             </button>
-          )}
+          ) : activeTab === 'logs' ? (
+            <button
+              onClick={fetchLogs}
+              disabled={loadingLogs}
+              className="inline-flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm shadow-md shadow-sky-600/25 active:scale-95 transition-all cursor-pointer"
+            >
+              <RefreshCw className={`w-4 h-4 ${loadingLogs ? 'animate-spin' : ''}`} />
+              <span>Refresh Logs</span>
+            </button>
+          ) : null}
         </div>
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -2776,6 +2870,42 @@ export default function AdminPage() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            TAB 6: FOODS & CUISINE
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        {activeTab === 'foods' && (
+          <div className="animate-fade-in">
+            <AdminFoodsTab adminPassword={adminPassword} />
+          </div>
+        )}
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            TAB 7: CULTURE & HERITAGE
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        {activeTab === 'culture' && (
+          <div className="animate-fade-in">
+            <AdminCultureTab adminPassword={adminPassword} />
+          </div>
+        )}
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            TAB 8: EXPERIENCES & ADVENTURES
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        {activeTab === 'experiences' && (
+          <div className="animate-fade-in">
+            <AdminExperiencesTab adminPassword={adminPassword} />
+          </div>
+        )}
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            TAB 9: CUSTOMERS & USERS
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        {activeTab === 'customers' && (
+          <div className="animate-fade-in">
+            <AdminUsersTab adminPassword={adminPassword} />
           </div>
         )}
       </main>

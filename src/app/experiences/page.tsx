@@ -96,8 +96,23 @@ async function getAdventureDestinations(): Promise<Place[]> {
   }
 }
 
+async function getExperienceItems() {
+  try {
+    const dbExp = await prisma.experienceItem.findMany({
+      orderBy: [{ sort_order: 'asc' }, { id: 'asc' }],
+    });
+    if (dbExp.length > 0) return dbExp;
+  } catch (e) {
+    console.error('Error fetching experiences from DB:', e);
+  }
+  return EXPERIENCES_LIST;
+}
+
 export default async function ExperiencesPage() {
-  const adventurePlaces = await getAdventureDestinations();
+  const [experiences, adventurePlaces] = await Promise.all([
+    getExperienceItems(),
+    getAdventureDestinations(),
+  ]);
 
   return (
     <div className="min-h-screen bg-white text-slate-900 pb-20">
@@ -143,12 +158,12 @@ export default async function ExperiencesPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {EXPERIENCES_LIST.map((item) => {
-            const IconComp = item.icon;
+          {experiences.map((item, idx) => {
+            const IconComp = (item as any).icon || Compass;
             return (
               <div
                 key={item.id}
-                id={item.id}
+                id={String(item.id)}
                 className="group rounded-3xl bg-white border border-slate-200/90 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col scroll-mt-24"
               >
                 {/* Image */}
