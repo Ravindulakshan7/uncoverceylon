@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Heart, Sparkles, Search, ChevronDown, LogOut, ShieldCheck, User as UserIcon } from 'lucide-react';
+import { Menu, X, Heart, Search, ChevronDown, LogOut, ShieldCheck, User as UserIcon } from 'lucide-react';
 import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
 import CurrencySelector from '@/components/CurrencySelector';
@@ -116,13 +116,6 @@ export default function Navbar() {
     }
   };
 
-  const openAiModal = () => {
-    setMobileOpen(false);
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('uc:open-ai-modal'));
-    }
-  };
-
   return (
     <header
       className={`sticky top-0 inset-x-0 z-[9999] bg-white text-[#002b11] transition-all duration-200 ${
@@ -185,16 +178,6 @@ export default function Navbar() {
                 />
               </form>
             )}
-
-            {/* ━━━ 2. GLOWING "PLAN WITH AI" PILL (TripAdvisor signature) ━━━ */}
-            <button
-              type="button"
-              onClick={openAiModal}
-              className="hidden lg:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#f2faf5] hover:bg-[#e6f7ee] text-[#002b11] text-xs sm:text-[13px] font-bold border border-[#00aa6c]/50 shadow-[0_0_16px_rgba(0,170,108,0.25)] hover:shadow-[0_0_22px_rgba(0,170,108,0.4)] transition-all cursor-pointer active:scale-95 shrink-0"
-            >
-              <Sparkles className="w-4 h-4 text-[#00aa6c]" />
-              <span>Plan with AI</span>
-            </button>
           </div>
 
           {/* ━━━ 3. CENTER / RIGHT NAV LINKS ━━━ */}
@@ -334,16 +317,6 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* Mobile Plan with AI Pill */}
-            <button
-              type="button"
-              onClick={openAiModal}
-              className="lg:hidden p-2 rounded-full text-emerald-800 bg-emerald-50 border border-emerald-200"
-              aria-label="Plan with AI"
-            >
-              <Sparkles className="w-4 h-4 text-[#00aa6c]" />
-            </button>
-
             {/* Mobile Menu Hamburger */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -413,17 +386,6 @@ export default function Navbar() {
         {/* ━━━ MOBILE DROPDOWN MENU ━━━ */}
         {mobileOpen && (
           <div className="md:hidden border-t border-slate-100 py-3.5 space-y-1.5 bg-white animate-in slide-in-from-top-2 duration-200">
-            <button
-              onClick={openAiModal}
-              className="w-full text-left px-3.5 py-3 rounded-2xl font-bold text-sm bg-emerald-50 text-emerald-950 border border-emerald-200/80 flex items-center justify-between"
-            >
-              <span className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#00aa6c]" />
-                <span>Plan with Ceylon AI</span>
-              </span>
-              <span className="text-[11px] bg-emerald-200/70 text-emerald-900 font-bold px-2 py-0.5 rounded-full">New</span>
-            </button>
-
             <Link
               href="/destinations"
               onClick={() => {

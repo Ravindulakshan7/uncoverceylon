@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Compass, Sparkles } from 'lucide-react';
+import { ArrowRight, Compass } from 'lucide-react';
 
 export default function HeroSection() {
   const scrollToInterests = () => {
@@ -66,7 +66,7 @@ export default function HeroSection() {
               onClick={scrollToInterests}
               className="inline-flex items-center gap-2 font-bold text-xs sm:text-sm px-6 sm:px-8 py-3 sm:py-3.5 rounded-full bg-white text-[#0f1b2d] hover:bg-[#00aa6c] hover:text-white transition-all duration-300 shadow-xl shadow-black/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5 cursor-pointer active:scale-95"
             >
-              <Sparkles className="w-4 h-4 text-[#00aa6c] group-hover:text-white" />
+              <Compass className="w-4 h-4 text-[#00aa6c] group-hover:text-white" />
               <span>Find Your Vibe</span>
             </button>
 

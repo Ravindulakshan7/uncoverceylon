@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Utensils, Sparkles, MapPin, Star, Flame, Coffee } from 'lucide-react';
+import { ArrowRight, Utensils, MapPin, Star, Flame, Coffee } from 'lucide-react';
 import PlaceCard from '@/components/PlaceCard';
 import { Place } from '@/types';
 

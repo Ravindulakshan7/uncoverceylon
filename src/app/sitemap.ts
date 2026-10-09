@@ -24,6 +24,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Error fetching foods for sitemap:', error);
   }
 
+  let cultures: { id: number; created_at: Date }[] = [];
+  try {
+    cultures = await prisma.cultureItem.findMany({
+      select: { id: true, created_at: true },
+      orderBy: { id: 'asc' },
+    });
+  } catch (error) {
+    console.error('Error fetching culture items for sitemap:', error);
+  }
+
+  let experiences: { id: number; created_at: Date }[] = [];
+  try {
+    experiences = await prisma.experienceItem.findMany({
+      select: { id: true, created_at: true },
+      orderBy: { id: 'asc' },
+    });
+  } catch (error) {
+    console.error('Error fetching experiences for sitemap:', error);
+  }
+
   // 1. Dynamic Destination URLs (Priority 0.85)
   const destinationUrls: MetadataRoute.Sitemap = places.map((place) => ({
     url: `${baseUrl}/places/${place.id}`,
@@ -33,9 +53,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // 1b. Dynamic Food Specialty URLs (Priority 0.85)
-  const foodUrls: MetadataRoute.Sitemap = foods.map((f) => ({
+  const foodFallbackIds = [1, 2, 3, 4, 5, 6];
+  const foodUrls: MetadataRoute.Sitemap = (foods.length > 0 ? foods : foodFallbackIds.map((id) => ({ id, created_at: new Date() }))).map((f) => ({
     url: `${baseUrl}/food/${f.id}`,
     lastModified: f.created_at || new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.85,
+  }));
+
+  // 1c. Dynamic Culture Heritage URLs (Priority 0.85)
+  const cultureFallbackIds = [1, 2, 3, 4, 5, 6];
+  const cultureUrls: MetadataRoute.Sitemap = (cultures.length > 0 ? cultures : cultureFallbackIds.map((id) => ({ id, created_at: new Date() }))).map((c) => ({
+    url: `${baseUrl}/culture/${c.id}`,
+    lastModified: c.created_at || new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.85,
+  }));
+
+  // 1d. Dynamic Experience & Adventure URLs (Priority 0.85)
+  const expFallbackIds = [1, 2, 3, 4, 5, 6];
+  const experienceUrls: MetadataRoute.Sitemap = (experiences.length > 0 ? experiences : expFallbackIds.map((id) => ({ id, created_at: new Date() }))).map((e) => ({
+    url: `${baseUrl}/experiences/${e.id}`,
+    lastModified: e.created_at || new Date(),
     changeFrequency: 'weekly',
     priority: 0.85,
   }));
@@ -116,5 +155,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  return [...staticUrls, ...categoryUrls, ...destinationUrls, ...foodUrls];
+  return [
+    ...staticUrls,
+    ...categoryUrls,
+    ...destinationUrls,
+    ...foodUrls,
+    ...cultureUrls,
+    ...experienceUrls,
+  ];
 }

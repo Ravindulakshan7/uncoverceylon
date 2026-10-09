@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Review } from '@/types';
-import { Star, Send, Loader2, Sparkles, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Star, Send, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -152,7 +152,7 @@ export default function ReviewSection({ placeId, initialReviews }: ReviewSection
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
             <div className="space-y-2 max-w-xl">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-emerald-300 text-xs font-bold border border-white/15">
-                <Sparkles className="w-3.5 h-3.5" />
+                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                 <span>Traveler Reviews</span>
               </div>
               <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">

@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  Sparkles, Map, MapPin, Search, Heart, Globe, Users,
+  Compass, Map, MapPin, Search, Heart, Globe, Users,
   ShieldCheck, CheckCircle2, ArrowRight, Star, Gem, Navigation,
   Smartphone, BookOpen, Layers, Zap, Cpu, Award, Route,
   TrendingUp, MessageSquare, Feather, Share2, ChevronDown
@@ -36,7 +36,7 @@ export default function AboutPage() {
         <div className="mx-auto flex min-h-screen min-h-[100dvh] w-full max-w-5xl flex-col items-center justify-center px-4 pb-28 pt-24 text-center sm:px-6 lg:px-8">
           {/* Breadcrumb & Pill */}
           <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold text-amber-400 backdrop-blur-md mb-6 shadow-sm">
-            <Sparkles className="h-3.5 w-3.5" />
+            <Compass className="h-3.5 w-3.5" />
             <span>Serandib Co. Initiative · Proudly Sri Lankan</span>
           </div>
 
@@ -698,7 +698,7 @@ export default function AboutPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-600/10 via-transparent to-transparent pointer-events-none" />
         <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold text-amber-400 backdrop-blur-md mb-6">
-            <Sparkles className="h-3.5 w-3.5" />
+            <Compass className="h-3.5 w-3.5" />
             <span>Embark on Your Journey</span>
           </span>
 

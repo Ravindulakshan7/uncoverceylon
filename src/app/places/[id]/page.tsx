@@ -14,7 +14,7 @@ import {
   MapPin, Star, Clock, Tag, Ticket, Calendar, ChevronLeft,
   ArrowUpRight, Heart, Share2, CheckCircle2, Map,
   AlertCircle, ShieldCheck, Sun, Info, ArrowRight, Eye,
-  CloudSun, CloudRain, Thermometer, Wind, Umbrella, Sparkles
+  CloudSun, CloudRain, Thermometer, Wind, Umbrella, Compass
 } from 'lucide-react';
 
 interface PlacePageProps {
@@ -562,7 +562,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
             <section className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-sm space-y-6">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-5 h-5 text-sky-600" />
+                  <Compass className="w-5 h-5 text-sky-600" />
                 </div>
                 <div>
                   <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">
@@ -753,7 +753,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
 
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 flex gap-3">
                   <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-sky-600 shrink-0 font-bold">
-                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
                   </div>
                   <div>
                     <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
@@ -894,7 +894,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-3 sm:gap-4">
             <div>
               <div className="inline-flex items-center gap-1.5 bg-sky-50 text-sky-700 text-xs font-bold px-3 py-1 rounded-full mb-2 border border-sky-200">
-                <Sparkles className="w-3.5 h-3.5 text-sky-600" />
+                <MapPin className="w-3.5 h-3.5 text-sky-600" />
                 <span>More {place.category}</span>
               </div>
               <h2 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">

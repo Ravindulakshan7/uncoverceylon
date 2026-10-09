@@ -8,7 +8,6 @@ import {
   Clock,
   MapPin,
   ArrowLeft,
-  Sparkles,
   ChevronRight,
   Coffee,
   CheckCircle2,
@@ -19,7 +18,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { Metadata } from 'next';
-import PlaceCard from '@/components/PlaceCard';
+import FoodAccordionSections from '@/components/FoodAccordionSections';
 import { Place } from '@/types';
 
 export const revalidate = 60;
@@ -604,64 +603,64 @@ export default async function FoodDetailPage({ params }: PageProps) {
 
       {/* ━━━ QUICK FACTS BAR ━━━ */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 sm:-mt-8 relative z-20">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 bg-white rounded-2xl p-4 sm:p-6 shadow-xl border border-slate-100">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 bg-white rounded-2xl p-4 sm:p-5 shadow-xl border border-slate-100 overflow-hidden">
           
           {/* Fact 1: Spice Level */}
-          <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center flex-shrink-0">
-              <Flame className="w-5 h-5" />
+          <div className="p-3 sm:p-3.5 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
+              <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 block truncate">
                 Spice Intensity
               </span>
-              <span className="text-xs sm:text-sm font-black text-slate-900">
+              <span className="text-xs sm:text-sm font-black text-slate-900 truncate block">
                 {dossier.spiceLevel}
               </span>
             </div>
           </div>
 
           {/* Fact 2: Meal Time */}
-          <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
-              <Clock className="w-5 h-5" />
+          <div className="p-3 sm:p-3.5 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 block truncate">
                 Best Meal Time
               </span>
-              <span className="text-xs sm:text-sm font-black text-slate-900">
-                {dossier.mealTime}
+              <span className="text-xs sm:text-sm font-black text-slate-900 truncate block">
+                {dossier.mealTime.split('(')[0]?.trim() || dossier.mealTime}
               </span>
             </div>
           </div>
 
           {/* Fact 3: Service Method */}
-          <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
-              <Utensils className="w-5 h-5" />
+          <div className="p-3 sm:p-3.5 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <Utensils className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 block truncate">
                 Traditional Serving
               </span>
-              <span className="text-xs sm:text-sm font-black text-slate-900 truncate block">
-                {dossier.servingStyle}
+              <span className="text-xs sm:text-sm font-black text-slate-900 truncate block" title={dossier.servingStyle}>
+                {dossier.servingStyle.split('on')[0]?.trim() || dossier.servingStyle}
               </span>
             </div>
           </div>
 
           {/* Fact 4: Estimated Cost */}
-          <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center flex-shrink-0">
-              <DollarSign className="w-5 h-5" />
+          <div className="p-3 sm:p-3.5 rounded-xl bg-slate-50/80 border border-slate-100 flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 block truncate">
                 Price Expectation
               </span>
-              <span className="text-xs sm:text-sm font-black text-slate-900 truncate block">
-                {dossier.priceExpectation}
+              <span className="text-xs sm:text-sm font-black text-slate-900 truncate block" title={dossier.priceExpectation}>
+                {dossier.priceExpectation.split('(')[0]?.trim() || dossier.priceExpectation}
               </span>
             </div>
           </div>
@@ -674,12 +673,12 @@ export default async function FoodDetailPage({ params }: PageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           
           {/* Main Left Column */}
-          <div className="lg:col-span-8 space-y-12">
+          <div className="lg:col-span-8 space-y-8">
             
             {/* Story & Heritage */}
             <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-100 shadow-sm space-y-6">
               <div className="inline-flex items-center gap-2 text-emerald-700 text-xs font-black uppercase tracking-wider">
-                <Sparkles className="w-4 h-4 text-emerald-500" />
+                <Compass className="w-4 h-4 text-emerald-600" />
                 <span>Culinary History & Heritage</span>
               </div>
 
@@ -702,100 +701,13 @@ export default async function FoodDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            {/* Elements / Key Components */}
-            <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-100 shadow-sm space-y-6">
-              <div className="inline-flex items-center gap-2 text-emerald-700 text-xs font-black uppercase tracking-wider">
-                <Utensils className="w-4 h-4 text-emerald-500" />
-                <span>Signature Flavors & Varieties</span>
-              </div>
-
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
-                Anatomy of the Dish
-              </h2>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {dossier.elements.map((elem, i) => (
-                  <div
-                    key={i}
-                    className="p-5 rounded-2xl bg-slate-50/80 border border-slate-100 hover:border-emerald-300 transition-colors space-y-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-slate-900 text-sm sm:text-base">
-                        {elem.title}
-                      </h3>
-                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-white text-emerald-700 border border-emerald-100">
-                        {elem.tag}
-                      </span>
-                    </div>
-                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                      {elem.desc}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Key Ingredients */}
-            <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-100 shadow-sm space-y-6">
-              <div className="inline-flex items-center gap-2 text-emerald-700 text-xs font-black uppercase tracking-wider">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span>Natural Island Spices</span>
-              </div>
-
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
-                Core Ingredients & Spices
-              </h2>
-
-              <div className="divide-y divide-slate-100">
-                {dossier.ingredients.map((ing, i) => (
-                  <div key={i} className="py-3.5 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 sm:gap-4">
-                    <span className="font-bold text-sm text-slate-900 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      {ing.name}
-                    </span>
-                    <span className="text-xs sm:text-sm text-slate-500 sm:max-w-md">
-                      {ing.detail}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Local Eating Etiquette & Tips */}
-            <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-100 shadow-sm space-y-6">
-              <div className="inline-flex items-center gap-2 text-emerald-700 text-xs font-black uppercase tracking-wider">
-                <Compass className="w-4 h-4 text-emerald-500" />
-                <span>Insider Travel Guide</span>
-              </div>
-
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight">
-                How to Eat & Order Like a Local
-              </h2>
-
-              <div className="space-y-4">
-                {dossier.eatingTips.map((tip, i) => (
-                  <div
-                    key={i}
-                    className="p-5 rounded-2xl bg-emerald-50/40 border border-emerald-100 space-y-1.5"
-                  >
-                    <h4 className="font-black text-emerald-900 text-sm">
-                      {tip.heading}
-                    </h4>
-                    <p className="text-xs sm:text-sm text-emerald-950/80 leading-relaxed">
-                      {tip.advice}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2 text-slate-700">
-                  <Coffee className="w-4 h-4 text-amber-600" />
-                  <span className="font-bold">Perfect Beverage Pairing:</span>
-                  <span className="text-slate-600">{dossier.pairing}</span>
-                </div>
-              </div>
-            </div>
+            {/* Collapsible Dropdown Sections (Anatomy, Ingredients, Local Guide) */}
+            <FoodAccordionSections
+              elements={dossier.elements}
+              ingredients={dossier.ingredients}
+              eatingTips={dossier.eatingTips}
+              pairing={dossier.pairing}
+            />
 
           </div>
 
@@ -865,57 +777,6 @@ export default async function FoodDetailPage({ params }: PageProps) {
                 </Link>
               </div>
             </div>
-
-            {/* Travel Spots Matching Regions */}
-            {matchingDestinations.length > 0 && (
-              <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-emerald-600" />
-                    <span>Nearby Foodie Destinations</span>
-                  </h4>
-                  <Link href="/destinations" className="text-[11px] font-bold text-emerald-600 hover:underline">
-                    View all
-                  </Link>
-                </div>
-                <p className="text-xs text-slate-500">
-                  Top-rated destinations in Sri Lanka where you can taste this authentic specialty:
-                </p>
-
-                <div className="space-y-3 pt-1">
-                  {matchingDestinations.map((place) => (
-                    <Link
-                      key={place.id}
-                      href={`/places/${place.id}`}
-                      className="group flex items-center gap-3 p-2.5 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all block"
-                    >
-                      <div className="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-slate-900">
-                        <Image
-                          src={place.image_url}
-                          alt={place.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform"
-                          unoptimized
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h5 className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors truncate">
-                          {place.name}
-                        </h5>
-                        <p className="text-[11px] text-slate-500 truncate flex items-center gap-1 mt-0.5">
-                          <MapPin className="w-3 h-3 text-slate-400 flex-shrink-0" />
-                          <span>{place.location}</span>
-                        </p>
-                        <span className="text-[10px] font-bold text-amber-600 flex items-center gap-1 mt-0.5">
-                          ★ {place.rating?.toFixed(1) || '4.8'}
-                        </span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
 
           </div>
 

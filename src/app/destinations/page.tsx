@@ -2,7 +2,7 @@ import { prisma } from '@/lib/db';
 import { Place } from '@/types';
 import PlacesGrid from '@/components/PlacesGrid';
 import Link from 'next/link';
-import { Compass, Sparkles, MapPin, ArrowRight } from 'lucide-react';
+import { Compass, MapPin, ArrowRight } from 'lucide-react';
 
 export const revalidate = 60;
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Utensils, Plus, Edit2, Trash2, Loader2, Sparkles, Image as ImageIcon, RefreshCw, X, Upload } from 'lucide-react';
+import { Utensils, Plus, Edit2, Trash2, Loader2, Image as ImageIcon, RefreshCw, X, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface FoodItem {

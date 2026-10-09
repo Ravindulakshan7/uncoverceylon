@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Search, SlidersHorizontal, X, Compass, MapPin, Sparkles, RotateCcw, Map } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Compass, MapPin, RotateCcw, Map } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Place, CategoryType } from '@/types';
 import PlaceCard from './PlaceCard';

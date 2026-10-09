@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Compass, Sparkles, MapPin, Waves, Mountain, PawPrint, Train, Sun, Anchor } from 'lucide-react';
+import { ArrowRight, Compass, MapPin, Waves, Mountain, PawPrint, Train, Sun, Anchor } from 'lucide-react';
 import PlaceCard from '@/components/PlaceCard';
 import { Place } from '@/types';
 
@@ -207,12 +207,13 @@ export default async function ExperiencesPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {experiences.map((item, idx) => {
+            const expId = item.id || idx + 1;
             const IconComp = (item as any).icon || Compass;
             return (
-              <div
-                key={item.id}
-                id={String(item.id)}
-                className="group rounded-3xl bg-white border border-slate-200/90 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col scroll-mt-24"
+              <Link
+                key={expId}
+                href={`/experiences/${expId}`}
+                className="group rounded-3xl bg-white border border-slate-200/90 hover:border-[#00aa6c]/50 overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col cursor-pointer block scroll-mt-24"
               >
                 {/* Image */}
                 <div className="relative h-56 w-full overflow-hidden bg-slate-900">
@@ -237,20 +238,25 @@ export default async function ExperiencesPage() {
                     <span className="text-[11px] font-bold uppercase tracking-wider text-[#0aa06e] block">
                       {item.tagline}
                     </span>
-                    <h3 className="text-xl font-black text-slate-900 mt-1">
+                    <h3 className="text-xl font-black text-slate-900 mt-1 group-hover:text-[#00aa6c] transition-colors">
                       {item.title}
                     </h3>
-                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-2 font-normal">
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-2 font-normal line-clamp-3">
                       {item.desc}
                     </p>
                   </div>
 
-                  <div className="pt-3 border-t border-slate-100 flex items-center gap-1.5 text-xs text-slate-500 font-semibold">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span className="truncate">{item.seasons}</span>
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5 text-slate-500 font-semibold truncate">
+                      <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span className="truncate">{item.seasons}</span>
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-[#00aa6c] font-black group-hover:translate-x-1 transition-transform shrink-0">
+                      Explore <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
