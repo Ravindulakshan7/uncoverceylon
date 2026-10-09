@@ -78,7 +78,7 @@ const FALLBACK_CULTURES = [
     title: 'Traditional Mask Carving',
     tagline: 'Ancient Folklore & Healing',
     desc: 'In the coastal village of Ambalangoda, master craftsmen carve intricate wooden Raksha and Kolam masks from light Kaduru wood, painted with natural pigments for ancient healing devil dances.',
-    image: 'https://images.unsplash.com/photo-1586611292717-1d4a1e5d3c9c?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://images.unsplash.com/photo-1609137144813-7d9921338f24?auto=format&fit=crop&w=1200&q=80',
     badge: 'Folk Art',
     period: 'Southern Coast • Ambalangoda',
   },
