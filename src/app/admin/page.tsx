@@ -336,9 +336,10 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/reviews?admin=true');
       const data = await res.json();
-      setAdminReviews(data.reviews || []);
+      setAdminReviews(Array.isArray(data.reviews) ? data.reviews : []);
     } catch {
       toast.error('Failed to load reviews');
+      setAdminReviews([]);
     } finally {
       setLoadingReviews(false);
     }
@@ -349,9 +350,9 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/admin/logs?limit=100');
       const data = await res.json();
-      setActivityLogs(data.logs || []);
+      setActivityLogs(Array.isArray(data.logs) ? data.logs : []);
     } catch {
-      // ignore
+      setActivityLogs([]);
     } finally {
       setLoadingLogs(false);
     }
@@ -820,6 +821,7 @@ export default function AdminPage() {
 
   // Filtered reviews calculation
   const filteredReviews = useMemo(() => {
+    if (!Array.isArray(adminReviews)) return [];
     return adminReviews.filter((r) => {
       if (reviewFilter === 'pending' && r.status !== 'pending') return false;
       if (reviewFilter === 'approved' && r.status !== 'approved' && r.status !== undefined && r.status !== null) return false;
@@ -839,6 +841,7 @@ export default function AdminPage() {
 
   // Filtered activity logs calculation
   const filteredLogs = useMemo(() => {
+    if (!Array.isArray(activityLogs)) return [];
     return activityLogs.filter((log) => {
       if (logFilter !== 'all' && log.entity_type !== logFilter) {
         return false;
@@ -846,9 +849,9 @@ export default function AdminPage() {
       if (logSearchQuery.trim()) {
         const q = logSearchQuery.toLowerCase();
         return (
-          log.details.toLowerCase().includes(q) ||
-          log.action.toLowerCase().includes(q) ||
-          log.actor.toLowerCase().includes(q)
+          log.details?.toLowerCase().includes(q) ||
+          log.action?.toLowerCase().includes(q) ||
+          log.actor?.toLowerCase().includes(q)
         );
       }
       return true;

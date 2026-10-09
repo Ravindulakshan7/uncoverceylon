@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const limit = Math.min(parseInt(searchParams.get('limit') || '100', 10), 200);
 
-    const logs = getActivityLogs(limit);
+    const logs = await getActivityLogs(limit);
     return NextResponse.json({ logs });
   } catch (error) {
     console.error('GET /api/admin/logs error:', error);
@@ -23,7 +23,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const success = clearActivityLogs();
+    const success = await clearActivityLogs();
     if (!success) {
       return NextResponse.json({ error: 'Failed to clear activity logs' }, { status: 500 });
     }
