@@ -43,6 +43,7 @@ export const metadata = {
 
 const FOOD_HIGHLIGHTS = [
   {
+    id: 1,
     title: 'Village Rice & Curry',
     tagline: '7-Curry Clay Pot Feast',
     desc: 'Slow-cooked in clay pots over cinnamon wood. Fragrant red rice served with jackfruit polos curry, tempered dhal, coconut pol sambol, and crispy papadum.',
@@ -51,6 +52,7 @@ const FOOD_HIGHLIGHTS = [
     regions: 'Island-wide • Matale • Ella',
   },
   {
+    id: 2,
     title: 'Midnight Kottu Roti',
     tagline: 'The Sound of Sri Lankan Nights',
     desc: 'The rhythmic clatter of metal blades slicing godamba roti, fresh vegetables, eggs, and rich spicy chicken or cheese curry on a sizzling hot plate.',
@@ -59,6 +61,7 @@ const FOOD_HIGHLIGHTS = [
     regions: 'Colombo • Galle Face • Kandy',
   },
   {
+    id: 3,
     title: 'Jaffna & Coastal Seafood',
     tagline: 'Fiery Crab & Ocean Grills',
     desc: 'World-renowned Jaffna crab curry infused with roasted curry powder, moringa leaves, and coconut milk, alongside fresh catch grilled right on the beach.',
@@ -67,6 +70,7 @@ const FOOD_HIGHLIGHTS = [
     regions: 'Jaffna • Negombo • Mirissa',
   },
   {
+    id: 4,
     title: 'Crispy Hoppers (Appa)',
     tagline: 'Bowl-Shaped Coconut Pancakes',
     desc: 'Crisp lacy golden edges with a soft, pillowy coconut center. Enjoyed plain, with a runny steamed egg, and fiery lunu miris onion relish.',
@@ -75,6 +79,7 @@ const FOOD_HIGHLIGHTS = [
     regions: 'All Provinces',
   },
   {
+    id: 5,
     title: 'Highland Ceylon Tea',
     tagline: 'The World’s Finest Brew',
     desc: 'Handpicked two leaves and a bud from misty mountains above 1,800m. Golden liquor with subtle floral notes, served with traditional English cake.',
@@ -83,6 +88,7 @@ const FOOD_HIGHLIGHTS = [
     regions: 'Nuwara Eliya • Kandy • Ella',
   },
   {
+    id: 6,
     title: 'Curd & Kithul Treacle',
     tagline: 'Ancient Natural Sweetness',
     desc: 'Rich, thick water buffalo curd poured with smoky, amber-gold sweet nectar tapped from wild highland Kithul palm trees. A centuries-old dessert.',
@@ -194,48 +200,57 @@ export default async function FoodPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {foods.map((item, idx) => (
-            <div
-              key={idx}
-              className="group rounded-3xl bg-white border border-slate-200/90 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
-            >
-              {/* Image */}
-              <div className="relative h-56 w-full overflow-hidden bg-slate-900">
-                <Image
-                  src={item.image}
-                  alt={item.title}
-                  fill
-                  className="object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
-                  unoptimized
-                />
-                <div className="absolute top-4 left-4 z-10">
-                  <span className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[#0f1b2d] text-xs font-black shadow-md">
-                    {item.badge}
-                  </span>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-6 flex-1 flex flex-col justify-between space-y-3">
-                <div>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 block">
-                    {item.tagline}
-                  </span>
-                  <h3 className="text-xl font-black text-slate-900 mt-1">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-2 font-normal">
-                    {item.desc}
-                  </p>
+          {foods.map((item, idx) => {
+            const foodId = item.id || idx + 1;
+            return (
+              <Link
+                key={foodId}
+                href={`/food/${foodId}`}
+                className="group rounded-3xl bg-white border border-slate-200/90 hover:border-[#00aa6c]/50 overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col cursor-pointer block"
+              >
+                {/* Image */}
+                <div className="relative h-56 w-full overflow-hidden bg-slate-900">
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    fill
+                    className="object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
+                    unoptimized
+                  />
+                  <div className="absolute top-4 left-4 z-10">
+                    <span className="px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[#0f1b2d] text-xs font-black shadow-md">
+                      {item.badge}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 flex items-center gap-1.5 text-xs text-slate-400 font-semibold">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                  <span>{item.regions}</span>
+                {/* Content */}
+                <div className="p-6 flex-1 flex flex-col justify-between space-y-3">
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-600 block">
+                      {item.tagline}
+                    </span>
+                    <h3 className="text-xl font-black text-slate-900 mt-1 group-hover:text-[#00aa6c] transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-2 font-normal line-clamp-3">
+                      {item.desc}
+                    </p>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5 text-slate-500 font-semibold truncate">
+                      <MapPin className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+                      <span className="truncate">{item.regions}</span>
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-[#00aa6c] font-black group-hover:translate-x-1 transition-transform flex-shrink-0">
+                      Explore <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       </section>
 

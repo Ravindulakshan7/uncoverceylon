@@ -14,10 +14,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('Error fetching places for sitemap:', error);
   }
 
+  let foods: { id: number; created_at: Date }[] = [];
+  try {
+    foods = await prisma.foodItem.findMany({
+      select: { id: true, created_at: true },
+      orderBy: { id: 'asc' },
+    });
+  } catch (error) {
+    console.error('Error fetching foods for sitemap:', error);
+  }
+
   // 1. Dynamic Destination URLs (Priority 0.85)
   const destinationUrls: MetadataRoute.Sitemap = places.map((place) => ({
     url: `${baseUrl}/places/${place.id}`,
     lastModified: place.created_at || new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.85,
+  }));
+
+  // 1b. Dynamic Food Specialty URLs (Priority 0.85)
+  const foodUrls: MetadataRoute.Sitemap = foods.map((f) => ({
+    url: `${baseUrl}/food/${f.id}`,
+    lastModified: f.created_at || new Date(),
     changeFrequency: 'weekly',
     priority: 0.85,
   }));
@@ -98,5 +116,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  return [...staticUrls, ...categoryUrls, ...destinationUrls];
+  return [...staticUrls, ...categoryUrls, ...destinationUrls, ...foodUrls];
 }
