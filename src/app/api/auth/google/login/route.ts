@@ -15,8 +15,11 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const returnTo = searchParams.get('return_to') || '/';
 
-  const host = request.headers.get('host') || 'localhost:3000';
-  const protocol = host.startsWith('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https';
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000';
+  const isLocal = host.startsWith('localhost') || host.startsWith('127.0.0.1');
+  const protocol = isLocal
+    ? 'http'
+    : (request.headers.get('x-forwarded-proto') || (process.env.NODE_ENV === 'production' ? 'https' : 'http'));
   const redirectUri = `${protocol}://${host}/api/auth/google/callback`;
 
   const state = Buffer.from(JSON.stringify({ return_to: returnTo })).toString('base64');

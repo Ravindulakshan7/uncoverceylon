@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { createSessionToken, AUTH_COOKIE_NAME } from '@/lib/auth';
 
+function getBaseRedirectUrl(request: NextRequest, path: string): URL {
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000';
+  const isLocal = host.startsWith('localhost') || host.startsWith('127.0.0.1');
+  const protocol = isLocal
+    ? 'http'
+    : (request.headers.get('x-forwarded-proto') || (process.env.NODE_ENV === 'production' ? 'https' : 'http'));
+
+  const cleanPath = path && path.startsWith('/') ? path : `/${path || ''}`;
+  return new URL(cleanPath, `${protocol}://${host}`);
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -22,7 +33,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (error || !code) {
-      const redirectUrl = new URL(returnTo, request.url);
+      const redirectUrl = getBaseRedirectUrl(request, returnTo);
       redirectUrl.searchParams.set('auth_error', error || 'Google sign in was cancelled');
       return NextResponse.redirect(redirectUrl);
     }
@@ -31,13 +42,16 @@ export async function GET(request: NextRequest) {
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
-      const redirectUrl = new URL(returnTo, request.url);
+      const redirectUrl = getBaseRedirectUrl(request, returnTo);
       redirectUrl.searchParams.set('auth_error', 'Google OAuth credentials missing on server');
       return NextResponse.redirect(redirectUrl);
     }
 
-    const host = request.headers.get('host') || 'localhost:3000';
-    const protocol = host.startsWith('localhost') || host.startsWith('127.0.0.1') ? 'http' : 'https';
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000';
+    const isLocal = host.startsWith('localhost') || host.startsWith('127.0.0.1');
+    const protocol = isLocal
+      ? 'http'
+      : (request.headers.get('x-forwarded-proto') || (process.env.NODE_ENV === 'production' ? 'https' : 'http'));
     const redirectUri = `${protocol}://${host}/api/auth/google/callback`;
 
     // 1. Exchange authorization code for tokens with Google
@@ -56,7 +70,7 @@ export async function GET(request: NextRequest) {
     const tokenData = await tokenRes.json();
     if (!tokenRes.ok || !tokenData.access_token) {
       console.error('Google token exchange error:', tokenData);
-      const redirectUrl = new URL(returnTo, request.url);
+      const redirectUrl = getBaseRedirectUrl(request, returnTo);
       redirectUrl.searchParams.set('auth_error', 'Failed to exchange token with Google');
       return NextResponse.redirect(redirectUrl);
     }
@@ -69,7 +83,7 @@ export async function GET(request: NextRequest) {
 
     if (!userinfoRes.ok || !userinfo.email) {
       console.error('Google userinfo fetch error:', userinfo);
-      const redirectUrl = new URL(returnTo, request.url);
+      const redirectUrl = getBaseRedirectUrl(request, returnTo);
       redirectUrl.searchParams.set('auth_error', 'Failed to retrieve profile from Google');
       return NextResponse.redirect(redirectUrl);
     }
@@ -119,7 +133,7 @@ export async function GET(request: NextRequest) {
     const sessionToken = createSessionToken(userSession);
 
     // 5. Redirect back to destination with session cookie
-    const redirectUrl = new URL(returnTo, request.url);
+    const redirectUrl = getBaseRedirectUrl(request, returnTo);
     redirectUrl.searchParams.set('auth_success', 'google');
     const response = NextResponse.redirect(redirectUrl);
 
@@ -127,7 +141,7 @@ export async function GET(request: NextRequest) {
       name: AUTH_COOKIE_NAME,
       value: sessionToken,
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production' && !isLocal,
       sameSite: 'lax',
       path: '/',
       maxAge: 60 * 60 * 24 * 30, // 30 days
@@ -136,6 +150,8 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (error) {
     console.error('Google OAuth callback error:', error);
-    return NextResponse.redirect(new URL('/?auth_error=unexpected_error', request.url));
+    const redirectUrl = getBaseRedirectUrl(request, '/');
+    redirectUrl.searchParams.set('auth_error', 'unexpected_error');
+    return NextResponse.redirect(redirectUrl);
   }
 }
