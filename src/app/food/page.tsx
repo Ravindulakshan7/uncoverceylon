@@ -8,8 +8,37 @@ import { Place } from '@/types';
 export const revalidate = 60;
 
 export const metadata = {
-  title: 'Food & Flavors — Uncover Ceylon',
-  description: 'A culinary journey across Sri Lanka: spicy village curries, street food kottu, coastal crab feasts, and highland Ceylon tea.',
+  title: 'Food & Flavors — Authentic Sri Lankan Cuisine & Street Food Guide',
+  description: 'Embark on a culinary journey across Sri Lanka: spicy village clay pot curries, sizzling midnight kottu roti, Jaffna fiery crab, crispy egg hoppers, and misty highland Ceylon tea.',
+  keywords: [
+    'Sri Lanka food',
+    'Ceylon tea',
+    'Sri Lankan rice and curry',
+    'Kottu roti Colombo',
+    'Hoppers Appa Sri Lanka',
+    'Jaffna crab curry',
+    'Sri Lanka street food',
+    'Serandib cuisine',
+  ],
+  alternates: {
+    canonical: 'https://uncoverceylon.com/food',
+  },
+  openGraph: {
+    title: 'Food & Flavors of Ceylon — Sri Lanka Culinary Travel Guide',
+    description: 'Explore spicy clay pot curries, street food kottu, and highland tea feasts across Sri Lanka.',
+    url: 'https://uncoverceylon.com/food',
+    siteName: 'Uncover Ceylon',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=1200&h=630&q=85',
+        width: 1200,
+        height: 630,
+        alt: 'Sri Lankan Spices and Clay Pots',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
 };
 
 const FOOD_HIGHLIGHTS = [
@@ -103,8 +132,26 @@ export default async function FoodPage() {
     getFoodDestinations(),
   ]);
 
+  const jsonLdFood = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Top Sri Lankan Dishes & Culinary Specialties',
+    description: 'Iconic street eats, clay pot feasts, and authentic tastes across Sri Lanka.',
+    itemListElement: foods.map((f, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      name: f.title,
+      description: f.desc,
+      image: f.image || undefined,
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdFood) }}
+      />
       
       {/* ━━━ Hero Banner ━━━ */}
       <section className="relative bg-[#0f1b2d] text-white py-16 sm:py-24 overflow-hidden isolate">

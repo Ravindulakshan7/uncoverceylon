@@ -7,8 +7,39 @@ import { Compass, Sparkles, MapPin, ArrowRight } from 'lucide-react';
 export const revalidate = 60;
 
 export const metadata = {
-  title: 'Destinations — Uncover Ceylon',
-  description: 'Explore 60+ curated places, misty mountains, ancient citadels, pristine beaches, and hidden waterfalls across all 9 provinces of Sri Lanka.',
+  title: 'Destinations in Sri Lanka — 60+ Curated Places & Hidden Gems Guide',
+  description: 'Explore 60+ curated places, misty mountains, ancient citadels, pristine beaches, and hidden waterfalls across all 9 provinces of Sri Lanka with interactive maps and reviews.',
+  keywords: [
+    'Sri Lanka destinations',
+    'Places to visit in Sri Lanka',
+    'Sri Lanka hidden gems',
+    'Best beaches Sri Lanka',
+    'Sri Lanka waterfalls',
+    'Ella Sri Lanka',
+    'Sigiriya fortress',
+    'Galle Fort',
+    'Mirissa beach',
+    'Sri Lanka travel guide',
+  ],
+  alternates: {
+    canonical: 'https://uncoverceylon.com/destinations',
+  },
+  openGraph: {
+    title: 'Explore All Destinations in Sri Lanka — Uncover Ceylon',
+    description: 'Discover 60+ curated attractions, beaches, waterfalls, and cultural wonders across Sri Lanka.',
+    url: 'https://uncoverceylon.com/destinations',
+    siteName: 'Uncover Ceylon',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=1200&h=630&q=85',
+        width: 1200,
+        height: 630,
+        alt: 'Sri Lanka Travel Destinations',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
 };
 
 async function getPlaces(): Promise<Place[]> {
@@ -32,8 +63,27 @@ async function getPlaces(): Promise<Place[]> {
 export default async function DestinationsPage() {
   const places = await getPlaces();
 
+  const jsonLdDestinations = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Curated Destinations & Hidden Gems in Sri Lanka',
+    description: 'Explore verified attractions, beaches, mountains, waterfalls, and cultural heritage across Sri Lanka.',
+    itemListElement: places.slice(0, 30).map((p, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      name: p.name,
+      description: p.description?.slice(0, 150),
+      image: p.image_url,
+      url: `https://uncoverceylon.com/places/${p.id}`,
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdDestinations) }}
+      />
       
       {/* ━━━ Page Header & Hero Banner ━━━ */}
       <section className="bg-gradient-to-b from-[#f4f7f5] via-[#fafcfb] to-white pt-8 sm:pt-14 pb-8 sm:pb-12 border-b border-slate-100">

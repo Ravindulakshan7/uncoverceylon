@@ -8,8 +8,38 @@ import { Place } from '@/types';
 export const revalidate = 60;
 
 export const metadata = {
-  title: 'Island Experiences & Adventures — Uncover Ceylon',
-  description: 'Unforgettable adventures across Sri Lanka: surfing golden breaks, scenic mountain trains, leopard safaris, and cloud forest trekking.',
+  title: 'Island Experiences & Outdoor Adventures — Sri Lanka Travel Guide',
+  description: 'Unforgettable adventures across Sri Lanka: surfing world-class breaks, scenic blue trains from Kandy to Ella, wild leopard safaris in Yala, whale watching, and cloud forest trekking.',
+  keywords: [
+    'Sri Lanka experiences',
+    'Sri Lanka adventure travel',
+    'Surfing Weligama Arugam Bay',
+    'Kandy Ella train journey',
+    'Yala safari leopards',
+    'Mirissa whale watching',
+    'Adams Peak hike',
+    'Kitulgala white water rafting',
+    'Things to do in Sri Lanka',
+  ],
+  alternates: {
+    canonical: 'https://uncoverceylon.com/experiences',
+  },
+  openGraph: {
+    title: 'Top Experiences & Adventures in Sri Lanka — Uncover Ceylon',
+    description: 'Surfing, high mountain scenic trains, wild leopard safaris, and rainforest expeditions.',
+    url: 'https://uncoverceylon.com/experiences',
+    siteName: 'Uncover Ceylon',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=1200&h=630&q=85',
+        width: 1200,
+        height: 630,
+        alt: 'Surfing breaking waves in Sri Lanka',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
 };
 
 const EXPERIENCES_LIST = [
@@ -114,8 +144,26 @@ export default async function ExperiencesPage() {
     getAdventureDestinations(),
   ]);
 
+  const jsonLdExperiences = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Top Outdoor Adventures & Travel Experiences in Sri Lanka',
+    description: 'Surfing, wildlife safaris, scenic railways, and mountain hikes across Sri Lanka.',
+    itemListElement: experiences.map((e: any, idx: number) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      name: e.title,
+      description: e.desc,
+      image: e.image,
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdExperiences) }}
+      />
       
       {/* ━━━ Hero Banner ━━━ */}
       <section className="relative bg-[#0f1b2d] text-white py-16 sm:py-24 overflow-hidden isolate">

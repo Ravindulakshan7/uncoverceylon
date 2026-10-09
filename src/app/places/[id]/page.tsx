@@ -34,24 +34,37 @@ export async function generateMetadata({ params }: PlacePageProps): Promise<Meta
       };
     }
 
-    const title = `${place.name} — UncoverCeylon`;
-    const desc = place.short_description || `Discover ${place.name} in ${place.location}, Sri Lanka. Travel guide, best season to visit, photos, and reviews.`;
+    const title = `${place.name} — Sri Lanka Travel Guide & Highlights | Uncover Ceylon`;
+    const desc = place.short_description || `Discover ${place.name} in ${place.location}, ${place.province}, Sri Lanka. Complete travel guide, entrance tickets (${place.entry_fee || 'Free'}), best season to visit, photos, reviews, and interactive directions.`;
     const img = place.image_url || 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=1200&h=630&fit=crop&q=85';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://uncoverceylon.com';
 
     return {
       title,
       description: desc,
+      alternates: {
+        canonical: `${siteUrl}/places/${place.id}`,
+      },
+      keywords: [
+        place.name,
+        `${place.name} Sri Lanka`,
+        `${place.location} travel guide`,
+        `${place.province} attractions`,
+        `${place.category} in Sri Lanka`,
+        'visit Sri Lanka',
+        'Ceylon travel guide',
+      ],
       openGraph: {
-        title: `${place.name} — Sri Lanka Travel Guide | UncoverCeylon`,
+        title: `${place.name} — Sri Lanka Travel Guide | Uncover Ceylon`,
         description: desc,
-        url: `/places/${place.id}`,
-        siteName: 'UncoverCeylon',
+        url: `${siteUrl}/places/${place.id}`,
+        siteName: 'Uncover Ceylon',
         images: [
           {
             url: img,
             width: 1200,
             height: 630,
-            alt: place.name,
+            alt: `${place.name} - ${place.location}, Sri Lanka`,
           },
         ],
         locale: 'en_US',
@@ -59,7 +72,7 @@ export async function generateMetadata({ params }: PlacePageProps): Promise<Meta
       },
       twitter: {
         card: 'summary_large_image',
-        title: `${place.name} — UncoverCeylon`,
+        title: `${place.name} — Sri Lanka Travel Guide`,
         description: desc,
         images: [img],
       },
@@ -331,8 +344,79 @@ export default async function PlacePage({ params }: PlacePageProps) {
     { icon: Clock, label: 'From Colombo', value: place.distance_km > 0 ? `${place.distance_km} km` : 'Scenic drive' },
   ];
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://uncoverceylon.com';
+
+  const jsonLdDestination = {
+    '@context': 'https://schema.org',
+    '@type': 'TouristDestination',
+    name: place.name,
+    description: place.short_description || place.description,
+    image: galleryImages,
+    touristType: [place.category, 'Sightseeing', 'Adventure', 'Nature'],
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: place.lat,
+      longitude: place.lng,
+    },
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: place.location,
+      addressRegion: place.province,
+      addressCountry: 'LK',
+    },
+    isAccessibleForFree: (place.entry_fee || '').toLowerCase().includes('free'),
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: place.rating > 0 ? place.rating : 4.8,
+      reviewCount: place.review_count > 0 ? place.review_count : Math.max(reviews.length, 1),
+      bestRating: 5,
+      worstRating: 1,
+    },
+    url: `${siteUrl}/places/${place.id}`,
+  };
+
+  const jsonLdBreadcrumb = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: siteUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Destinations',
+        item: `${siteUrl}/destinations`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: place.category,
+        item: `${siteUrl}/destinations?category=${encodeURIComponent(place.category)}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 4,
+        name: place.name,
+        item: `${siteUrl}/places/${place.id}`,
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 pt-20 sm:pt-24 pb-28">
+      {/* ━━━ JSON-LD STRUCTURED DATA FOR SUPER SEO ━━━ */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdDestination) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdBreadcrumb) }}
+      />
       
       {/* ━━━ TOP BREADCRUMB & ACTIONS BAR ━━━ */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">

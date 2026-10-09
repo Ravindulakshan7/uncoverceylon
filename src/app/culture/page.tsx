@@ -8,8 +8,39 @@ import { Place } from '@/types';
 export const revalidate = 60;
 
 export const metadata = {
-  title: 'Culture & Heritage — Uncover Ceylon',
-  description: 'Explore 2,500 years of living history across Sri Lanka: ancient rock fortresses, sacred Buddhist relics, colonial ramparts, and sacred pageants.',
+  title: 'Culture & Heritage — Ancient Kingdoms, Temples & Legends of Sri Lanka',
+  description: 'Explore 2,500 years of living history across Sri Lanka: ancient rock fortress Sigiriya, sacred Temple of the Tooth in Kandy, Galle Fort ramparts, and UNESCO world heritage treasures.',
+  keywords: [
+    'Sri Lanka culture',
+    'Cultural Triangle Sri Lanka',
+    'Sigiriya Rock Fortress',
+    'Temple of the Sacred Tooth Kandy',
+    'Galle Fort',
+    'Dambulla Cave Temple',
+    'Anuradhapura stupas',
+    'Polonnaruwa ruins',
+    'Sri Lanka heritage',
+    'UNESCO Sri Lanka',
+  ],
+  alternates: {
+    canonical: 'https://uncoverceylon.com/culture',
+  },
+  openGraph: {
+    title: 'Culture & Heritage of Sri Lanka — 2,500 Years of Living History',
+    description: 'Ancient rock citadels, sacred Buddhist relics, colonial ramparts, and sacred pageants across Ceylon.',
+    url: 'https://uncoverceylon.com/culture',
+    siteName: 'Uncover Ceylon',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&h=630&q=85',
+        width: 1200,
+        height: 630,
+        alt: 'Sigiriya Rock Fortress UNESCO Sri Lanka',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
 };
 
 const HERITAGE_PILLARS = [
@@ -101,8 +132,26 @@ export default async function CulturePage() {
     getCulturalDestinations(),
   ]);
 
+  const jsonLdCulture = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Cultural Heritage Highlights & Historic Sites of Sri Lanka',
+    description: 'Living traditions, UNESCO World Heritage monuments, and ancient kingdoms across Sri Lanka.',
+    itemListElement: cultures.map((c: any, idx: number) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      name: c.title,
+      description: c.desc,
+      image: c.image,
+    })),
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdCulture) }}
+      />
       
       {/* ━━━ Hero Banner ━━━ */}
       <section className="relative bg-[#0f1b2d] text-white py-16 sm:py-24 overflow-hidden isolate">

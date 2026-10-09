@@ -919,20 +919,20 @@ export default function AdminPage() {
     }
   };
 
-  // ━━━ 1. LOGIN SCREEN ━━━
+  // ━━━ 1. LOGIN SCREEN (Dark Luxury Serandib Co. Theme) ━━━
   if (!isAuth) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 py-16">
+      <div className="min-h-screen bg-[#09111e] flex items-center justify-center px-4 py-16">
         <div className="w-full max-w-md">
-          <div className="bg-white border border-slate-200 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-sky-950/10">
+          <div className="bg-[#111c2e] border border-[#1e324d] rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/60">
             <div className="flex flex-col items-center mb-8">
-              <div className="w-16 h-16 rounded-2xl bg-sky-50 border border-sky-100 flex items-center justify-center mb-4 shadow-sm">
-                <ShieldCheck className="w-8 h-8 text-sky-600" />
+              <div className="w-16 h-16 rounded-2xl bg-[#00aa6c]/15 border border-[#00aa6c]/30 flex items-center justify-center mb-4 shadow-lg shadow-emerald-950/40">
+                <ShieldCheck className="w-8 h-8 text-[#3ddc9a]" />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mb-2">
+              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-2">
                 Admin Workspace
               </h1>
-              <p className="text-slate-500 text-sm text-center">
+              <p className="text-slate-400 text-sm text-center">
                 Enter your administrator credentials to manage UncoverCeylon
               </p>
             </div>
@@ -945,20 +945,20 @@ export default function AdminPage() {
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
                   placeholder="Enter administrator password..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-11 py-3.5 text-slate-900 placeholder-slate-400 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 focus:bg-white transition-all shadow-xs"
+                  className="w-full bg-[#0a111a] border border-[#1e324d] rounded-xl pl-11 pr-11 py-3.5 text-white placeholder-slate-500 text-sm focus:border-[#00aa6c] focus:ring-2 focus:ring-[#00aa6c]/20 outline-none transition-all shadow-xs"
                   autoFocus
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
 
               {authError && (
-                <p className="text-rose-600 text-xs flex items-center gap-1.5 font-semibold">
+                <p className="text-rose-400 text-xs flex items-center gap-1.5 font-semibold">
                   <X className="w-3.5 h-3.5" />
                   {authError}
                 </p>
@@ -967,18 +967,18 @@ export default function AdminPage() {
               <button
                 type="submit"
                 disabled={isLoggingIn}
-                className="w-full flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-sky-600/25 active:scale-95 cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg shadow-emerald-950/40 active:scale-95 cursor-pointer"
               >
                 {isLoggingIn ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
                 <span>{isLoggingIn ? 'Verifying Password...' : 'Authorize & Enter'}</span>
               </button>
             </form>
 
-            <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-              <Link href="/" className="text-sky-600 hover:underline flex items-center gap-1 font-semibold">
+            <div className="mt-8 pt-6 border-t border-[#1e324d]/60 flex items-center justify-between text-xs text-slate-400">
+              <Link href="/" className="text-[#3ddc9a] hover:underline flex items-center gap-1 font-semibold">
                 <ArrowLeft className="w-3.5 h-3.5" /> Back to live site
               </Link>
-              <span className="text-[11px] font-medium text-slate-400">Serandib Co. Admin Portal</span>
+              <span className="text-[11px] font-medium text-slate-500">Serandib Co. Admin Portal</span>
             </div>
           </div>
         </div>
@@ -986,23 +986,23 @@ export default function AdminPage() {
     );
   }
 
-  // ━━━ 2. MODERN DASHBOARD ━━━
+  // ━━━ 2. MODERN DASHBOARD (Dark Luxury Theme) ━━━
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+    <div className="min-h-screen bg-[#09111e] text-slate-100 flex flex-col font-sans">
       
       {/* ━━━ SAAS TOP HEADER ━━━ */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+      <header className="bg-[#0f1b2d]/90 backdrop-blur-xl border-b border-[#1e324d] sticky top-0 z-40 shadow-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between">
           
           {/* Logo & Workspace Tag */}
           <div className="flex items-center gap-3.5">
             <Link href="/" className="flex items-center gap-1 group">
-              <span className="text-slate-900 font-extrabold text-xl tracking-tight">
-                Uncover<span className="text-sky-600">Ceylon</span>
+              <span className="text-white font-black text-xl tracking-tight">
+                Uncover<span className="text-[#00aa6c]">Ceylon</span>
               </span>
             </Link>
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs bg-sky-50 text-sky-700 font-bold px-3 py-1 rounded-full border border-sky-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs bg-[#00aa6c]/20 text-[#3ddc9a] font-bold px-3 py-1 rounded-full border border-[#00aa6c]/30 shadow-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3ddc9a] animate-pulse" />
               Admin Workspace
             </span>
           </div>
@@ -1011,7 +1011,7 @@ export default function AdminPage() {
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-xs sm:text-sm font-semibold transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-[#162338] text-xs sm:text-sm font-semibold transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">Live Website</span>
@@ -1028,9 +1028,9 @@ export default function AdminPage() {
                 toast.success('Dashboard data synced!');
               }}
               title="Refresh Data"
-              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[#162338] hover:bg-[#1e304a] text-slate-200 border border-[#1e324d] text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-4 h-4 text-[#3ddc9a]" />
               <span className="hidden sm:inline">Sync Data</span>
             </button>
 
@@ -1038,13 +1038,13 @@ export default function AdminPage() {
             <button
               onClick={handleDownloadBackup}
               disabled={isDownloadingBackup}
-              title="Download one-click full uncoverceylon.db backup file"
-              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs sm:text-sm font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              title="Download one-click full database backup"
+              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[#00aa6c]/20 hover:bg-[#00aa6c]/30 text-[#3ddc9a] border border-[#00aa6c]/40 text-xs sm:text-sm font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               {isDownloadingBackup ? (
-                <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
+                <Loader2 className="w-4 h-4 animate-spin text-[#3ddc9a]" />
               ) : (
-                <Database className="w-4 h-4 text-emerald-600" />
+                <Database className="w-4 h-4 text-[#3ddc9a]" />
               )}
               <span className="hidden sm:inline">{isDownloadingBackup ? 'Backing Up...' : 'Backup DB'}</span>
             </button>
@@ -1056,7 +1056,7 @@ export default function AdminPage() {
                 setAdminPassword('');
                 toast('Signed out from admin session');
               }}
-              className="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs sm:text-sm font-bold transition-colors"
+              className="px-3.5 py-2 rounded-xl bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 border border-rose-800/80 text-xs sm:text-sm font-bold transition-colors cursor-pointer"
             >
               Log Out
             </button>
@@ -1070,102 +1070,102 @@ export default function AdminPage() {
         {/* ━━━ DASHBOARD STATISTICS (5 MODERN CARDS) ━━━ */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-sky-500/40 hover:shadow-md transition-all">
+          <div className="bg-[#111c2e] rounded-2xl p-5 border border-[#1e324d] shadow-lg hover:border-[#00aa6c]/50 transition-all">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">
+              <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">
                 Total Places
               </span>
-              <div className="w-9 h-9 rounded-xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-[#00aa6c]/15 text-[#3ddc9a] border border-[#00aa6c]/30 flex items-center justify-center">
                 <MapPin className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              {loadingPlaces ? <Loader2 className="w-6 h-6 animate-spin text-sky-600" /> : stats.totalDestinations}
+            <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              {loadingPlaces ? <Loader2 className="w-6 h-6 animate-spin text-[#3ddc9a]" /> : stats.totalDestinations}
             </div>
-            <span className="text-[11px] text-slate-500 font-medium block mt-1">
+            <span className="text-[11px] text-slate-400 font-medium block mt-1">
               Active destinations
             </span>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-indigo-500/40 hover:shadow-md transition-all">
+          <div className="bg-[#111c2e] rounded-2xl p-5 border border-[#1e324d] shadow-lg hover:border-indigo-500/50 transition-all">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">
+              <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">
                 Categories
               </span>
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-indigo-950/60 text-indigo-400 border border-indigo-800 flex items-center justify-center">
                 <Layers className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               {stats.totalCategories}
             </div>
-            <span className="text-[11px] text-slate-500 font-medium block mt-1">
+            <span className="text-[11px] text-slate-400 font-medium block mt-1">
               Beaches, Peaks, Wildlife
             </span>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-cyan-500/40 hover:shadow-md transition-all">
+          <div className="bg-[#111c2e] rounded-2xl p-5 border border-[#1e324d] shadow-lg hover:border-cyan-500/50 transition-all">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">
+              <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">
                 Provinces
               </span>
-              <div className="w-9 h-9 rounded-xl bg-cyan-50 text-cyan-600 border border-cyan-100 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-cyan-950/60 text-cyan-400 border border-cyan-800 flex items-center justify-center">
                 <Map className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               {stats.totalProvinces}
             </div>
-            <span className="text-[11px] text-slate-500 font-medium block mt-1">
+            <span className="text-[11px] text-slate-400 font-medium block mt-1">
               All 9 provinces covered
             </span>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-amber-400/50 hover:shadow-md transition-all">
+          <div className="bg-[#111c2e] rounded-2xl p-5 border border-[#1e324d] shadow-lg hover:border-amber-400/50 transition-all">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">
+              <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">
                 Reviews
               </span>
-              <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-amber-950/60 text-amber-400 border border-amber-800 flex items-center justify-center">
                 <Star className="w-4 h-4" />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               {stats.totalReviews.toLocaleString()}
             </div>
-            <span className="text-[11px] text-slate-500 font-medium block mt-1">
+            <span className="text-[11px] text-slate-400 font-medium block mt-1">
               Traveler ratings log
             </span>
           </div>
 
-          <div className="col-span-2 sm:col-span-1 bg-white rounded-2xl p-5 border border-slate-200 shadow-xs hover:border-amber-400/50 hover:shadow-md transition-all">
+          <div className="col-span-2 sm:col-span-1 bg-[#111c2e] rounded-2xl p-5 border border-[#1e324d] shadow-lg hover:border-amber-400/50 transition-all">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">
+              <span className="text-slate-400 text-xs font-bold uppercase tracking-wider">
                 Featured
               </span>
-              <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-500 border border-amber-100 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-amber-950/60 text-amber-400 border border-amber-800 flex items-center justify-center">
                 <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
               </div>
             </div>
-            <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <div className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               {stats.totalFeatured}
             </div>
-            <span className="text-[11px] text-slate-500 font-medium block mt-1">
+            <span className="text-[11px] text-slate-400 font-medium block mt-1">
               Homepage spotlights
             </span>
           </div>
         </div>
 
         {/* ━━━ TAB SWITCHER & ACTION CONTROLS ━━━ */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#1e324d]">
           
-          <div className="flex flex-wrap items-center bg-slate-100 p-1.5 rounded-2xl border border-slate-200 w-fit gap-1">
+          <div className="flex flex-wrap items-center bg-[#0a111a] p-1.5 rounded-2xl border border-[#1e324d] w-fit gap-1">
             <button
               onClick={() => setActiveTab('places')}
               className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === 'places'
-                  ? 'bg-white text-sky-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#00aa6c] text-white shadow-lg shadow-emerald-950/40'
+                  : 'text-slate-400 hover:text-white hover:bg-[#162338]'
               }`}
             >
               <Layers className="w-4 h-4" />
@@ -1176,8 +1176,8 @@ export default function AdminPage() {
               onClick={() => setActiveTab('foods')}
               className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === 'foods'
-                  ? 'bg-white text-sky-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#00aa6c] text-white shadow-lg shadow-emerald-950/40'
+                  : 'text-slate-400 hover:text-white hover:bg-[#162338]'
               }`}
             >
               <Utensils className="w-4 h-4" />
@@ -1188,8 +1188,8 @@ export default function AdminPage() {
               onClick={() => setActiveTab('culture')}
               className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === 'culture'
-                  ? 'bg-white text-sky-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#00aa6c] text-white shadow-lg shadow-emerald-950/40'
+                  : 'text-slate-400 hover:text-white hover:bg-[#162338]'
               }`}
             >
               <Landmark className="w-4 h-4" />
@@ -1200,8 +1200,8 @@ export default function AdminPage() {
               onClick={() => setActiveTab('experiences')}
               className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === 'experiences'
-                  ? 'bg-white text-sky-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#00aa6c] text-white shadow-lg shadow-emerald-950/40'
+                  : 'text-slate-400 hover:text-white hover:bg-[#162338]'
               }`}
             >
               <Compass className="w-4 h-4" />
@@ -1212,8 +1212,8 @@ export default function AdminPage() {
               onClick={() => setActiveTab('slides')}
               className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === 'slides'
-                  ? 'bg-white text-sky-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#00aa6c] text-white shadow-lg shadow-emerald-950/40'
+                  : 'text-slate-400 hover:text-white hover:bg-[#162338]'
               }`}
             >
               <ImageIcon className="w-4 h-4" />
@@ -1224,8 +1224,8 @@ export default function AdminPage() {
               onClick={() => setActiveTab('region')}
               className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === 'region'
-                  ? 'bg-white text-sky-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#00aa6c] text-white shadow-lg shadow-emerald-950/40'
+                  : 'text-slate-400 hover:text-white hover:bg-[#162338]'
               }`}
             >
               <MapPin className="w-4 h-4" />
@@ -1236,14 +1236,14 @@ export default function AdminPage() {
               onClick={() => setActiveTab('reviews')}
               className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === 'reviews'
-                  ? 'bg-white text-sky-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#00aa6c] text-white shadow-lg shadow-emerald-950/40'
+                  : 'text-slate-400 hover:text-white hover:bg-[#162338]'
               }`}
             >
               <MessageSquare className="w-4 h-4" />
               <span>Reviews ({adminReviews.length})</span>
               {adminReviews.filter((r) => r.status === 'pending').length > 0 && (
-                <span className="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-pulse shadow-xs">
+                <span className="bg-amber-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full animate-pulse shadow-xs">
                   {adminReviews.filter((r) => r.status === 'pending').length} pending
                 </span>
               )}
@@ -1253,8 +1253,8 @@ export default function AdminPage() {
               onClick={() => setActiveTab('customers')}
               className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === 'customers'
-                  ? 'bg-white text-sky-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#00aa6c] text-white shadow-lg shadow-emerald-950/40'
+                  : 'text-slate-400 hover:text-white hover:bg-[#162338]'
               }`}
             >
               <Users className="w-4 h-4" />
@@ -1265,8 +1265,8 @@ export default function AdminPage() {
               onClick={() => setActiveTab('logs')}
               className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
                 activeTab === 'logs'
-                  ? 'bg-white text-sky-600 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-[#00aa6c] text-white shadow-lg shadow-emerald-950/40'
+                  : 'text-slate-400 hover:text-white hover:bg-[#162338]'
               }`}
             >
               <History className="w-4 h-4" />
@@ -1280,7 +1280,7 @@ export default function AdminPage() {
                 setEditingPlace(null);
                 setIsEditorOpen(true);
               }}
-              className="inline-flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm shadow-md shadow-sky-600/25 active:scale-95 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-950/40 active:scale-95 transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Add New Destination</span>
@@ -1288,7 +1288,7 @@ export default function AdminPage() {
           ) : activeTab === 'slides' ? (
             <button
               onClick={() => setShowSlideForm(!showSlideForm)}
-              className="inline-flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm shadow-md shadow-sky-600/25 active:scale-95 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-950/40 active:scale-95 transition-all cursor-pointer"
             >
               {showSlideForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
               <span>{showSlideForm ? 'Close Entry Form' : 'Add Hero Slide'}</span>
@@ -1296,7 +1296,7 @@ export default function AdminPage() {
           ) : activeTab === 'region' ? (
             <button
               onClick={() => setShowRegionSlideForm(!showRegionSlideForm)}
-              className="inline-flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm shadow-md shadow-sky-600/25 active:scale-95 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-950/40 active:scale-95 transition-all cursor-pointer"
             >
               {showRegionSlideForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
               <span>{showRegionSlideForm ? 'Close Form' : 'Add Region Slide'}</span>
@@ -1305,7 +1305,7 @@ export default function AdminPage() {
             <button
               onClick={fetchReviews}
               disabled={loadingReviews}
-              className="inline-flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm shadow-md shadow-sky-600/25 active:scale-95 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-950/40 active:scale-95 transition-all cursor-pointer"
             >
               <RefreshCw className={`w-4 h-4 ${loadingReviews ? 'animate-spin' : ''}`} />
               <span>Refresh Reviews</span>
@@ -1314,7 +1314,7 @@ export default function AdminPage() {
             <button
               onClick={fetchLogs}
               disabled={loadingLogs}
-              className="inline-flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm shadow-md shadow-sky-600/25 active:scale-95 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-950/40 active:scale-95 transition-all cursor-pointer"
             >
               <RefreshCw className={`w-4 h-4 ${loadingLogs ? 'animate-spin' : ''}`} />
               <span>Refresh Logs</span>
@@ -1329,7 +1329,7 @@ export default function AdminPage() {
           <div className="space-y-6">
 
             {/* ━━━ DATA TABLE TOOLBAR (SEARCH & FILTERS) ━━━ */}
-            <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs space-y-4">
+            <div className="bg-[#111c2e] rounded-3xl border border-[#1e324d] p-5 shadow-lg space-y-4">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 
                 {/* Search input */}
@@ -1343,12 +1343,12 @@ export default function AdminPage() {
                       setCurrentPage(1);
                     }}
                     placeholder="Search by destination name, location or province..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-9 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 focus:bg-white outline-none shadow-xs"
+                    className="w-full bg-[#0a111a] border border-[#1e324d] rounded-xl pl-10 pr-9 py-2.5 text-xs sm:text-sm text-white placeholder-slate-500 focus:border-[#00aa6c] focus:ring-1 focus:ring-[#00aa6c]/20 outline-none shadow-xs"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -1359,14 +1359,14 @@ export default function AdminPage() {
                 <div className="flex flex-wrap items-center gap-2.5">
                   {/* Category Filter */}
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider hidden sm:inline">Category:</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">Category:</span>
                     <select
                       value={selectedCategory}
                       onChange={(e) => {
                         setSelectedCategory(e.target.value);
                         setCurrentPage(1);
                       }}
-                      className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:border-sky-500 outline-none cursor-pointer"
+                      className="bg-[#0a111a] border border-[#1e324d] rounded-xl px-3 py-2 text-xs font-bold text-slate-200 focus:border-[#00aa6c] outline-none cursor-pointer"
                     >
                       <option value="All">All Categories</option>
                       {CATEGORIES.map((c) => (
@@ -1377,14 +1377,14 @@ export default function AdminPage() {
 
                   {/* Province Filter */}
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider hidden sm:inline">Province:</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">Province:</span>
                     <select
                       value={selectedProvince}
                       onChange={(e) => {
                         setSelectedProvince(e.target.value);
                         setCurrentPage(1);
                       }}
-                      className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:border-sky-500 outline-none cursor-pointer"
+                      className="bg-[#0a111a] border border-[#1e324d] rounded-xl px-3 py-2 text-xs font-bold text-slate-200 focus:border-[#00aa6c] outline-none cursor-pointer"
                     >
                       <option value="All">All Provinces</option>
                       {PROVINCES.map((p) => (
@@ -1401,7 +1401,7 @@ export default function AdminPage() {
                         setSelectedFeatured(e.target.value);
                         setCurrentPage(1);
                       }}
-                      className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-900 focus:border-sky-500 outline-none cursor-pointer"
+                      className="bg-[#0a111a] border border-[#1e324d] rounded-xl px-3 py-2 text-xs font-bold text-slate-200 focus:border-[#00aa6c] outline-none cursor-pointer"
                     >
                       <option value="All">All Statuses</option>
                       <option value="Featured">⭐ Featured Only</option>
@@ -1419,7 +1419,7 @@ export default function AdminPage() {
                         setSelectedFeatured('All');
                         setCurrentPage(1);
                       }}
-                      className="text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 px-3 py-2 rounded-xl"
+                      className="text-xs font-bold text-rose-300 hover:text-white bg-rose-950/60 border border-rose-800/80 px-3 py-2 rounded-xl transition-colors cursor-pointer"
                     >
                       Reset
                     </button>
@@ -1429,24 +1429,24 @@ export default function AdminPage() {
 
               {/* ━━━ BULK ACTIONS FLOATING BAR (Appears when rows selected) ━━━ */}
               {selectedIds.length > 0 && (
-                <div className="bg-sky-50 border border-sky-200 rounded-2xl p-3 sm:px-4 flex flex-wrap items-center justify-between gap-3 animate-fade-in shadow-xs">
+                <div className="bg-[#00aa6c]/15 border border-[#00aa6c]/30 rounded-2xl p-3 sm:px-4 flex flex-wrap items-center justify-between gap-3 animate-fade-in shadow-lg">
                   <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-sky-600 text-white text-xs font-bold flex items-center justify-center">
+                    <span className="w-6 h-6 rounded-full bg-[#00aa6c] text-white text-xs font-bold flex items-center justify-center">
                       {selectedIds.length}
                     </span>
-                    <span className="text-xs sm:text-sm font-bold text-slate-900">
+                    <span className="text-xs sm:text-sm font-bold text-white">
                       {selectedIds.length === 1 ? 'destination selected' : 'destinations selected'}
                     </span>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
                     {/* Bulk Change Category */}
-                    <div className="flex items-center gap-1.5 bg-white border border-sky-200 rounded-xl px-2.5 py-1 shadow-xs">
-                      <Tag className="w-3.5 h-3.5 text-sky-600" />
+                    <div className="flex items-center gap-1.5 bg-[#0a111a] border border-[#1e324d] rounded-xl px-2.5 py-1 shadow-xs">
+                      <Tag className="w-3.5 h-3.5 text-[#3ddc9a]" />
                       <select
                         value={bulkCategory}
                         onChange={(e) => setBulkCategory(e.target.value)}
-                        className="text-xs font-bold text-slate-800 bg-transparent focus:outline-none cursor-pointer pr-1"
+                        className="text-xs font-bold text-slate-200 bg-transparent focus:outline-none cursor-pointer pr-1"
                       >
                         {CATEGORIES.map((cat) => (
                           <option key={cat} value={cat}>
@@ -1457,7 +1457,7 @@ export default function AdminPage() {
                       <button
                         onClick={handleBulkChangeCategory}
                         disabled={isApplyingBulkCategory}
-                        className="inline-flex items-center gap-1 bg-sky-600 hover:bg-sky-700 text-white font-bold px-2.5 py-1 rounded-lg text-xs transition-colors cursor-pointer disabled:opacity-50"
+                        className="inline-flex items-center gap-1 bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold px-2.5 py-1 rounded-lg text-xs transition-colors cursor-pointer disabled:opacity-50"
                       >
                         {isApplyingBulkCategory ? (
                           <Loader2 className="w-3 h-3 animate-spin" />
@@ -1480,7 +1480,7 @@ export default function AdminPage() {
                     {/* Clear selection */}
                     <button
                       onClick={() => setSelectedIds([])}
-                      className="text-xs text-slate-500 hover:text-slate-900 px-2 py-1 font-semibold cursor-pointer"
+                      className="text-xs text-slate-400 hover:text-white px-2 py-1 font-semibold cursor-pointer"
                     >
                       Clear
                     </button>
@@ -1490,20 +1490,20 @@ export default function AdminPage() {
             </div>
 
             {/* ━━━ DATA TABLE ━━━ */}
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="bg-[#111c2e] rounded-3xl border border-[#1e324d] shadow-lg overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider select-none">
+                    <tr className="bg-[#0a111a] border-b border-[#1e324d] text-[11px] font-bold text-slate-400 uppercase tracking-wider select-none">
                       {/* Bulk Select Checkbox */}
                       <th className="py-4 px-4 w-12 text-center">
                         <button
                           type="button"
                           onClick={toggleSelectAll}
-                          className="text-slate-400 hover:text-sky-600"
+                          className="text-slate-400 hover:text-[#3ddc9a]"
                         >
                           {paginatedPlaces.length > 0 && paginatedPlaces.every((p) => selectedIds.includes(p.id)) ? (
-                            <CheckSquare className="w-4 h-4 text-sky-600" />
+                            <CheckSquare className="w-4 h-4 text-[#3ddc9a]" />
                           ) : (
                             <Square className="w-4 h-4" />
                           )}
@@ -1516,55 +1516,55 @@ export default function AdminPage() {
                       {/* Column 2: Name (Sortable) */}
                       <th
                         onClick={() => handleSort('name')}
-                        className="py-4 px-4 cursor-pointer hover:text-sky-600 transition-colors"
+                        className="py-4 px-4 cursor-pointer hover:text-[#3ddc9a] transition-colors"
                       >
                         <div className="flex items-center gap-1.5">
                           <span>Name & Location</span>
-                          <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+                          <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
                         </div>
                       </th>
 
                       {/* Column 3: Category (Sortable) */}
                       <th
                         onClick={() => handleSort('category')}
-                        className="py-4 px-4 cursor-pointer hover:text-sky-600 transition-colors"
+                        className="py-4 px-4 cursor-pointer hover:text-[#3ddc9a] transition-colors"
                       >
                         <div className="flex items-center gap-1.5">
                           <span>Category</span>
-                          <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+                          <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
                         </div>
                       </th>
 
                       {/* Column 4: Province (Sortable) */}
                       <th
                         onClick={() => handleSort('province')}
-                        className="py-4 px-4 cursor-pointer hover:text-sky-600 transition-colors"
+                        className="py-4 px-4 cursor-pointer hover:text-[#3ddc9a] transition-colors"
                       >
                         <div className="flex items-center gap-1.5">
                           <span>Province</span>
-                          <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+                          <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
                         </div>
                       </th>
 
                       {/* Column 5: Rating (Sortable) */}
                       <th
                         onClick={() => handleSort('rating')}
-                        className="py-4 px-4 cursor-pointer hover:text-sky-600 transition-colors"
+                        className="py-4 px-4 cursor-pointer hover:text-[#3ddc9a] transition-colors"
                       >
                         <div className="flex items-center gap-1.5">
                           <span>Rating</span>
-                          <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+                          <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
                         </div>
                       </th>
 
                       {/* Column 6: Featured (Sortable) */}
                       <th
                         onClick={() => handleSort('featured')}
-                        className="py-4 px-4 cursor-pointer hover:text-sky-600 transition-colors"
+                        className="py-4 px-4 cursor-pointer hover:text-[#3ddc9a] transition-colors"
                       >
                         <div className="flex items-center gap-1.5">
                           <span>Featured</span>
-                          <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+                          <ArrowUpDown className="w-3.5 h-3.5 text-slate-500" />
                         </div>
                       </th>
 
@@ -1576,20 +1576,20 @@ export default function AdminPage() {
                     </tr>
                   </thead>
 
-                  <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
+                  <tbody className="divide-y divide-[#1e324d]/60 text-xs sm:text-sm">
                     {loadingPlaces ? (
                       <tr>
-                        <td colSpan={9} className="py-20 text-center text-slate-500">
-                          <Loader2 className="w-8 h-8 animate-spin text-sky-600 mx-auto mb-2" />
-                          <span className="font-bold text-slate-900">Loading destination records...</span>
+                        <td colSpan={9} className="py-20 text-center text-slate-400">
+                          <Loader2 className="w-8 h-8 animate-spin text-[#00aa6c] mx-auto mb-2" />
+                          <span className="font-bold text-white">Loading destination records...</span>
                         </td>
                       </tr>
                     ) : paginatedPlaces.length === 0 ? (
                       <tr>
-                        <td colSpan={9} className="py-16 text-center text-slate-500">
-                          <Search className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                          <p className="font-bold text-slate-900">No destinations match your filters</p>
-                          <p className="text-xs text-slate-500 mt-1">Try resetting the search or category filters.</p>
+                        <td colSpan={9} className="py-16 text-center text-slate-400">
+                          <Search className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                          <p className="font-bold text-white">No destinations match your filters</p>
+                          <p className="text-xs text-slate-400 mt-1">Try resetting the search or category filters.</p>
                         </td>
                       </tr>
                     ) : (
@@ -1600,8 +1600,8 @@ export default function AdminPage() {
                             key={place.id}
                             className={`transition-colors ${
                               isSelected
-                                ? 'bg-sky-50/70'
-                                : 'hover:bg-slate-50/80'
+                                ? 'bg-[#00aa6c]/10 text-white'
+                                : 'hover:bg-[#162338]/60 text-slate-300'
                             }`}
                           >
                             {/* Checkbox */}
@@ -1609,10 +1609,10 @@ export default function AdminPage() {
                               <button
                                 type="button"
                                 onClick={() => toggleSelectRow(place.id)}
-                                className="text-slate-400 hover:text-sky-600"
+                                className="text-slate-500 hover:text-[#3ddc9a]"
                               >
                                 {isSelected ? (
-                                  <CheckSquare className="w-4 h-4 text-sky-600" />
+                                  <CheckSquare className="w-4 h-4 text-[#3ddc9a]" />
                                 ) : (
                                   <Square className="w-4 h-4" />
                                 )}
@@ -1621,7 +1621,7 @@ export default function AdminPage() {
 
                             {/* 1. Thumbnail */}
                             <td className="py-3.5 px-4">
-                              <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0 flex items-center justify-center">
+                              <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-[#0a111a] border border-[#1e324d] flex-shrink-0 flex items-center justify-center">
                                 {isValidImageUrl(place.image_url) ? (
                                   <>
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1636,12 +1636,12 @@ export default function AdminPage() {
                                         if (fallback) fallback.style.display = 'flex';
                                       }}
                                     />
-                                    <div style={{ display: 'none' }} className="w-full h-full items-center justify-center text-slate-400">
+                                    <div style={{ display: 'none' }} className="w-full h-full items-center justify-center text-slate-500">
                                       <MapPin className="w-4 h-4" />
                                     </div>
                                   </>
                                 ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                  <div className="w-full h-full flex items-center justify-center text-slate-500">
                                     <MapPin className="w-4 h-4" />
                                   </div>
                                 )}
@@ -1653,12 +1653,12 @@ export default function AdminPage() {
                               <Link
                                 href={`/places/${place.id}`}
                                 target="_blank"
-                                className="font-bold text-slate-900 hover:text-sky-600 transition-colors block line-clamp-1"
+                                className="font-bold text-white hover:text-[#3ddc9a] transition-colors block line-clamp-1"
                               >
                                 {place.name}
                               </Link>
-                              <div className="flex items-center gap-1 text-slate-500 text-xs mt-0.5">
-                                <MapPin className="w-3 h-3 text-sky-600 flex-shrink-0" />
+                              <div className="flex items-center gap-1 text-slate-400 text-xs mt-0.5">
+                                <MapPin className="w-3 h-3 text-[#00aa6c] flex-shrink-0" />
                                 <span className="truncate">{place.location}</span>
                               </div>
                             </td>
@@ -1675,18 +1675,18 @@ export default function AdminPage() {
                             </td>
 
                             {/* 4. Province */}
-                            <td className="py-3.5 px-4 text-slate-600 font-medium text-xs">
+                            <td className="py-3.5 px-4 text-slate-300 font-medium text-xs">
                               {place.province}
                             </td>
 
                             {/* 5. Rating & Reviews */}
                             <td className="py-3.5 px-4">
                               <div className="flex items-center gap-1.5">
-                                <div className="flex items-center gap-1 bg-amber-50/70 text-slate-900 border border-amber-200/80 px-2 py-0.5 rounded-lg text-xs font-bold">
+                                <div className="flex items-center gap-1 bg-amber-950/60 text-amber-300 border border-amber-800/80 px-2 py-0.5 rounded-lg text-xs font-bold">
                                   <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                                   <span>{place.rating.toFixed(1)}</span>
                                 </div>
-                                <span className="text-[11px] text-slate-500">
+                                <span className="text-[11px] text-slate-400">
                                   ({place.review_count})
                                 </span>
                               </div>
@@ -1699,13 +1699,13 @@ export default function AdminPage() {
                                 title="Click to toggle featured spotlight"
                                 className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full transition-all cursor-pointer ${
                                   place.featured === 1
-                                    ? 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
-                                    : 'bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200'
+                                    ? 'bg-amber-950/70 text-amber-300 border border-amber-700 hover:bg-amber-900/60'
+                                    : 'bg-[#162338] text-slate-400 border border-[#1e324d] hover:bg-[#1e304a] hover:text-white'
                                 }`}
                               >
                                 <Star
                                   className={`w-3 h-3 ${
-                                    place.featured === 1 ? 'fill-amber-400 text-amber-400' : 'text-slate-400'
+                                    place.featured === 1 ? 'fill-amber-400 text-amber-400' : 'text-slate-500'
                                   }`}
                                 />
                                 <span>{place.featured === 1 ? 'Featured' : 'Standard'}</span>
@@ -1714,8 +1714,8 @@ export default function AdminPage() {
 
                             {/* 7. Status */}
                             <td className="py-3.5 px-4">
-                              <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              <span className="inline-flex items-center gap-1.5 bg-[#00aa6c]/20 text-[#3ddc9a] border border-[#00aa6c]/30 px-2.5 py-0.5 rounded-full text-[11px] font-bold">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#3ddc9a] animate-pulse" />
                                 Published
                               </span>
                             </td>
@@ -1728,7 +1728,7 @@ export default function AdminPage() {
                                   href={`/places/${place.id}`}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-sky-600 transition-colors"
+                                  className="p-2 rounded-lg bg-[#162338] hover:bg-[#1e304a] text-slate-300 hover:text-[#3ddc9a] transition-colors"
                                   title="View Live Page"
                                 >
                                   <ExternalLink className="w-3.5 h-3.5" />
@@ -1740,7 +1740,7 @@ export default function AdminPage() {
                                     setEditingPlace(place);
                                     setIsEditorOpen(true);
                                   }}
-                                  className="p-2 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 hover:text-sky-800 transition-colors"
+                                  className="p-2 rounded-lg bg-[#00aa6c]/20 hover:bg-[#00aa6c]/30 text-[#3ddc9a] transition-colors cursor-pointer"
                                   title="Edit Destination"
                                 >
                                   <Edit className="w-3.5 h-3.5" />
@@ -1749,7 +1749,7 @@ export default function AdminPage() {
                                 {/* Delete Button */}
                                 <button
                                   onClick={() => setDeleteModalPlace(place)}
-                                  className="p-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors"
+                                  className="p-2 rounded-lg bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 transition-colors cursor-pointer"
                                   title="Delete Destination"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -1765,15 +1765,15 @@ export default function AdminPage() {
               </div>
 
               {/* ━━━ TABLE PAGINATION FOOTER ━━━ */}
-              <div className="bg-slate-50 border-t border-slate-200 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3 text-xs text-slate-500">
+              <div className="bg-[#0a111a] border-t border-[#1e324d] px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3 text-xs text-slate-400">
                   <span>
-                    Showing <strong className="text-slate-900">{Math.min((currentPage - 1) * pageSize + 1, sortedPlaces.length)}</strong> to{' '}
-                    <strong className="text-slate-900">{Math.min(currentPage * pageSize, sortedPlaces.length)}</strong> of{' '}
-                    <strong className="text-slate-900">{sortedPlaces.length}</strong> destinations
+                    Showing <strong className="text-white">{Math.min((currentPage - 1) * pageSize + 1, sortedPlaces.length)}</strong> to{' '}
+                    <strong className="text-white">{Math.min(currentPage * pageSize, sortedPlaces.length)}</strong> of{' '}
+                    <strong className="text-white">{sortedPlaces.length}</strong> destinations
                   </span>
 
-                  <div className="flex items-center gap-1 pl-3 border-l border-slate-200">
+                  <div className="flex items-center gap-1 pl-3 border-l border-[#1e324d]">
                     <span>Rows:</span>
                     <select
                       value={pageSize}
@@ -1781,34 +1781,32 @@ export default function AdminPage() {
                         setPageSize(Number(e.target.value));
                         setCurrentPage(1);
                       }}
-                      className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-900"
+                      className="bg-[#162338] border border-[#1e324d] rounded-lg px-2 py-1 text-xs text-slate-200 outline-none cursor-pointer"
                     >
-                      <option value={5}>5</option>
                       <option value={10}>10</option>
                       <option value={20}>20</option>
                       <option value={50}>50</option>
+                      <option value={100}>100</option>
                     </select>
                   </div>
                 </div>
 
-                {/* Pagination Controls */}
-                <div className="flex items-center gap-2">
+                {/* Page Navigation */}
+                <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                     disabled={currentPage === 1}
-                    className="p-2 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="p-1.5 rounded-lg border border-[#1e324d] bg-[#162338] hover:bg-[#1e304a] text-slate-300 hover:text-white disabled:opacity-40 transition-colors cursor-pointer"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-
-                  <span className="text-xs font-bold text-slate-900 px-2">
-                    Page {currentPage} of {totalPages}
+                  <span className="text-xs text-slate-400 font-bold px-2">
+                    Page <span className="text-white">{currentPage}</span> of <span className="text-white">{totalPages}</span>
                   </span>
-
                   <button
                     onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className="p-2 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    disabled={currentPage === totalPages || totalPages === 0}
+                    className="p-1.5 rounded-lg border border-[#1e324d] bg-[#162338] hover:bg-[#1e304a] text-slate-300 hover:text-white disabled:opacity-40 transition-colors cursor-pointer"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -2914,28 +2912,28 @@ export default function AdminPage() {
           MODAL 1: SINGLE ITEM DELETE CONFIRMATION
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       {deleteModalPlace && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-5 animate-scale-in">
-            <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-[#111c2e] rounded-3xl max-w-md w-full p-6 sm:p-8 border border-[#1e324d] shadow-2xl space-y-5 animate-scale-in text-white">
+            <div className="w-14 h-14 rounded-2xl bg-rose-950/60 border border-rose-800 text-rose-400 flex items-center justify-center">
               <AlertTriangle className="w-7 h-7" />
             </div>
 
             <div>
-              <h3 className="text-xl font-black text-slate-900">
+              <h3 className="text-xl font-black text-white">
                 Delete Destination?
               </h3>
-              <p className="text-slate-600 text-sm mt-1 leading-relaxed">
+              <p className="text-slate-300 text-sm mt-1 leading-relaxed">
                 Are you sure you want to permanently delete{' '}
-                <strong className="text-slate-900">&quot;{deleteModalPlace.name}&quot;</strong>?
+                <strong className="text-white">&quot;{deleteModalPlace.name}&quot;</strong>?
                 This action will remove all reviews and coordinates from the platform and cannot be undone.
               </p>
             </div>
 
-            <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
+            <div className="flex items-center gap-3 pt-3 border-t border-[#1e324d]">
               <button
                 onClick={confirmSingleDelete}
                 disabled={isDeleting}
-                className="flex-1 flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl transition-all shadow-md shadow-rose-500/20 active:scale-95 text-sm"
+                className="flex-1 flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-rose-950/50 active:scale-95 text-sm cursor-pointer"
               >
                 {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                 <span>{isDeleting ? 'Deleting...' : 'Delete Destination'}</span>
@@ -2944,7 +2942,7 @@ export default function AdminPage() {
               <button
                 onClick={() => setDeleteModalPlace(null)}
                 disabled={isDeleting}
-                className="px-5 py-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-sm transition-colors"
+                className="px-5 py-3 rounded-xl border border-[#1e324d] text-slate-300 hover:bg-[#162338] hover:text-white font-bold text-sm transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -2957,28 +2955,28 @@ export default function AdminPage() {
           MODAL 2: BULK DELETE CONFIRMATION
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
       {isBulkDeleteOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-slate-200 shadow-2xl space-y-5 animate-scale-in">
-            <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-[#111c2e] rounded-3xl max-w-md w-full p-6 sm:p-8 border border-[#1e324d] shadow-2xl space-y-5 animate-scale-in text-white">
+            <div className="w-14 h-14 rounded-2xl bg-rose-950/60 border border-rose-800 text-rose-400 flex items-center justify-center">
               <AlertTriangle className="w-7 h-7" />
             </div>
 
             <div>
-              <h3 className="text-xl font-black text-slate-900">
+              <h3 className="text-xl font-black text-white">
                 Bulk Delete Destinations?
               </h3>
-              <p className="text-slate-600 text-sm mt-1 leading-relaxed">
+              <p className="text-slate-300 text-sm mt-1 leading-relaxed">
                 You are about to permanently delete{' '}
-                <strong className="text-rose-600 font-bold">{selectedIds.length}</strong> selected destinations.
+                <strong className="text-rose-400 font-bold">{selectedIds.length}</strong> selected destinations.
                 Their photos, reviews, and map markers will be permanently removed.
               </p>
             </div>
 
-            <div className="flex items-center gap-3 pt-3 border-t border-slate-100">
+            <div className="flex items-center gap-3 pt-3 border-t border-[#1e324d]">
               <button
                 onClick={confirmBulkDelete}
                 disabled={isDeleting}
-                className="flex-1 flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl transition-all shadow-md shadow-rose-500/20 active:scale-95 text-sm"
+                className="flex-1 flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-rose-950/50 active:scale-95 text-sm cursor-pointer"
               >
                 {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                 <span>{isDeleting ? 'Deleting...' : `Delete All ${selectedIds.length} Destinations`}</span>
@@ -2987,7 +2985,7 @@ export default function AdminPage() {
               <button
                 onClick={() => setIsBulkDeleteOpen(false)}
                 disabled={isDeleting}
-                className="px-5 py-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-sm transition-colors"
+                className="px-5 py-3 rounded-xl border border-[#1e324d] text-slate-300 hover:bg-[#162338] hover:text-white font-bold text-sm transition-colors cursor-pointer"
               >
                 Cancel
               </button>

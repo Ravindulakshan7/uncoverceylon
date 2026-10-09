@@ -331,20 +331,20 @@ export default function DestinationEditorModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in">
-      <div className="bg-white rounded-3xl max-w-4xl w-full border border-slate-200 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-scale-in">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fade-in">
+      <div className="bg-[#111c2e] rounded-3xl max-w-4xl w-full border border-[#1e324d] shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-scale-in text-white">
         
         {/* ━━━ MODAL TOP HEADER ━━━ */}
-        <div className="bg-white px-6 sm:px-8 py-5 border-b border-slate-200 flex items-center justify-between flex-shrink-0">
+        <div className="bg-[#0f1b2d] px-6 sm:px-8 py-5 border-b border-[#1e324d] flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center">
-              {isEditMode ? <FileText className="w-5 h-5" /> : <MapPin className="w-5 h-5 text-sky-600" />}
+            <div className="w-10 h-10 rounded-2xl bg-[#00aa6c]/20 text-[#3ddc9a] border border-[#00aa6c]/30 flex items-center justify-center shadow-xs">
+              {isEditMode ? <FileText className="w-5 h-5" /> : <MapPin className="w-5 h-5 text-[#3ddc9a]" />}
             </div>
             <div>
-              <h2 className="text-xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-xl font-black text-white tracking-tight">
                 {isEditMode ? `Edit: ${place?.name}` : 'Create New Destination'}
               </h2>
-              <p className="text-slate-500 text-xs">
+              <p className="text-slate-400 text-xs mt-0.5">
                 {isEditMode ? 'Update coordinates, photos, and travel guide metadata' : 'Publish a new tourist destination to UncoverCeylon'}
               </p>
             </div>
@@ -352,14 +352,14 @@ export default function DestinationEditorModal({
 
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
+            className="w-9 h-9 rounded-xl bg-[#162338] hover:bg-[#1e304a] text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* ━━━ 6-TAB SEGMENTED NAVIGATION BAR ━━━ */}
-        <div className="bg-slate-50 border-b border-slate-200 px-6 sm:px-8 flex-shrink-0 overflow-x-auto scrollbar-none">
+        <div className="bg-[#0a111a] border-b border-[#1e324d] px-6 sm:px-8 flex-shrink-0 overflow-x-auto scrollbar-none">
           <div className="flex items-center gap-2 py-2.5">
             {TABS.map((tab) => {
               const Icon = tab.icon;
@@ -371,8 +371,8 @@ export default function DestinationEditorModal({
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-sky-600 text-white shadow-sm shadow-sky-600/25'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                      ? 'bg-[#00aa6c] text-white shadow-lg shadow-emerald-950/40'
+                      : 'text-slate-400 hover:text-white hover:bg-[#162338]'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -1001,7 +1001,7 @@ export default function DestinationEditorModal({
                     const idx = TABS.findIndex((t) => t.id === activeTab);
                     if (idx < TABS.length - 1) setActiveTab(TABS[idx + 1].id);
                   }}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs sm:text-sm font-bold transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#162338] hover:bg-[#1e304a] text-slate-200 border border-[#1e324d] text-xs sm:text-sm font-bold transition-colors cursor-pointer"
                 >
                   <span>Next Tab</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -1011,7 +1011,7 @@ export default function DestinationEditorModal({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="inline-flex items-center gap-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-bold px-7 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-sky-600/25 active:scale-95 cursor-pointer"
+                className="inline-flex items-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] disabled:opacity-50 text-white font-bold px-7 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-emerald-950/40 active:scale-95 cursor-pointer"
               >
                 {isSubmitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

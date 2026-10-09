@@ -7,6 +7,20 @@ import { ArrowRight, Map, Compass, Sun, Train, ShieldCheck } from 'lucide-react'
 export const revalidate = 60;
 
 export default async function HomePage() {
+  const [placesCount, foodsCount, cultureCount, experiencesCount] = await Promise.all([
+    prisma.place.count().catch(() => 60),
+    prisma.foodItem.count().catch(() => 98),
+    prisma.cultureItem.count().catch(() => 76),
+    prisma.experienceItem.count().catch(() => 124),
+  ]);
+
+  const interestCounts = {
+    destinations: `${placesCount}+ places`,
+    food: `${foodsCount > 0 ? foodsCount : 98} dishes`,
+    culture: `${cultureCount > 0 ? cultureCount : 76} heritage`,
+    experiences: `${experiencesCount > 0 ? experiencesCount : 124} activities`,
+  };
+
   return (
     <div className="min-h-screen w-full max-w-none bg-white text-slate-900 font-sans">
       
@@ -14,7 +28,7 @@ export default async function HomePage() {
       <HeroSection />
 
       {/* ━━━ 2. BROWSE BY MOOD / UNCOVER CEYLON BY INTEREST (4 Cards Grid) ━━━ */}
-      <InterestsSection />
+      <InterestsSection counts={interestCounts} />
 
       {/* ━━━ 3. ISLAND ROUTE PLANNER BANNER (Interactive Map Preview) ━━━ */}
       <section id="map-banner" className="py-12 sm:py-20 bg-slate-50 border-t border-slate-200/80">

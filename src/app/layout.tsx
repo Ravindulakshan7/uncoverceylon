@@ -12,30 +12,43 @@ import WishlistDrawer from "@/components/WishlistDrawer";
 import AuthModal from "@/components/AuthModal";
 
 export const viewport: Viewport = {
-  themeColor: "#07111e",
+  themeColor: "#0f1b2d",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
 };
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://uncoverceylon.com";
+
 export const metadata: Metadata = {
-  title: "UncoverCeylon — Discover the Hidden Beauty of Sri Lanka",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Uncover Ceylon — Sri Lanka Premier Travel Guide, Hidden Gems & Itineraries",
+    template: "%s | Uncover Ceylon",
+  },
   description:
-    "Explore breathtaking places, hidden gems, ancient wonders, and untouched shores across all 9 provinces of Sri Lanka. Curated guides, live distance calculations, multi-currency fees, and 100% offline PWA support by Serandib Co.",
+    "Discover the ultimate travel guide to Sri Lanka. Curated hidden gems, pristine turquoise beaches, misty tea mountain trails, ancient UNESCO kingdoms, wildlife safaris, and verified local tips across all 9 provinces by Serandib Co.",
   keywords: [
-    "Sri Lanka",
-    "Ceylon",
     "Sri Lanka travel guide",
-    "hidden gems Sri Lanka",
-    "Sigiriya",
-    "Ella",
-    "Sri Lanka beaches",
-    "Sri Lanka waterfalls",
+    "Sri Lanka tourism",
+    "visit Sri Lanka",
     "Ceylon travel",
+    "Sigiriya rock fortress",
+    "Ella scenic train",
+    "Mirissa whale watching",
+    "Yala safari leopards",
+    "Nuwara Eliya tea plantations",
+    "Sri Lanka hidden gems",
+    "Sri Lanka itinerary",
+    "Ceylon food and curries",
+    "Sri Lanka culture and temples",
+    "best beaches in Sri Lanka",
+    "Sri Lanka waterfalls",
+    "Serandib Co travel",
   ],
-  authors: [{ name: "UncoverCeylon" }],
-  creator: "UncoverCeylon",
-  publisher: "UncoverCeylon",
+  authors: [{ name: "Serandib Co. & Uncover Ceylon Team" }],
+  creator: "Uncover Ceylon",
+  publisher: "Serandib Co.",
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -46,24 +59,21 @@ export const metadata: Metadata = {
       { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
     ],
   },
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://uncoverceylon.com"
-  ),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "UncoverCeylon — Discover the Hidden Beauty of Sri Lanka",
+    title: "Uncover Ceylon — Sri Lanka Premier Travel Guide & Hidden Gems",
     description:
-      "Explore breathtaking places, hidden gems, ancient wonders, and untouched shores across Sri Lanka. Your premier island travel guide by Serandib Co.",
-    url: "/",
-    siteName: "UncoverCeylon",
+      "Explore hand-picked destinations, misty hill country trails, ancient citadels, and secluded coastal bays across Sri Lanka with verified local insights and interactive route planning.",
+    url: SITE_URL,
+    siteName: "Uncover Ceylon",
     images: [
       {
         url: "https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=1200&h=630&fit=crop&q=85",
         width: 1200,
         height: 630,
-        alt: "UncoverCeylon - Discover Sri Lanka",
+        alt: "Sigiriya Rock Fortress — Uncover Ceylon",
       },
     ],
     locale: "en_US",
@@ -71,9 +81,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "UncoverCeylon — Discover the Hidden Beauty of Sri Lanka",
+    title: "Uncover Ceylon — Sri Lanka Premier Travel Guide",
     description:
-      "Explore breathtaking places, hidden gems, ancient wonders, and untouched shores across Sri Lanka.",
+      "Explore hand-picked destinations, misty hill country trails, ancient citadels, and secluded coastal bays across Sri Lanka.",
     images: [
       "https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=1200&h=630&fit=crop&q=85",
     ],
@@ -81,6 +91,13 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 };
 
@@ -89,8 +106,59 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const jsonLdWebsite = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Uncover Ceylon",
+    alternateName: ["UncoverCeylon", "Serandib Travel Guide"],
+    url: SITE_URL,
+    description:
+      "The premier digital travel guide for the tropical island of Sri Lanka, featuring curated destinations, offline maps, food, and culture.",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${SITE_URL}/destinations?search={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  const jsonLdOrganization = {
+    "@context": "https://schema.org",
+    "@type": "TravelAgency",
+    name: "Uncover Ceylon",
+    url: SITE_URL,
+    logo: `${SITE_URL}/icons/icon-512.png`,
+    image: "https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=1200&h=630&fit=crop&q=85",
+    description:
+      "Authoritative travel discovery platform curated by Serandib Co. dedicated to promoting ethical, culturally immersive, and breathtaking tourism across Sri Lanka.",
+    areaServed: {
+      "@type": "Country",
+      name: "Sri Lanka",
+    },
+    knowsAbout: [
+      "Sri Lanka Travel",
+      "Ceylon Culture",
+      "Sri Lankan Cuisine",
+      "Wildlife Safaris",
+      "Heritage Sites",
+      "Tropical Beaches",
+    ],
+  };
+
   return (
     <html lang="en" data-scroll-behavior="smooth">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebsite) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }}
+        />
+      </head>
       <body className="min-h-screen bg-white text-slate-900 antialiased selection:bg-[#00aa6c] selection:text-white">
         <LanguageProvider>
           <CurrencyProvider>
@@ -106,11 +174,11 @@ export default function RootLayout({
                     position="bottom-right"
                     toastOptions={{
                       style: {
-                        background: "#0a192f",
+                        background: "#0f1b2d",
                         color: "#f8fafc",
-                        border: "1px solid rgba(255, 255, 255, 0.12)",
+                        border: "1px solid rgba(0, 170, 108, 0.25)",
                         boxShadow: "0 20px 35px -5px rgba(0,0,0,0.5)",
-                        borderRadius: "14px",
+                        borderRadius: "16px",
                         fontFamily: "'Inter', sans-serif",
                         fontWeight: 600,
                         fontSize: "13.5px",
