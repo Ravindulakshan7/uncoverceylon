@@ -30,74 +30,111 @@ export default async function HomePage() {
       {/* ━━━ 2. BROWSE BY MOOD / UNCOVER CEYLON BY INTEREST (4 Cards Grid) ━━━ */}
       <InterestsSection counts={interestCounts} />
 
-      {/* ━━━ 3. ISLAND ROUTE PLANNER BANNER (Interactive Map Preview) ━━━ */}
-      <section id="map-banner" className="py-12 sm:py-20 bg-slate-50 border-t border-slate-200/80">
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[32px] bg-gradient-to-br from-slate-950 via-[#06261c] to-slate-950 border border-slate-800 p-7 sm:p-12 lg:p-14 text-white shadow-xl shadow-slate-950/10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative overflow-hidden">
-            
-            {/* Background glowing ambient light */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#00aa6c]/15 rounded-full blur-3xl pointer-events-none" />
+      {/* ━━━ 3. ISLAND ROUTE PLANNER BANNER (Glassmorphism DeepSeek Redesign) ━━━ */}
+      <section
+        id="map-banner"
+        className="py-14 sm:py-24 border-t border-slate-200/80 relative overflow-hidden"
+        style={{
+          backgroundColor: '#eef2f5',
+          backgroundImage: `
+            radial-gradient(circle at 15% 20%, rgba(203, 213, 225, 0.5) 0%, transparent 45%),
+            radial-gradient(circle at 85% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 45%),
+            radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.6) 0%, transparent 60%)
+          `,
+        }}
+      >
+        <div className="w-[min(1240px,92%)] mx-auto">
+          <div
+            className="relative rounded-[24px] sm:rounded-[32px] overflow-hidden isolate p-6 sm:p-10 lg:p-14 border border-white/70"
+            style={{
+              background: 'rgba(255, 255, 255, 0.55)',
+              backdropFilter: 'blur(28px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(28px) saturate(180%)',
+              boxShadow:
+                '0 30px 60px -30px rgba(15, 27, 45, 0.20), 0 8px 24px -12px rgba(15, 27, 45, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(255, 255, 255, 0.4)',
+            }}
+          >
+            {/* Soft colored orbs behind glass */}
+            <div
+              className="absolute -top-[180px] -right-[120px] w-[420px] h-[420px] rounded-full blur-[40px] pointer-events-none z-0"
+              style={{ background: 'radial-gradient(circle, rgba(16, 185, 129, 0.20) 0%, transparent 65%)' }}
+            />
+            <div
+              className="absolute -bottom-[160px] -left-[100px] w-[360px] h-[360px] rounded-full blur-[40px] pointer-events-none z-0"
+              style={{ background: 'radial-gradient(circle, rgba(148, 163, 184, 0.35) 0%, transparent 65%)' }}
+            />
 
-            {/* Left Content */}
-            <div className="lg:col-span-6 space-y-4 relative z-10">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-emerald-300 text-xs font-bold border border-white/15">
-                <Map className="w-3.5 h-3.5" />
-                Island Route Planner
-              </span>
-              <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
-                Plan your route across the island
-              </h2>
-              <p className="text-slate-300 text-xs sm:text-base font-normal leading-relaxed max-w-lg">
-                Sri Lanka is beautifully compact. You can surf turquoise morning waves, ride scenic misty tea trains, and explore ancient Buddhist kingdoms in a single trip.
-              </p>
-              <div className="pt-2">
+            {/* Inner Content Grid */}
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] gap-8 lg:gap-14 items-center">
+              
+              {/* Left Side */}
+              <div className="max-w-[520px]">
+                <div
+                  className="inline-flex items-center gap-2 text-[12px] sm:text-[13px] font-bold text-[#475569] px-4 py-2 rounded-full mb-5 sm:mb-6 border border-white/90 shadow-[0_2px_8px_rgba(15,27,45,0.05),inset_0_1px_0_rgba(255,255,255,1)]"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.7)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                  }}
+                >
+                  <Map className="w-3.5 h-3.5 text-[#10b981] shrink-0" />
+                  <span>Island Route Planner</span>
+                </div>
+
+                <h2 className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold tracking-tight leading-[1.06] text-[#0f1b2d] mb-4 sm:mb-5">
+                  Plan your route across the island
+                </h2>
+
+                <p className="text-[#64748b] text-[15px] sm:text-base leading-relaxed mb-6 sm:mb-8 max-w-[480px]">
+                  Sri Lanka is beautifully compact. You can surf turquoise morning waves, ride scenic misty tea trains, and explore ancient Buddhist kingdoms in a single trip.
+                </p>
+
                 <Link
                   href="/map"
-                  className="inline-flex items-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-full font-bold text-xs sm:text-sm bg-[#00aa6c] hover:bg-[#008f5a] text-white shadow-lg shadow-emerald-950/40 transition-all active:scale-95 cursor-pointer"
+                  className="group inline-flex items-center gap-3 font-bold text-[14px] sm:text-[15px] text-white px-7 py-3.5 sm:py-4 rounded-full transition-all duration-300 active:scale-95 cursor-pointer shadow-[0_12px_26px_-10px_rgba(16,185,129,0.50),0_4px_12px_-4px_rgba(16,185,129,0.28),inset_0_1px_0_rgba(255,255,255,0.4)] hover:shadow-[0_20px_40px_-10px_rgba(16,185,129,0.55),0_6px_16px_-4px_rgba(16,185,129,0.35),inset_0_1px_0_rgba(255,255,255,0.45)] hover:-translate-y-0.5"
+                  style={{
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  }}
                 >
                   <span>Open interactive 9-province map</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
                 </Link>
               </div>
-            </div>
 
-            {/* Right: 4 Island Quick-Stats Cards */}
-            <div className="lg:col-span-6 grid grid-cols-2 gap-3 sm:gap-4 relative z-10">
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/10 hover:border-white/20 transition-all">
-                <b className="text-2xl sm:text-3xl font-black text-emerald-400 block leading-none">
-                  65,610
-                </b>
-                <span className="text-[11px] sm:text-xs font-semibold text-slate-300 mt-2 block">
-                  sq km of island diversity
-                </span>
+              {/* Right Side - 4 Glass Stat Cards */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                {[
+                  { value: '65,610', label: 'sq km of island diversity' },
+                  { value: '8', label: 'UNESCO Heritage sites' },
+                  { value: '1,340', label: 'km of tropical coastlines' },
+                  { value: '365 Days', label: 'year-round coastal sunshine' },
+                ].map((stat, idx) => (
+                  <div
+                    key={idx}
+                    className="group relative rounded-[18px] p-4 sm:p-6 border border-white/85 hover:border-white transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                    style={{
+                      background: 'rgba(255, 255, 255, 0.55)',
+                      backdropFilter: 'blur(20px) saturate(160%)',
+                      WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+                      boxShadow:
+                        '0 8px 20px -10px rgba(15, 27, 45, 0.12), 0 2px 6px -2px rgba(15, 27, 45, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(255, 255, 255, 0.5)',
+                    }}
+                  >
+                    {/* Top highlight sheen */}
+                    <div className="absolute top-0 inset-x-0 h-1/2 bg-gradient-to-b from-white/35 to-transparent rounded-t-[18px] pointer-events-none" />
+                    {/* Tiny green dot accent */}
+                    <div className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 w-1.5 h-1.5 rounded-full bg-[#10b981] shadow-[0_0_0_3px_rgba(16,185,129,0.15),0_0_12px_rgba(16,185,129,0.4)]" />
+
+                    <b className="relative z-10 block text-2xl sm:text-3xl lg:text-[34px] font-extrabold tracking-tight leading-none text-[#0f1b2d] group-hover:text-[#059669] transition-colors duration-300 mb-2 sm:mb-2.5">
+                      {stat.value}
+                    </b>
+                    <span className="relative z-10 block text-xs sm:text-[13px] text-[#64748b] font-medium leading-snug">
+                      {stat.label}
+                    </span>
+                  </div>
+                ))}
               </div>
 
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/10 hover:border-white/20 transition-all">
-                <b className="text-2xl sm:text-3xl font-black text-emerald-400 block leading-none">
-                  8
-                </b>
-                <span className="text-[11px] sm:text-xs font-semibold text-slate-300 mt-2 block">
-                  UNESCO Heritage sites
-                </span>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/10 hover:border-white/20 transition-all">
-                <b className="text-2xl sm:text-3xl font-black text-emerald-400 block leading-none">
-                  1,340
-                </b>
-                <span className="text-[11px] sm:text-xs font-semibold text-slate-300 mt-2 block">
-                  km of tropical coastlines
-                </span>
-              </div>
-
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-5 border border-white/10 hover:border-white/20 transition-all">
-                <b className="text-2xl sm:text-3xl font-black text-emerald-400 block leading-none">
-                  365 Days
-                </b>
-                <span className="text-[11px] sm:text-xs font-semibold text-slate-300 mt-2 block">
-                  year-round coastal sunshine
-                </span>
-              </div>
             </div>
 
           </div>

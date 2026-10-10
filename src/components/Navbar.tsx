@@ -10,7 +10,7 @@ import CurrencySelector from '@/components/CurrencySelector';
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'destinations' | 'map'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'destinations' | 'map' | 'about'>('home');
   const [scrolled, setScrolled] = useState(false);
   const [navSearchQuery, setNavSearchQuery] = useState('');
   const pathname = usePathname();
@@ -42,6 +42,16 @@ export default function Navbar() {
 
       if (currentPath.startsWith('/map')) {
         setActiveTab('map');
+        return;
+      }
+
+      if (currentPath.startsWith('/about')) {
+        setActiveTab('about');
+        return;
+      }
+
+      if (currentPath.startsWith('/destinations')) {
+        setActiveTab('destinations');
         return;
       }
 
@@ -180,36 +190,42 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* ━━━ 3. CENTER / RIGHT NAV LINKS ━━━ */}
-          <div className="hidden md:flex items-center gap-1.5">
-            <Link
-              href="/destinations"
-              onClick={() => setActiveTab('destinations')}
-              className={`px-3.5 py-2 text-[14px] font-semibold rounded-full transition-colors ${
-                activeTab === 'destinations'
-                  ? 'text-[#002b11] font-bold bg-slate-100'
-                  : 'text-slate-700 hover:text-[#002b11] hover:bg-slate-50'
-              }`}
-            >
-              Destinations
-            </Link>
-            <Link
-              href="/map"
-              onClick={() => setActiveTab('map')}
-              className={`px-3.5 py-2 text-[14px] font-semibold rounded-full transition-colors ${
-                activeTab === 'map'
-                  ? 'text-[#002b11] font-bold bg-slate-100'
-                  : 'text-slate-700 hover:text-[#002b11] hover:bg-slate-50'
-              }`}
-            >
-              Map
-            </Link>
-            <Link
-              href="/about"
-              className="px-3.5 py-2 text-[14px] font-semibold text-slate-700 hover:text-[#002b11] hover:bg-slate-50 rounded-full transition-colors"
-            >
-              About
-            </Link>
+          {/* ━━━ 3. CENTER / RIGHT NAV LINKS WITH BOTTOM INDICATOR LINE ━━━ */}
+          <div className="hidden md:flex items-center gap-6 lg:gap-8 h-full">
+            {[
+              { id: 'destinations', label: 'Destinations', href: '/destinations' },
+              { id: 'map', label: 'Map', href: '/map' },
+              { id: 'about', label: 'About', href: '/about' },
+            ].map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <Link
+                  key={tab.id}
+                  href={tab.href}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className="group relative flex flex-col items-center justify-center h-full px-1 text-[14px] font-bold transition-colors"
+                >
+                  <span
+                    className={`transition-colors duration-200 py-1 ${
+                      isActive
+                        ? 'text-[#002b11] font-extrabold'
+                        : 'text-slate-600 hover:text-[#002b11]'
+                    }`}
+                  >
+                    {tab.label}
+                  </span>
+                  
+                  {/* Subtle bottom indicator line */}
+                  <span
+                    className={`absolute bottom-2.5 sm:bottom-3 inset-x-0 h-[2.5px] rounded-full bg-[#00aa6c] transition-all duration-300 ${
+                      isActive
+                        ? 'w-full opacity-100 scale-x-100'
+                        : 'w-full opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100'
+                    }`}
+                  />
+                </Link>
+              );
+            })}
           </div>
 
           {/* ━━━ 4. RIGHT CONTROLS: [USD] [Wishlist] [Solid Black Sign in Pill] ━━━ */}

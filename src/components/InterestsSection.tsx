@@ -65,11 +65,14 @@ export default function InterestsSection({ counts }: InterestsSectionProps) {
       id="interests"
       className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 scroll-mt-20"
     >
-      {/* ━━━ Centered Section Header (Subtitle removed as requested) ━━━ */}
+      {/* ━━━ Centered Section Header ━━━ */}
       <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12">
         <h2 className="text-3xl sm:text-4xl lg:text-[44px] font-black text-[#0f1b2d] tracking-tight leading-tight">
           Uncover Ceylon by Interest
         </h2>
+        <p className="text-slate-500 text-sm sm:text-base font-medium mt-2.5 sm:mt-3 max-w-xl mx-auto">
+          Tailor your journey through timeless heritage, tropical coastlines, wild sanctuaries, and authentic Ceylon flavors.
+        </p>
       </div>
 
       {/* ━━━ 4 Portrait Cards Grid ━━━ */}
