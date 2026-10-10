@@ -1,17 +1,30 @@
 import { prisma } from '@/lib/db';
 import HeroSection from '@/components/HeroSection';
 import InterestsSection from '@/components/InterestsSection';
+import TopDestinationsSection from '@/components/TopDestinationsSection';
+import AiTripPlannerSection from '@/components/AiTripPlannerSection';
+import ProvincesSection from '@/components/ProvincesSection';
+import CuratedItinerariesSection from '@/components/CuratedItinerariesSection';
+import WeatherSeasonSection from '@/components/WeatherSeasonSection';
+import CeylonFlavorsSection from '@/components/CeylonFlavorsSection';
+import TravelerReviewsSection from '@/components/TravelerReviewsSection';
 import Link from 'next/link';
 import { ArrowRight, Map, Compass, Sun, Train, ShieldCheck } from 'lucide-react';
 
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [placesCount, foodsCount, cultureCount, experiencesCount] = await Promise.all([
+  const [placesCount, foodsCount, cultureCount, experiencesCount, topPlacesRaw] = await Promise.all([
     prisma.place.count().catch(() => 60),
     prisma.foodItem.count().catch(() => 98),
     prisma.cultureItem.count().catch(() => 76),
     prisma.experienceItem.count().catch(() => 124),
+    prisma.place
+      .findMany({
+        take: 8,
+        orderBy: [{ featured: 'desc' }, { rating: 'desc' }],
+      })
+      .catch(() => []),
   ]);
 
   const interestCounts = {
@@ -21,16 +34,33 @@ export default async function HomePage() {
     experiences: `${experiencesCount > 0 ? experiencesCount : 124} activities`,
   };
 
+  const topDestinations = topPlacesRaw.map((p) => ({
+    id: p.id,
+    name: p.name,
+    tagline: p.category,
+    rating: p.rating > 0 ? p.rating : 4.8,
+    reviews: `${p.review_count > 0 ? p.review_count : '1.4k'}`,
+    location: `${p.province}, ${p.location}`,
+    entry_fee: p.entry_fee && p.entry_fee !== 'Free' ? `starts at ${p.entry_fee}` : 'Free Entry',
+    image: p.image_url || 'https://images.unsplash.com/photo-1588598198321-9735fd52455b?auto=format&fit=crop&w=900&q=80',
+  }));
+
   return (
     <div className="min-h-screen w-full max-w-none bg-white text-slate-900 font-sans">
       
-      {/* ━━━ 1. WANDER.LK EDITORIAL HERO (Matching User's DeepSeek Design) ━━━ */}
+      {/* ━━━ 1. WANDER.LK FULL-SCREEN ROUNDED HERO SLIDER ━━━ */}
       <HeroSection />
 
-      {/* ━━━ 2. BROWSE BY MOOD / UNCOVER CEYLON BY INTEREST (4 Cards Grid) ━━━ */}
+      {/* ━━━ 2. UNCOVER CEYLON BY INTEREST (4 Cards Grid) ━━━ */}
       <InterestsSection counts={interestCounts} />
 
-      {/* ━━━ 3. ISLAND ROUTE PLANNER BANNER (Glassmorphism DeepSeek Redesign) ━━━ */}
+      {/* ━━━ 3. TOP DESTINATIONS (Positioned in middle of SS 2, matching SS 1 design) ━━━ */}
+      <TopDestinationsSection destinations={topDestinations} />
+
+      {/* ━━━ 4. AI TRIP PLANNER / SMART ASSISTANT ━━━ */}
+      <AiTripPlannerSection />
+
+      {/* ━━━ 5. ISLAND ROUTE PLANNER BANNER (Glassmorphism DeepSeek Redesign) ━━━ */}
       <section
         id="map-banner"
         className="py-14 sm:py-24 border-t border-slate-200/80 relative overflow-hidden"
@@ -141,7 +171,22 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ━━━ 4. TRAVELER ESSENTIALS & LOCAL INSIGHTS ━━━ */}
+      {/* ━━━ 6. EXPLORE BY 9 ISLAND PROVINCES ━━━ */}
+      <ProvincesSection />
+
+      {/* ━━━ 7. HANDPICKED CURATED ITINERARIES (3, 5, 7, 10 Days) ━━━ */}
+      <CuratedItinerariesSection />
+
+      {/* ━━━ 8. LIVE WEATHER & DUAL-MONSOON CLIMATE GUIDE ━━━ */}
+      <WeatherSeasonSection />
+
+      {/* ━━━ 9. AUTHENTIC CEYLON FLAVORS & TEA SPOTLIGHT ━━━ */}
+      <CeylonFlavorsSection />
+
+      {/* ━━━ 10. TRAVELER REVIEWS & STORIES ━━━ */}
+      <TravelerReviewsSection />
+
+      {/* ━━━ 11. TRAVELER ESSENTIALS & LOCAL INSIGHTS ━━━ */}
       <section className="py-12 sm:py-20 bg-white border-t border-slate-200/80">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
@@ -193,7 +238,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ━━━ 5. BOTTOM TEASER ━━━ */}
+      {/* ━━━ 12. BOTTOM TEASER ━━━ */}
       <section className="border-t border-slate-200 bg-[#f8fafc] py-6 sm:py-8">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 sm:px-6 sm:flex-row sm:items-center sm:justify-between lg:px-8">
           <div className="flex items-center gap-3">
