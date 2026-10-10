@@ -2,7 +2,6 @@ import { prisma } from '@/lib/db';
 import HeroSection from '@/components/HeroSection';
 import InterestsSection from '@/components/InterestsSection';
 import TopDestinationsSection from '@/components/TopDestinationsSection';
-import AiTripPlannerSection from '@/components/AiTripPlannerSection';
 import ProvincesSection from '@/components/ProvincesSection';
 import CuratedItinerariesSection from '@/components/CuratedItinerariesSection';
 import WeatherSeasonSection from '@/components/WeatherSeasonSection';
@@ -54,11 +53,8 @@ export default async function HomePage() {
       {/* ━━━ 2. UNCOVER CEYLON BY INTEREST (4 Cards Grid) ━━━ */}
       <InterestsSection counts={interestCounts} />
 
-      {/* ━━━ 3. TOP DESTINATIONS (Positioned in middle of SS 2, matching SS 1 design) ━━━ */}
+      {/* ━━━ 3. TOP DESTINATIONS (Extended to screen sides) ━━━ */}
       <TopDestinationsSection destinations={topDestinations} />
-
-      {/* ━━━ 4. AI TRIP PLANNER / SMART ASSISTANT ━━━ */}
-      <AiTripPlannerSection />
 
       {/* ━━━ 5. ISLAND ROUTE PLANNER BANNER (Glassmorphism DeepSeek Redesign) ━━━ */}
       <section

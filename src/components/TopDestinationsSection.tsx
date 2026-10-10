@@ -110,10 +110,10 @@ export default function TopDestinationsSection({ destinations }: TopDestinations
   };
 
   return (
-    <section className="py-8 sm:py-14 bg-white">
-      {/* ━━━ WIDE CONTAINER (Expanded width for expansive luxury feel) ━━━ */}
-      <div className="w-full max-w-[1560px] px-3 sm:px-6 lg:px-8 mx-auto">
-        <div className="bg-[#f3f5f8] rounded-[28px] sm:rounded-[38px] p-6 sm:p-9 lg:p-12 border border-slate-200/80 shadow-xs">
+    <section className="py-6 sm:py-10 bg-white">
+      {/* ━━━ FULL-WIDTH EXTENDED CONTAINER (Matching Hero Section Margins) ━━━ */}
+      <div className="w-full px-2 sm:px-4 md:px-6 max-w-none">
+        <div className="bg-[#f3f5f8] rounded-[24px] sm:rounded-[36px] md:rounded-[44px] p-6 sm:p-10 lg:p-12 border border-slate-200/80 shadow-xs">
           
           {/* Header Row: Title on Left, Subtitle on Right */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6 sm:mb-9">

@@ -3,13 +3,15 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Heart, Search, ChevronDown, LogOut, ShieldCheck, User as UserIcon } from 'lucide-react';
+import { Menu, X, Heart, Search, ChevronDown, LogOut, ShieldCheck, User as UserIcon, Sparkles } from 'lucide-react';
 import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
 import CurrencySelector from '@/components/CurrencySelector';
+import AiTripModal from '@/components/AiTripModal';
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'home' | 'destinations' | 'map' | 'about'>('home');
   const [scrolled, setScrolled] = useState(false);
   const [navSearchQuery, setNavSearchQuery] = useState('');
@@ -226,6 +228,16 @@ export default function Navbar() {
                 </Link>
               );
             })}
+
+            {/* AI Trip Planner Button */}
+            <button
+              type="button"
+              onClick={() => setAiModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-[#00aa6c] hover:from-emerald-600 hover:to-[#008f5a] text-white text-xs sm:text-[13px] font-extrabold shadow-sm shadow-emerald-500/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ml-1 shrink-0"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-200 animate-pulse" />
+              <span>Ceylon AI</span>
+            </button>
           </div>
 
           {/* ━━━ 4. RIGHT CONTROLS: [USD] [Wishlist] [Solid Black Sign in Pill] ━━━ */}
@@ -428,6 +440,24 @@ export default function Navbar() {
             >
               <span>About Serandib Co.</span>
             </Link>
+
+            {/* Mobile AI Trip Planner Trigger */}
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(false);
+                setAiModalOpen(true);
+              }}
+              className="w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 text-emerald-950 flex items-center justify-between cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-emerald-600 animate-pulse" />
+                <span>Plan Trip with Ceylon AI</span>
+              </div>
+              <span className="text-[10px] font-extrabold bg-[#00aa6c] text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
+                Instant
+              </span>
+            </button>
             <div className="pt-2 px-1">
               {!user ? (
                 <button
@@ -483,6 +513,9 @@ export default function Navbar() {
           </div>
         )}
       </nav>
+
+      {/* ━━━ CEYLON AI TRIP PLANNER MODAL ━━━ */}
+      <AiTripModal isOpen={aiModalOpen} onClose={() => setAiModalOpen(false)} />
     </header>
   );
 }
