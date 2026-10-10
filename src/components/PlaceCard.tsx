@@ -99,7 +99,7 @@ export default function PlaceCard({ place, index = 0, variant = 'grid' }: PlaceC
                 {distanceInfo.text}
               </span>
             </div>
-            <h3 className="text-sm sm:text-lg font-black leading-snug sm:leading-tight text-slate-900 group-hover:text-[#00aa6c] line-clamp-1 transition-colors">
+            <h3 className="text-sm sm:text-lg font-black sm:font-bold leading-snug sm:leading-snug text-slate-900 sm:text-slate-800 tracking-tight sm:tracking-[-0.015em] group-hover:text-[#00aa6c] line-clamp-1 transition-colors">
               {place.name}
             </h3>
             <p className="hidden sm:block mt-1.5 line-clamp-2 text-xs sm:text-sm leading-relaxed text-slate-600 font-medium">
