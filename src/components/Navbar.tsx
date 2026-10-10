@@ -174,6 +174,16 @@ export default function Navbar() {
               </span>
             </Link>
 
+            {/* ━━━ "PLAN WITH AI" PILL BUTTON (Matching User's Screenshot) ━━━ */}
+            <button
+              type="button"
+              onClick={() => setAiModalOpen(true)}
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-white hover:bg-emerald-50/60 border border-emerald-400 text-[#0f1b2d] font-bold text-xs sm:text-[13px] shadow-[0_2px_8px_rgba(16,185,129,0.12)] hover:border-[#00aa6c] hover:shadow-[0_4px_14px_rgba(16,185,129,0.22)] transition-all cursor-pointer active:scale-95 shrink-0"
+            >
+              <Sparkles className="w-4 h-4 text-[#00aa6c]" />
+              <span>Plan with AI</span>
+            </button>
+
             {/* ━━━ TRIPADVISOR COMPACT SEARCH PILL (Appears on scroll right next to logo) ━━━ */}
             {scrolled && (
               <form
@@ -228,16 +238,6 @@ export default function Navbar() {
                 </Link>
               );
             })}
-
-            {/* AI Trip Planner Button */}
-            <button
-              type="button"
-              onClick={() => setAiModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-[#00aa6c] hover:from-emerald-600 hover:to-[#008f5a] text-white text-xs sm:text-[13px] font-extrabold shadow-sm shadow-emerald-500/25 transition-all hover:scale-105 active:scale-95 cursor-pointer ml-1 shrink-0"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-200 animate-pulse" />
-              <span>Ceylon AI</span>
-            </button>
           </div>
 
           {/* ━━━ 4. RIGHT CONTROLS: [USD] [Wishlist] [Solid Black Sign in Pill] ━━━ */}
