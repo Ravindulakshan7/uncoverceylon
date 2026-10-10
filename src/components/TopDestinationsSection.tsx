@@ -136,14 +136,14 @@ export default function TopDestinationsSection({ destinations }: TopDestinations
               <Link
                 key={place.id}
                 href={`/places/${place.id}`}
-                className="group relative flex-none w-[260px] sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] aspect-[4/5] rounded-[22px] sm:rounded-[26px] overflow-hidden snap-start shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 block bg-[#0f1b2d]"
+                className="group relative flex-none w-[250px] sm:w-[270px] lg:w-[285px] aspect-[4/5] rounded-[22px] sm:rounded-[26px] overflow-hidden snap-start shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 block bg-[#0f1b2d]"
               >
                 {/* Background Image */}
                 <Image
                   src={place.image}
                   alt={place.name}
                   fill
-                  sizes="(max-width: 640px) 260px, (max-width: 1024px) 50vw, 25vw"
+                  sizes="(max-width: 640px) 250px, (max-width: 1024px) 270px, 285px"
                   className="object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
                   unoptimized
                 />
