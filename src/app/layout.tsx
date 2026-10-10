@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -186,6 +187,18 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-white text-slate-900 antialiased selection:bg-[#00aa6c] selection:text-white">
+        <Script
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-5FZLF5MSDE"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-5FZLF5MSDE');
+          `}
+        </Script>
         <LanguageProvider>
           <CurrencyProvider>
             <LocationProvider>
