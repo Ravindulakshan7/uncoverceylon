@@ -96,8 +96,13 @@ const DEFAULT_DESTINATIONS: TopDestination[] = [
 ];
 
 export default function TopDestinationsSection({ destinations }: TopDestinationsSectionProps) {
-  const items = destinations && destinations.length > 0 ? destinations : DEFAULT_DESTINATIONS;
+  const items = destinations !== undefined ? destinations : [];
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // If there are no real destinations in the database, don't show hardcoded fake cards
+  if (items.length === 0) {
+    return null;
+  }
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {

@@ -35,6 +35,19 @@ interface RegionSlide {
   sort_order: number;
 }
 
+interface SiteReviewItem {
+  id: string | number;
+  name: string;
+  country: string;
+  flag?: string;
+  role?: string;
+  visited?: string;
+  comment: string;
+  rating: number;
+  date: string;
+  user_image?: string;
+}
+
 const CATEGORIES = [
   'Beaches', 'Waterfalls', 'Mountains', 'Ancient Sites',
   'Wildlife', 'Hidden Gems', 'Historical', 'Religious Places'
@@ -119,6 +132,23 @@ export default function AdminPage() {
   const [reviewSearchQuery, setReviewSearchQuery] = useState('');
   const [updatingReviewId, setUpdatingReviewId] = useState<number | null>(null);
   const [deletingReviewId, setDeletingReviewId] = useState<number | null>(null);
+
+  // Site & Platform Reviews State
+  const [reviewSectionTab, setReviewSectionTab] = useState<'destinations' | 'site'>('destinations');
+  const [siteReviews, setSiteReviews] = useState<SiteReviewItem[]>([]);
+  const [loadingSiteReviews, setLoadingSiteReviews] = useState(false);
+  const [siteReviewSearch, setSiteReviewSearch] = useState('');
+  const [deletingSiteReviewId, setDeletingSiteReviewId] = useState<string | number | null>(null);
+  const [showAddSiteReviewModal, setShowAddSiteReviewModal] = useState(false);
+  const [editingSiteReview, setEditingSiteReview] = useState<SiteReviewItem | null>(null);
+  const [siteReviewForm, setSiteReviewForm] = useState({
+    author: '',
+    country: '',
+    role: 'Verified Traveler',
+    comment: '',
+    rating: 5,
+  });
+  const [submittingSiteReview, setSubmittingSiteReview] = useState(false);
 
   // Places state
   const [places, setPlaces] = useState<Place[]>([]);
@@ -280,6 +310,7 @@ export default function AdminPage() {
       fetchSlides();
       fetchRegionData();
       fetchReviews();
+      fetchSiteReviews();
       fetchLogs();
       fetchSectionCounts();
     }
@@ -404,6 +435,96 @@ export default function AdminPage() {
       toast.error(err instanceof Error ? err.message : 'Error deleting review');
     } finally {
       setDeletingReviewId(null);
+    }
+  };
+
+  const fetchSiteReviews = async () => {
+    setLoadingSiteReviews(true);
+    try {
+      const res = await fetch('/api/site-reviews');
+      const data = await res.json();
+      setSiteReviews(Array.isArray(data.reviews) ? data.reviews : []);
+    } catch {
+      toast.error('Failed to load site reviews');
+      setSiteReviews([]);
+    } finally {
+      setLoadingSiteReviews(false);
+    }
+  };
+
+  const handleDeleteSiteReview = async (reviewId: string | number) => {
+    if (!confirm('Are you sure you want to permanently delete this site review?')) return;
+    setDeletingSiteReviewId(reviewId);
+    try {
+      const res = await fetch(`/api/site-reviews?id=${encodeURIComponent(reviewId)}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete site review');
+
+      toast.success('Site review permanently deleted.');
+      setSiteReviews((prev) => prev.filter((r) => String(r.id) !== String(reviewId)));
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error deleting site review');
+    } finally {
+      setDeletingSiteReviewId(null);
+    }
+  };
+
+  const handleSaveSiteReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!siteReviewForm.author.trim() || !siteReviewForm.comment.trim()) {
+      toast.error('Author and review comment are required.');
+      return;
+    }
+    setSubmittingSiteReview(true);
+    try {
+      if (editingSiteReview) {
+        const res = await fetch('/api/site-reviews', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: editingSiteReview.id,
+            name: siteReviewForm.author.trim(),
+            country: siteReviewForm.country.trim() || 'Global Traveler',
+            role: siteReviewForm.role.trim() || 'Community Member',
+            comment: siteReviewForm.comment.trim(),
+            rating: siteReviewForm.rating,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to update review');
+        toast.success('Site review updated successfully! ✨');
+      } else {
+        const res = await fetch('/api/site-reviews', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            author: siteReviewForm.author.trim(),
+            country: siteReviewForm.country.trim() || 'Global Traveler',
+            role: siteReviewForm.role.trim() || 'Community Member',
+            comment: siteReviewForm.comment.trim(),
+            rating: siteReviewForm.rating,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to create review');
+        toast.success('New site review published! 🎉');
+      }
+      setShowAddSiteReviewModal(false);
+      setEditingSiteReview(null);
+      setSiteReviewForm({
+        author: '',
+        country: '',
+        role: 'Verified Traveler',
+        comment: '',
+        rating: 5,
+      });
+      fetchSiteReviews();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error saving site review');
+    } finally {
+      setSubmittingSiteReview(false);
     }
   };
 
@@ -839,6 +960,20 @@ export default function AdminPage() {
     });
   }, [adminReviews, reviewFilter, reviewSearchQuery]);
 
+  // Filtered site reviews calculation
+  const filteredSiteReviews = useMemo(() => {
+    if (!Array.isArray(siteReviews)) return [];
+    if (!siteReviewSearch.trim()) return siteReviews;
+    const q = siteReviewSearch.toLowerCase().trim();
+    return siteReviews.filter(
+      (r) =>
+        (r.name && r.name.toLowerCase().includes(q)) ||
+        (r.country && r.country.toLowerCase().includes(q)) ||
+        (r.comment && r.comment.toLowerCase().includes(q)) ||
+        (r.role && r.role.toLowerCase().includes(q))
+    );
+  }, [siteReviews, siteReviewSearch]);
+
   // Filtered activity logs calculation
   const filteredLogs = useMemo(() => {
     if (!Array.isArray(activityLogs)) return [];
@@ -1026,6 +1161,7 @@ export default function AdminPage() {
                 fetchSlides();
                 fetchRegionData();
                 fetchReviews();
+                fetchSiteReviews();
                 fetchLogs();
                 fetchSectionCounts();
                 toast.success('Dashboard data synced!');
@@ -1244,7 +1380,7 @@ export default function AdminPage() {
               }`}
             >
               <MessageSquare className="w-4 h-4" />
-              <span>Reviews ({adminReviews.length})</span>
+              <span>Reviews ({adminReviews.length + siteReviews.length})</span>
               {adminReviews.filter((r) => r.status === 'pending').length > 0 && (
                 <span className="bg-amber-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full animate-pulse shadow-xs">
                   {adminReviews.filter((r) => r.status === 'pending').length} pending
@@ -1305,14 +1441,40 @@ export default function AdminPage() {
               <span>{showRegionSlideForm ? 'Close Form' : 'Add Region Slide'}</span>
             </button>
           ) : activeTab === 'reviews' ? (
-            <button
-              onClick={fetchReviews}
-              disabled={loadingReviews}
-              className="inline-flex items-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold px-5 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-950/40 active:scale-95 transition-all cursor-pointer"
-            >
-              <RefreshCw className={`w-4 h-4 ${loadingReviews ? 'animate-spin' : ''}`} />
-              <span>Refresh Reviews</span>
-            </button>
+            <div className="flex items-center gap-2">
+              {reviewSectionTab === 'site' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingSiteReview(null);
+                    setSiteReviewForm({
+                      author: '',
+                      country: '',
+                      role: 'Verified Traveler',
+                      comment: '',
+                      rating: 5,
+                    });
+                    setShowAddSiteReviewModal(true);
+                  }}
+                  className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg shadow-purple-950/40 active:scale-95 transition-all cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Add Site Review</span>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  fetchReviews();
+                  fetchSiteReviews();
+                }}
+                disabled={loadingReviews || loadingSiteReviews}
+                className="inline-flex items-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold px-4 py-2.5 rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-950/40 active:scale-95 transition-all cursor-pointer"
+              >
+                <RefreshCw className={`w-4 h-4 ${(loadingReviews || loadingSiteReviews) ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
+              </button>
+            </div>
           ) : activeTab === 'logs' ? (
             <button
               onClick={fetchLogs}
@@ -2425,10 +2587,68 @@ export default function AdminPage() {
         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         {activeTab === 'reviews' && (
           <div className="space-y-6">
-            {/* ━━━ REVIEWS STATS SUMMARY ━━━ */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div
-                onClick={() => setReviewFilter('all')}
+            {/* ━━━ REVIEW TYPE SWITCHER (Destination Reviews vs Site/Platform Reviews) ━━━ */}
+            <div className="bg-[#111c2e] p-2 rounded-2xl border border-[#1e324d] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setReviewSectionTab('destinations')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                    reviewSectionTab === 'destinations'
+                      ? 'bg-[#00aa6c] text-white shadow-lg shadow-emerald-950/40'
+                      : 'text-slate-400 hover:text-white hover:bg-[#162338]'
+                  }`}
+                >
+                  <MapPin className="w-4 h-4" />
+                  <span>Destination Reviews ({adminReviews.length})</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setReviewSectionTab('site');
+                    if (siteReviews.length === 0) fetchSiteReviews();
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer ${
+                    reviewSectionTab === 'site'
+                      ? 'bg-[#00aa6c] text-white shadow-lg shadow-emerald-950/40'
+                      : 'text-slate-400 hover:text-white hover:bg-[#162338]'
+                  }`}
+                >
+                  <Star className="w-4 h-4 text-amber-300" />
+                  <span>Site & Platform Reviews ({siteReviews.length})</span>
+                </button>
+              </div>
+
+              {reviewSectionTab === 'site' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingSiteReview(null);
+                    setSiteReviewForm({
+                      author: '',
+                      country: '',
+                      role: 'Verified Traveler',
+                      comment: '',
+                      rating: 5,
+                    });
+                    setShowAddSiteReviewModal(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all shadow-md cursor-pointer self-start sm:self-auto"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Add Site Review</span>
+                </button>
+              )}
+            </div>
+
+            {/* ━━━ SUB-TAB 1: DESTINATION REVIEWS ━━━ */}
+            {reviewSectionTab === 'destinations' && (
+              <div className="space-y-6">
+                {/* ━━━ REVIEWS STATS SUMMARY ━━━ */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div
+                    onClick={() => setReviewFilter('all')}
                 className={`bg-white rounded-2xl p-4 border transition-all cursor-pointer ${
                   reviewFilter === 'all'
                     ? 'border-sky-500 ring-2 ring-sky-500/20 shadow-sm'
@@ -2710,6 +2930,162 @@ export default function AdminPage() {
             )}
           </div>
         )}
+
+        {/* ━━━ SUB-TAB 2: SITE & PLATFORM REVIEWS (Loved by Adventurers Worldwide) ━━━ */}
+        {reviewSectionTab === 'site' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Site Reviews Stats */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="bg-white rounded-2xl p-4 border border-slate-200">
+                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Total Site Feedback
+                </div>
+                <div className="text-2xl font-black text-slate-900">{siteReviews.length}</div>
+              </div>
+              <div className="bg-white rounded-2xl p-4 border border-emerald-200">
+                <div className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">
+                  5-Star Ratings
+                </div>
+                <div className="text-2xl font-black text-emerald-600">
+                  {siteReviews.filter((r) => (Number(r.rating) || 5) === 5).length}
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl p-4 border border-amber-200">
+                <div className="text-xs font-bold text-amber-600 uppercase tracking-wider mb-1">
+                  Average Score
+                </div>
+                <div className="text-2xl font-black text-amber-600">
+                  {(siteReviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / (siteReviews.length || 1)).toFixed(1)} ★
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl p-4 border border-purple-200">
+                <div className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-1">
+                  Live Section
+                </div>
+                <div className="text-xs font-bold text-purple-900 mt-1 line-clamp-1">
+                  Loved by Adventurers Worldwide
+                </div>
+              </div>
+            </div>
+
+            {/* Search Toolbar */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={siteReviewSearch}
+                  onChange={(e) => setSiteReviewSearch(e.target.value)}
+                  placeholder="Search reviews by name, country, comment..."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:border-sky-500 focus:bg-white outline-none"
+                />
+              </div>
+              <div className="text-xs font-semibold text-slate-500">
+                Showing {filteredSiteReviews.length} of {siteReviews.length} traveler stories
+              </div>
+            </div>
+
+            {/* Site Reviews Cards */}
+            {loadingSiteReviews ? (
+              <div className="py-20 flex justify-center bg-white rounded-3xl border border-slate-200">
+                <Loader2 className="w-8 h-8 animate-spin text-sky-600" />
+              </div>
+            ) : filteredSiteReviews.length === 0 ? (
+              <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center text-slate-500 space-y-2">
+                <MessageSquare className="w-10 h-10 text-slate-300 mx-auto" />
+                <h4 className="text-base font-bold text-slate-800">No Site Reviews Found</h4>
+                <p className="text-xs text-slate-400">Click &quot;+ Add Site Review&quot; above to create one!</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredSiteReviews.map((rev) => (
+                  <div
+                    key={rev.id}
+                    className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-col justify-between gap-4 hover:border-slate-300 transition-all"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-sky-500/10 text-sky-600 font-bold flex items-center justify-center text-sm border border-sky-500/20">
+                            {rev.name ? rev.name.charAt(0).toUpperCase() : 'U'}
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                              <span>{rev.name}</span>
+                              {rev.flag && <span>{rev.flag}</span>}
+                            </h4>
+                            <p className="text-xs text-slate-400 font-medium">
+                              {rev.country || 'Global Traveler'} · <span className="text-slate-600">{rev.role || 'Member'}</span>
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-[11px] font-semibold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-full">
+                          {rev.date || 'Recent'}
+                        </span>
+                      </div>
+
+                      {/* Stars */}
+                      <div className="flex items-center gap-1 text-amber-400 text-sm">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-4 h-4 ${i < (Number(rev.rating) || 5) ? 'fill-amber-400 text-amber-400' : 'text-slate-200'}`}
+                          />
+                        ))}
+                        <span className="text-xs font-bold text-slate-700 ml-1">
+                          {rev.rating || 5}.0
+                        </span>
+                      </div>
+
+                      {/* Comment */}
+                      <p className="text-slate-700 text-xs sm:text-sm leading-relaxed italic bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                        &ldquo;{rev.comment}&rdquo;
+                      </p>
+                    </div>
+
+                    {/* Card Actions */}
+                    <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingSiteReview(rev);
+                          setSiteReviewForm({
+                            author: rev.name,
+                            country: rev.country || '',
+                            role: rev.role || 'Verified Traveler',
+                            comment: rev.comment,
+                            rating: Number(rev.rating) || 5,
+                          });
+                          setShowAddSiteReviewModal(true);
+                        }}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-all cursor-pointer"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                        <span>Edit</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteSiteReview(rev.id)}
+                        disabled={deletingSiteReviewId === rev.id}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        {deletingSiteReviewId === rev.id ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-3.5 h-3.5" />
+                        )}
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    )}
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
             TAB 5: ADMIN ACTIVITY LOGS (AUDIT TRAIL)
@@ -3012,6 +3388,139 @@ export default function AdminPage() {
           fetchPlaces();
         }}
       />
+
+      {/* ━━━ MODAL 4: ADD / EDIT SITE REVIEW MODAL ━━━ */}
+      {showAddSiteReviewModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-[#111c2e] border border-[#1e324d] rounded-3xl max-w-lg w-full p-6 text-white shadow-2xl animate-scale-in">
+            <div className="flex items-center justify-between pb-4 border-b border-[#1e324d] mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-300 flex items-center justify-center">
+                  <Star className="w-5 h-5 text-amber-300" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-white">
+                    {editingSiteReview ? 'Edit Site Review' : 'Add Platform Traveler Review'}
+                  </h3>
+                  <p className="text-xs text-slate-400">Displayed on homepage &quot;Loved by Adventurers Worldwide&quot;</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddSiteReviewModal(false);
+                  setEditingSiteReview(null);
+                }}
+                className="w-8 h-8 rounded-lg bg-[#162338] text-slate-400 hover:text-white flex items-center justify-center cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveSiteReview} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  Traveler Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={siteReviewForm.author}
+                  onChange={(e) => setSiteReviewForm({ ...siteReviewForm, author: e.target.value })}
+                  placeholder="e.g. Ravindu Bro / Sarah Jenkins"
+                  className="w-full bg-[#0a111a] border border-[#1e324d] rounded-xl px-4 py-2.5 text-sm text-white focus:border-purple-500 outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Country
+                  </label>
+                  <input
+                    type="text"
+                    value={siteReviewForm.country}
+                    onChange={(e) => setSiteReviewForm({ ...siteReviewForm, country: e.target.value })}
+                    placeholder="e.g. Sri Lanka / Germany"
+                    className="w-full bg-[#0a111a] border border-[#1e324d] rounded-xl px-4 py-2.5 text-sm text-white focus:border-purple-500 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Role / Traveler Type
+                  </label>
+                  <input
+                    type="text"
+                    value={siteReviewForm.role}
+                    onChange={(e) => setSiteReviewForm({ ...siteReviewForm, role: e.target.value })}
+                    placeholder="e.g. Couple Getaway / Solo"
+                    className="w-full bg-[#0a111a] border border-[#1e324d] rounded-xl px-4 py-2.5 text-sm text-white focus:border-purple-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  Rating (1 to 5 Stars)
+                </label>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setSiteReviewForm({ ...siteReviewForm, rating: s })}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                        siteReviewForm.rating >= s
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                          : 'bg-[#0a111a] text-slate-500 border border-[#1e324d]'
+                      }`}
+                    >
+                      <Star className={`w-3.5 h-3.5 ${siteReviewForm.rating >= s ? 'fill-amber-400 text-amber-400' : ''}`} />
+                      <span>{s}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                  Review Comment *
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  value={siteReviewForm.comment}
+                  onChange={(e) => setSiteReviewForm({ ...siteReviewForm, comment: e.target.value })}
+                  placeholder="Share feedback about the platform, trip recommendations, itineraries..."
+                  className="w-full bg-[#0a111a] border border-[#1e324d] rounded-xl p-3 text-sm text-white focus:border-purple-500 outline-none resize-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#1e324d]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddSiteReviewModal(false);
+                    setEditingSiteReview(null);
+                  }}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingSiteReview}
+                  className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-md shadow-purple-950/40 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {submittingSiteReview && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{editingSiteReview ? 'Save Changes' : 'Publish Review'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   );

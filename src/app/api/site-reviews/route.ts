@@ -130,3 +130,92 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message || 'Failed to submit review' }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Review ID is required' }, { status: 400 });
+    }
+
+    const setting = await prisma.siteSetting.findUnique({
+      where: { key: 'site_reviews' },
+    });
+
+    let currentList = INITIAL_REVIEWS;
+    if (setting && setting.value) {
+      try {
+        const parsed = JSON.parse(setting.value);
+        if (Array.isArray(parsed)) currentList = parsed;
+      } catch (e) {
+        // fallback
+      }
+    }
+
+    const updatedList = currentList.filter((r: any) => String(r.id) !== String(id));
+
+    await prisma.siteSetting.upsert({
+      where: { key: 'site_reviews' },
+      update: { value: JSON.stringify(updatedList) },
+      create: { key: 'site_reviews', value: JSON.stringify(updatedList) },
+    });
+
+    return NextResponse.json({ success: true, reviews: updatedList });
+  } catch (error: any) {
+    console.error('Error deleting site review:', error);
+    return NextResponse.json({ error: error.message || 'Failed to delete review' }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, name, country, comment, rating, role, visited } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'Review ID is required' }, { status: 400 });
+    }
+
+    const setting = await prisma.siteSetting.findUnique({
+      where: { key: 'site_reviews' },
+    });
+
+    let currentList = INITIAL_REVIEWS;
+    if (setting && setting.value) {
+      try {
+        const parsed = JSON.parse(setting.value);
+        if (Array.isArray(parsed)) currentList = parsed;
+      } catch (e) {
+        // fallback
+      }
+    }
+
+    const updatedList = currentList.map((r: any) => {
+      if (String(r.id) === String(id)) {
+        return {
+          ...r,
+          name: name !== undefined ? name : r.name,
+          country: country !== undefined ? country : r.country,
+          comment: comment !== undefined ? comment : r.comment,
+          rating: rating !== undefined ? Number(rating) : r.rating,
+          role: role !== undefined ? role : r.role,
+          visited: visited !== undefined ? visited : r.visited,
+        };
+      }
+      return r;
+    });
+
+    await prisma.siteSetting.upsert({
+      where: { key: 'site_reviews' },
+      update: { value: JSON.stringify(updatedList) },
+      create: { key: 'site_reviews', value: JSON.stringify(updatedList) },
+    });
+
+    return NextResponse.json({ success: true, reviews: updatedList });
+  } catch (error: any) {
+    console.error('Error updating site review:', error);
+    return NextResponse.json({ error: error.message || 'Failed to update review' }, { status: 500 });
+  }
+}

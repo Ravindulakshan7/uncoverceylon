@@ -14,7 +14,7 @@ export const revalidate = 60;
 
 export default async function HomePage() {
   const [placesCount, foodsCount, cultureCount, experiencesCount, topPlacesRaw] = await Promise.all([
-    prisma.place.count().catch(() => 60),
+    prisma.place.count().catch(() => 0),
     prisma.foodItem.count().catch(() => 98),
     prisma.cultureItem.count().catch(() => 76),
     prisma.experienceItem.count().catch(() => 124),
@@ -27,7 +27,7 @@ export default async function HomePage() {
   ]);
 
   const interestCounts = {
-    destinations: `${placesCount}+ places`,
+    destinations: placesCount > 0 ? `${placesCount}+ places` : 'Curated places',
     food: `${foodsCount > 0 ? foodsCount : 98} dishes`,
     culture: `${cultureCount > 0 ? cultureCount : 76} heritage`,
     experiences: `${experiencesCount > 0 ? experiencesCount : 124} activities`,
