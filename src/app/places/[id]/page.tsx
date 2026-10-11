@@ -8,8 +8,8 @@ import DestinationGallery from './DestinationGallery';
 import PlaceMap from './PlaceMap';
 import PlaceCard from '@/components/PlaceCard';
 import WishlistButton from '@/components/WishlistButton';
-import OfflineGuideButton from '@/components/OfflineGuideButton';
 import PlaceSidebarQuickFacts from './PlaceSidebarQuickFacts';
+import DestinationDetailAccordions from './DestinationDetailAccordions';
 import {
   MapPin, Star, Clock, Tag, Ticket, Calendar, ChevronLeft,
   ArrowUpRight, Heart, Share2, CheckCircle2, Map,
@@ -424,9 +424,9 @@ export default async function PlacePage({ params }: PlacePageProps) {
           
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-500">
-            <Link href="/" className="hover:text-sky-600 transition-colors">Home</Link>
+            <Link href="/" className="hover:text-[#00aa6c] transition-colors">Home</Link>
             <span>/</span>
-            <Link href={`/?category=${encodeURIComponent(place.category)}#explore`} className="hover:text-sky-600 transition-colors">
+            <Link href={`/?category=${encodeURIComponent(place.category)}#explore`} className="hover:text-[#00aa6c] transition-colors">
               {place.category}
             </Link>
             <span>/</span>
@@ -435,13 +435,12 @@ export default async function PlacePage({ params }: PlacePageProps) {
 
           {/* Quick Action buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <OfflineGuideButton place={place} variant="pill" />
             <WishlistButton placeId={place.id} placeName={place.name} variant="pill" />
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 bg-white border border-slate-200 hover:border-sky-300 text-slate-700 hover:text-slate-900 font-bold px-4 py-2 rounded-xl text-xs sm:text-sm shadow-xs transition-all active:scale-95"
+              className="inline-flex items-center gap-1.5 bg-white border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-slate-900 font-bold px-4 py-2 rounded-xl text-xs sm:text-sm shadow-xs transition-all active:scale-95"
             >
-              <ChevronLeft className="w-4 h-4 text-sky-600" />
+              <ChevronLeft className="w-4 h-4 text-[#00aa6c]" />
               <span className="hidden sm:inline">Back to Explore</span>
               <span className="sm:hidden">Back</span>
             </Link>
@@ -454,7 +453,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="bg-sky-50 text-sky-700 text-xs font-bold px-3 py-1 rounded-full border border-sky-200">
+              <span className="bg-emerald-50 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full border border-emerald-200">
                 {place.category}
               </span>
               <span className="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1 rounded-full border border-slate-200">
@@ -473,7 +472,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
             </h1>
 
             <div className="flex items-center gap-2 text-slate-500 text-sm mt-2">
-              <MapPin className="w-4 h-4 text-sky-600 flex-shrink-0" />
+              <MapPin className="w-4 h-4 text-[#00aa6c] flex-shrink-0" />
               <span>{place.location}, Sri Lanka</span>
             </div>
           </div>
@@ -518,7 +517,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
             {/* ━━━ 2. DESTINATION OVERVIEW ━━━ */}
             <section className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-sm space-y-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#00aa6c] border border-emerald-100 flex items-center justify-center flex-shrink-0">
                   <Info className="w-5 h-5" />
                 </div>
                 <div>
@@ -532,7 +531,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
               </div>
 
               {/* Highlight summary lead */}
-              <p className="text-slate-900 text-lg sm:text-xl font-medium leading-relaxed border-l-4 border-sky-600 pl-4 py-2 bg-sky-50/60 rounded-r-xl">
+              <p className="text-slate-900 text-lg sm:text-xl font-medium leading-relaxed border-l-4 border-[#00aa6c] pl-4 py-2 bg-emerald-50/50 rounded-r-xl">
                 {place.short_description}
               </p>
 
@@ -544,268 +543,33 @@ export default async function PlacePage({ params }: PlacePageProps) {
               {/* Quick highlight tags */}
               <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-100">
                 <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-sky-600" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00aa6c]" />
                   Scenic Viewpoint
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-sky-600" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00aa6c]" />
                   Photography Permitted
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-sky-600" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#00aa6c]" />
                   Local Guide Recommended
                 </span>
               </div>
             </section>
 
-            {/* ━━━ 3. THINGS TO DO SECTION ━━━ */}
-            <section className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-sm space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center flex-shrink-0">
-                  <Compass className="w-5 h-5 text-sky-600" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                    Things To Do & Experiences
-                  </h3>
-                  <p className="text-slate-500 text-xs sm:text-sm">
-                    Curated activities recommended by local explorers
-                  </p>
-                </div>
-              </div>
+            {/* ━━━ 3. COLLAPSIBLE IN-DEPTH ACCORDIONS (THINGS TO DO, SEASONALITY & TIPS) ━━━ */}
+            <DestinationDetailAccordions
+              place={place}
+              thingsToDo={thingsToDo}
+              seasonality={seasonality}
+            />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                {thingsToDo.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="p-5 rounded-2xl bg-slate-50/70 border border-slate-200/80 hover:border-sky-300 hover:bg-white transition-all shadow-xs space-y-2 group"
-                  >
-                    <div className="text-2xl mb-1">{item.icon}</div>
-                    <h4 className="font-extrabold text-slate-900 text-base group-hover:text-sky-600 transition-colors">
-                      {item.title}
-                    </h4>
-                    <p className="text-slate-600 text-xs leading-relaxed">
-                      {item.desc}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* ━━━ 4. SEASONALITY & WEATHER GUIDE ━━━ */}
-            <section className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-sm space-y-7">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/60 flex items-center justify-center flex-shrink-0">
-                    <Sun className="w-5 h-5 fill-amber-400/30 text-amber-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                      Seasonality & Weather Guide
-                    </h3>
-                    <p className="text-slate-500 text-xs sm:text-sm">
-                      Real-time climate profile, temperature ranges & month-by-month travel matrix
-                    </p>
-                  </div>
-                </div>
-
-                {/* Live Current Month Status Badge */}
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 border border-slate-200 self-start sm:self-auto">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                      seasonality.currentStatus.status === 'peak'
-                        ? 'bg-emerald-400'
-                        : seasonality.currentStatus.status === 'good'
-                        ? 'bg-amber-400'
-                        : 'bg-sky-400'
-                    }`}></span>
-                    <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-                      seasonality.currentStatus.status === 'peak'
-                        ? 'bg-emerald-500'
-                        : seasonality.currentStatus.status === 'good'
-                        ? 'bg-amber-500'
-                        : 'bg-sky-500'
-                    }`}></span>
-                  </span>
-                  <span className="text-slate-900">
-                    {seasonality.currentMonthName}: {seasonality.currentStatus.label}
-                  </span>
-                </div>
-              </div>
-
-              {/* Climate Summary Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    <CloudSun className="w-3.5 h-3.5 text-sky-600" />
-                    <span>Climate Zone</span>
-                  </div>
-                  <div className="text-sm sm:text-base font-extrabold text-slate-900">
-                    {seasonality.climateType}
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    <Thermometer className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Avg Temperature</span>
-                  </div>
-                  <div className="text-sm sm:text-base font-extrabold text-slate-900">
-                    {seasonality.tempRange}
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    <Wind className="w-3.5 h-3.5 text-sky-600" />
-                    <span>Humidity & Air</span>
-                  </div>
-                  <div className="text-sm sm:text-base font-extrabold text-slate-900">
-                    {seasonality.humidity}
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    <Sun className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Prime Window</span>
-                  </div>
-                  <div className="text-sm sm:text-base font-extrabold text-slate-900 truncate">
-                    {place.best_time || 'Nov to Apr'}
-                  </div>
-                </div>
-              </div>
-
-              {/* 12-Month Seasonality Calendar Bar */}
-              <div className="space-y-3 pt-2">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-700">
-                  <span>Month-by-Month Travel Conditions:</span>
-                  <span className="text-slate-500 font-normal hidden sm:inline">12-month climate outlook</span>
-                </div>
-
-                <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-1.5">
-                  {seasonality.monthStatuses.map((m, idx) => {
-                    const isCurrent = m.name === seasonality.currentMonthName;
-                    const isPeak = m.status === 'peak';
-                    const isGood = m.status === 'good';
-
-                    return (
-                      <div
-                        key={idx}
-                        className={`rounded-xl p-2.5 text-center flex flex-col items-center justify-between border transition-all ${
-                          isCurrent ? 'ring-2 ring-sky-600 shadow-sm' : ''
-                        } ${
-                          isPeak
-                            ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
-                            : isGood
-                            ? 'bg-amber-50/80 border-amber-200 text-amber-950'
-                            : 'bg-sky-50/70 border-sky-200 text-sky-950'
-                        }`}
-                        title={`${m.name}: ${m.label}`}
-                      >
-                        <span className="text-[11px] font-bold">{m.name}</span>
-                        <span className="text-base my-0.5">
-                          {isPeak ? '☀️' : isGood ? '🌤️' : '🌧️'}
-                        </span>
-                        <span className="text-[9px] font-semibold uppercase tracking-tight opacity-80">
-                          {isPeak ? 'Peak' : isGood ? 'Good' : 'Wet'}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Calendar Legend */}
-                <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 pt-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                    <span><strong>Peak Season:</strong> Clear skies, calm seas & dry hiking</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                    <span><strong>Good / Shoulder:</strong> Mild weather & fewer crowds</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
-                    <span><strong>Monsoon / Wet:</strong> Lush foliage, misty falls & low rates</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Timing & Pacing Advices */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
-                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 flex gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-sky-600 shrink-0 font-bold">
-                    <Clock className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                      Optimal Daily Hours
-                    </span>
-                    <span className="text-sm font-extrabold text-slate-900">
-                      {seasonality.primeHours}
-                    </span>
-                    <p className="text-xs text-slate-600 mt-0.5">
-                      Best lighting for photography and cooler walking temperature.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 flex gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-sky-600 shrink-0 font-bold">
-                    <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
-                  </div>
-                  <div>
-                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                      Local Weather Advice
-                    </span>
-                    <span className="text-sm font-extrabold text-slate-900">
-                      {seasonality.weatherNote}
-                    </span>
-                    <p className="text-xs text-slate-600 mt-0.5">
-                      Recommended stay duration: {seasonality.recommendedDuration}.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* ━━━ 5. TRAVEL TIPS & VISITOR ADVISORY ━━━ */}
-            {place.tips && (
-              <section className="bg-gradient-to-br from-amber-50/70 to-amber-100/40 border border-amber-200/80 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-amber-400 text-slate-900 flex items-center justify-center flex-shrink-0 font-bold">
-                    <Info className="w-4 h-4" />
-                  </div>
-                  <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">
-                    Visitor Tips & Advisory
-                  </h3>
-                </div>
-
-                <p className="text-slate-700 leading-relaxed text-sm sm:text-base whitespace-pre-line pl-1">
-                  {place.tips}
-                </p>
-
-                <div className="flex flex-wrap gap-2 pt-2">
-                  <span className="text-xs font-semibold text-amber-900 bg-white/80 border border-amber-200 px-3 py-1 rounded-full">
-                    💡 Carry drinking water
-                  </span>
-                  <span className="text-xs font-semibold text-amber-900 bg-white/80 border border-amber-200 px-3 py-1 rounded-full">
-                    👟 Wear sturdy footwear
-                  </span>
-                  <span className="text-xs font-semibold text-amber-900 bg-white/80 border border-amber-200 px-3 py-1 rounded-full">
-                    👒 Bring sun protection
-                  </span>
-                </div>
-              </section>
-            )}
-
-            {/* ━━━ 6. INTERACTIVE MAP SECTION ━━━ */}
+            {/* ━━━ 4. INTERACTIVE MAP SECTION ━━━ */}
             <section>
               <PlaceMap place={place} />
             </section>
 
-            {/* ━━━ 7. REVIEWS SECTION ━━━ */}
+            {/* ━━━ 5. REVIEWS SECTION ━━━ */}
             <section className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200/80 shadow-sm">
               <ReviewSection placeId={place.id} initialReviews={reviews} />
             </section>
@@ -822,13 +586,11 @@ export default async function PlacePage({ params }: PlacePageProps) {
               <div className="space-y-3 pt-3 border-t border-slate-100">
                 <WishlistButton placeId={place.id} placeName={place.name} variant="pill" className="w-full justify-center py-3.5" />
 
-                <OfflineGuideButton place={place} variant="sidebar" />
-
                 <a
                   href={`https://www.google.com/maps?q=${place.lat},${place.lng}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold py-3.5 px-6 rounded-2xl text-sm transition-all shadow-md shadow-sky-600/25 active:scale-95"
+                  className="w-full flex items-center justify-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold py-3.5 px-6 rounded-2xl text-sm transition-all shadow-md shadow-emerald-600/20 active:scale-95"
                 >
                   <MapPin className="w-4 h-4" />
                   <span>Open in Google Maps</span>
@@ -837,16 +599,16 @@ export default async function PlacePage({ params }: PlacePageProps) {
 
                 <Link
                   href="/map"
-                  className="w-full flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 font-bold py-3 px-6 rounded-2xl text-sm transition-all active:scale-95"
+                  className="w-full flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 hover:text-[#00aa6c] hover:border-emerald-200 font-bold py-3 px-6 rounded-2xl text-sm transition-all active:scale-95"
                 >
-                  <Map className="w-4 h-4 text-sky-600" />
+                  <Map className="w-4 h-4 text-[#00aa6c]" />
                   <span>View on Ceylon Live Map</span>
                 </Link>
               </div>
 
               {/* Trust & Safety Guarantees */}
               <div className="pt-4 border-t border-slate-100 flex items-center gap-3 text-xs text-slate-500">
-                <ShieldCheck className="w-5 h-5 text-sky-600 flex-shrink-0" />
+                <ShieldCheck className="w-5 h-5 text-[#00aa6c] flex-shrink-0" />
                 <span>Verified travel information updated by Sri Lanka travel network.</span>
               </div>
             </div>
@@ -859,8 +621,8 @@ export default async function PlacePage({ params }: PlacePageProps) {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
             <div>
-              <div className="inline-flex items-center gap-1.5 bg-sky-50 text-sky-700 text-xs font-bold px-3 py-1 rounded-full mb-2 border border-sky-200">
-                <MapPin className="w-3.5 h-3.5 text-sky-600" />
+              <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full mb-2 border border-emerald-200">
+                <MapPin className="w-3.5 h-3.5 text-[#00aa6c]" />
                 <span>Nearby in {place.province}</span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
@@ -873,7 +635,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
 
             <Link
               href={`/?province=${encodeURIComponent(place.province)}#explore`}
-              className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-sky-600 hover:text-sky-500 group"
+              className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-[#00aa6c] hover:text-[#008f5a] group"
             >
               <span>Explore all in {place.province}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -893,8 +655,8 @@ export default async function PlacePage({ params }: PlacePageProps) {
         <section className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 mt-12 sm:mt-20 pt-10 sm:pt-16 border-t border-slate-200">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-3 sm:gap-4">
             <div>
-              <div className="inline-flex items-center gap-1.5 bg-sky-50 text-sky-700 text-xs font-bold px-3 py-1 rounded-full mb-2 border border-sky-200">
-                <MapPin className="w-3.5 h-3.5 text-sky-600" />
+              <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full mb-2 border border-emerald-200">
+                <MapPin className="w-3.5 h-3.5 text-[#00aa6c]" />
                 <span>More {place.category}</span>
               </div>
               <h2 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
@@ -907,7 +669,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
 
             <Link
               href={`/?category=${encodeURIComponent(place.category)}#explore`}
-              className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-sky-600 hover:text-sky-500 group"
+              className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-[#00aa6c] hover:text-[#008f5a] group"
             >
               <span>View all {place.category}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -925,15 +687,15 @@ export default async function PlacePage({ params }: PlacePageProps) {
       {/* ━━━ 10. LUXURY MOBILE FLOATING ACTION BAR (Airbnb / TripAdvisor style) ━━━ */}
       <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-xl border-t border-slate-200 px-4 py-3 shadow-[0_-8px_30px_rgba(15,23,42,0.1)]">
         <div className="flex items-center justify-between gap-3 max-w-md mx-auto">
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1 pr-2">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
               Admission
             </span>
-            <div className="flex items-baseline gap-1.5 truncate">
-              <span className="text-base font-extrabold text-slate-900 truncate">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-sm sm:text-base font-extrabold text-slate-900 line-clamp-1 break-words">
                 {place.entry_fee || 'Free Entry'}
               </span>
-              <span className="text-[11px] font-bold text-sky-600 flex items-center gap-0.5 shrink-0">
+              <span className="text-[11px] font-bold text-[#00aa6c] flex items-center gap-0.5 shrink-0">
                 <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                 {place.rating.toFixed(1)}
               </span>
@@ -941,12 +703,11 @@ export default async function PlacePage({ params }: PlacePageProps) {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <OfflineGuideButton place={place} variant="icon" />
             <WishlistButton placeId={place.id} placeName={place.name} variant="icon" />
 
             <Link
               href="/map"
-              className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-sky-600 active:scale-95 transition-all"
+              className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#00aa6c] active:scale-95 transition-all"
               aria-label="View on map"
               title="View on Live Map"
             >
@@ -957,7 +718,7 @@ export default async function PlacePage({ params }: PlacePageProps) {
               href={`https://www.google.com/maps?q=${place.lat},${place.lng}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm shadow-md shadow-sky-600/25 active:scale-95 transition-all"
+              className="inline-flex items-center gap-1.5 bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold py-2.5 px-4 rounded-xl text-xs sm:text-sm shadow-md shadow-emerald-600/20 active:scale-95 transition-all"
             >
               <MapPin className="w-3.5 h-3.5 text-amber-300" />
               <span>Open in Maps</span>

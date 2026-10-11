@@ -8,7 +8,7 @@ const InteractiveMap = dynamic(() => import('@/components/InteractiveMap'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-80 rounded-3xl bg-slate-100 flex flex-col items-center justify-center text-slate-500">
-      <Loader2 className="w-8 h-8 animate-spin text-sky-600 mb-2" />
+      <Loader2 className="w-8 h-8 animate-spin text-[#00aa6c] mb-2" />
       <span className="text-xs font-semibold">Loading localized map...</span>
     </div>
   ),
@@ -24,7 +24,7 @@ export default function PlaceMap({ place }: PlaceMapProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#00aa6c] border border-emerald-100 flex items-center justify-center">
               <Navigation className="w-4 h-4" />
             </div>
             <h3 className="text-xl font-bold text-slate-900">
@@ -40,7 +40,7 @@ export default function PlaceMap({ place }: PlaceMapProps) {
           href={`https://www.google.com/maps?q=${place.lat},${place.lng}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold px-5 py-2.5 rounded-xl transition-all shadow-md shadow-sky-600/25 active:scale-95 text-xs flex-shrink-0"
+          className="inline-flex items-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold px-5 py-2.5 rounded-xl transition-all shadow-md shadow-emerald-600/20 active:scale-95 text-xs flex-shrink-0"
         >
           <MapPin className="w-4 h-4" />
           <span>Get Driving Directions</span>
@@ -67,7 +67,7 @@ export default function PlaceMap({ place }: PlaceMapProps) {
           </span>
         </div>
 
-        <span className="text-sky-700 font-bold bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
+        <span className="text-[#00aa6c] font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
           Verified Pin
         </span>
       </div>

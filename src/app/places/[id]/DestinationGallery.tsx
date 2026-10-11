@@ -140,7 +140,7 @@ export default function DestinationGallery({
               onClick={() => setActiveIndex(idx)}
               className={`relative w-24 sm:w-32 h-16 sm:h-20 rounded-2xl overflow-hidden flex-shrink-0 transition-all duration-200 border-2 ${
                 activeIndex === idx
-                  ? 'border-sky-500 scale-102 shadow-md ring-2 ring-sky-300'
+                  ? 'border-[#00aa6c] scale-102 shadow-md ring-2 ring-emerald-300'
                   : 'border-transparent opacity-70 hover:opacity-100'
               } ${failedIndices.has(idx) ? 'bg-slate-800' : ''}`}
             >
