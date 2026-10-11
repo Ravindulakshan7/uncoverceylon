@@ -6,7 +6,7 @@ import { Place } from '@/types';
 import {
   X, Save, Upload, Loader2, MapPin, Image as ImageIcon, ImageOff,
   FileText, Globe, Star, CheckCircle2, AlertCircle, ArrowLeft, ArrowRight,
-  MoveUp, MoveDown, Trash2, Eye, ExternalLink, HelpCircle
+  MoveUp, MoveDown, Trash2, Eye, ExternalLink, HelpCircle, Sparkles
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -88,6 +88,10 @@ export default function DestinationEditorModal({
   const [imageList, setImageList] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
 
+  // AI JSON Auto-Fill Modal State
+  const [showJsonModal, setShowJsonModal] = useState(false);
+  const [jsonInput, setJsonInput] = useState('');
+
   // Initialize form data when place changes
   useEffect(() => {
     if (place) {
@@ -168,6 +172,68 @@ export default function DestinationEditorModal({
         ? prev.meta_description
         : desc,
     }));
+  };
+
+  // Quick Apply AI-Generated JSON
+  const handleApplyJson = () => {
+    try {
+      if (!jsonInput.trim()) {
+        toast.error('Please paste JSON data first!');
+        return;
+      }
+      let cleaned = jsonInput.trim();
+      if (cleaned.startsWith('```')) {
+        cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+      }
+      const data = JSON.parse(cleaned);
+      const target = Array.isArray(data) ? data[0] : data;
+      if (!target || typeof target !== 'object') {
+        toast.error('Invalid JSON structure.');
+        return;
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        name: target.name || prev.name,
+        short_description: target.short_description || prev.short_description,
+        description: target.description || prev.description,
+        category: target.category || prev.category,
+        location: target.location || prev.location,
+        province: target.province || prev.province,
+        lat: target.lat !== undefined ? Number(target.lat) : prev.lat,
+        lng: target.lng !== undefined ? Number(target.lng) : prev.lng,
+        entry_fee: target.entry_fee || prev.entry_fee,
+        best_time: target.best_time || prev.best_time,
+        distance_km: target.distance_km !== undefined ? Number(target.distance_km) : prev.distance_km,
+        tips: target.tips || prev.tips,
+        featured: target.featured !== undefined ? Boolean(target.featured) : prev.featured,
+        rating: target.rating !== undefined ? Number(target.rating) : prev.rating,
+        review_count: target.review_count !== undefined ? Number(target.review_count) : prev.review_count,
+        meta_title: target.meta_title || `${target.name || prev.name} Travel Guide | UncoverCeylon`,
+        meta_description: target.meta_description || target.short_description || prev.meta_description,
+      }));
+
+      const newImages: string[] = [];
+      if (target.image_url && typeof target.image_url === 'string') {
+        newImages.push(target.image_url);
+      }
+      if (Array.isArray(target.gallery)) {
+        target.gallery.forEach((g: unknown) => {
+          if (typeof g === 'string' && !newImages.includes(g)) {
+            newImages.push(g);
+          }
+        });
+      }
+      if (newImages.length > 0) {
+        setImageList((prev) => Array.from(new Set([...newImages, ...prev])));
+      }
+
+      toast.success('All fields auto-filled from AI JSON! ✨');
+      setShowJsonModal(false);
+      setJsonInput('');
+    } catch {
+      toast.error('Invalid JSON format. Please check the pasted text.');
+    }
   };
 
   // PC File Upload Handler
@@ -350,13 +416,70 @@ export default function DestinationEditorModal({
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="w-9 h-9 rounded-xl bg-[#162338] hover:bg-[#1e304a] text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowJsonModal((v) => !v)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-300 hover:bg-purple-500/30 text-xs font-bold transition-all cursor-pointer"
+              title="Paste AI JSON to fill all tabs automatically"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+              <span>⚡ AI Auto-Fill</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="w-9 h-9 rounded-xl bg-[#162338] hover:bg-[#1e304a] text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
+
+        {/* ━━━ AI JSON AUTO-FILL PANEL ━━━ */}
+        {showJsonModal && (
+          <div className="bg-[#13233b] border-b border-purple-500/30 px-6 sm:px-8 py-4 animate-fade-in flex-shrink-0">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-purple-400" />
+                Paste AI Generated JSON Code (All tabs will be filled automatically):
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowJsonModal(false)}
+                className="text-xs text-slate-400 hover:text-white transition-colors"
+              >
+                Close
+              </button>
+            </div>
+            <textarea
+              value={jsonInput}
+              onChange={(e) => setJsonInput(e.target.value)}
+              placeholder='Paste JSON here: { "name": "Ella Rock", "category": "Mountains", ... }'
+              rows={5}
+              className="w-full bg-[#0a111a] border border-[#1e324d] rounded-xl p-3 text-xs font-mono text-slate-200 placeholder:text-slate-600 focus:border-purple-500 outline-none resize-none mb-3"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setJsonInput('');
+                  setShowJsonModal(false);
+                }}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyJson}
+                className="px-4 py-1.5 rounded-lg text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white flex items-center gap-1.5 shadow-md shadow-purple-900/30 transition-all cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Apply to All Tabs ✨
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ━━━ 6-TAB SEGMENTED NAVIGATION BAR ━━━ */}
         <div className="bg-[#0a111a] border-b border-[#1e324d] px-6 sm:px-8 flex-shrink-0 overflow-x-auto scrollbar-none">
