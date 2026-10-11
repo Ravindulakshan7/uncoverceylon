@@ -420,10 +420,10 @@ export default function DestinationEditorModal({
             <button
               type="button"
               onClick={() => setShowJsonModal((v) => !v)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-300 hover:bg-purple-500/30 text-xs font-bold transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-extrabold shadow-md shadow-purple-950/40 transition-all cursor-pointer"
               title="Paste AI JSON to fill all tabs automatically"
             >
-              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+              <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
               <span>⚡ AI Auto-Fill</span>
             </button>
             <button
@@ -515,6 +515,32 @@ export default function DestinationEditorModal({
           {activeTab === 'basic' && (
             <div className="space-y-5 animate-fade-in">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {/* ⚡ Quick AI JSON Auto-Fill Banner */}
+                <div className="sm:col-span-2 bg-gradient-to-r from-purple-950/70 via-indigo-950/50 to-purple-950/70 border border-purple-500/50 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/40 flex items-center justify-center shrink-0">
+                      <Sparkles className="w-5 h-5 text-yellow-300" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-white flex items-center gap-1.5">
+                        <span>⚡ AI JSON Quick Auto-Fill</span>
+                        <span className="text-[10px] bg-purple-500/40 text-purple-200 px-2 py-0.5 rounded-full font-semibold uppercase">Super Fast</span>
+                      </h4>
+                      <p className="text-xs text-purple-200/80 mt-0.5">
+                        Have Gemini or ChatGPT JSON? Click to fill all 6 tabs in 1 click!
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowJsonModal(true)}
+                    className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-md shadow-purple-950/50 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
+                    <span>Paste AI Code</span>
+                  </button>
+                </div>
+
                 <div className="sm:col-span-2">
                   <label className="block text-slate-900 text-xs font-bold uppercase tracking-wider mb-2">
                     Destination Name *
