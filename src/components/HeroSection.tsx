@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Compass, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, MapPin } from 'lucide-react';
 
 const HERO_PLACES = [
   {
@@ -110,11 +110,10 @@ export default function HeroSection() {
             <span>Sri Lanka Travel Guide</span>
           </div>
 
-          {/* HUGE WANDER.LK Title */}
-          <h1 className="text-[clamp(3.8rem,14vw,11rem)] font-extrabold tracking-[-0.055em] leading-[0.86] text-white inline-flex items-start justify-center gap-[0.06em] drop-shadow-[0_8px_36px_rgba(0,0,0,0.5)] mb-4 sm:mb-6 select-none">
-            <span>WANDER</span>
-            <span className="text-[0.24em] font-extrabold tracking-[0.03em] mt-[0.52em] text-white/95 bg-white/20 backdrop-blur-md px-2.5 sm:px-3 py-0.5 rounded-xl border border-white/30 shadow-md">
-              LK
+          {/* Elegant "Ayubowan" Title */}
+          <h1 className="text-[clamp(3.4rem,11.5vw,8.5rem)] font-black tracking-[-0.03em] leading-[0.95] text-white drop-shadow-[0_12px_44px_rgba(0,0,0,0.65)] mb-3 sm:mb-5 select-none font-['Plus_Jakarta_Sans',system-ui,sans-serif]">
+            <span className="bg-gradient-to-b from-white via-white to-white/90 bg-clip-text text-transparent">
+              Ayubowan
             </span>
           </h1>
 
@@ -124,25 +123,23 @@ export default function HeroSection() {
             local insights, and hassle-free planning all in one platform.
           </p>
 
-          {/* Hero Action Buttons */}
+          {/* Hero Action Buttons (Compass icons removed as requested) */}
           <div className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap">
             
             {/* Primary Button: "Find Your Vibe" */}
             <button
               type="button"
               onClick={scrollToInterests}
-              className="inline-flex items-center gap-2 font-bold text-xs sm:text-sm px-6 sm:px-8 py-3 sm:py-3.5 rounded-full bg-white text-[#0f1b2d] hover:bg-[#00aa6c] hover:text-white transition-all duration-300 shadow-xl shadow-black/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5 cursor-pointer active:scale-95"
+              className="inline-flex items-center justify-center font-bold text-xs sm:text-sm px-6 sm:px-8 py-3 sm:py-3.5 rounded-full bg-white text-[#0f1b2d] hover:bg-[#00aa6c] hover:text-white transition-all duration-300 shadow-xl shadow-black/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5 cursor-pointer active:scale-95"
             >
-              <Compass className="w-4 h-4 text-[#00aa6c] group-hover:text-white" />
               <span>Find Your Vibe</span>
             </button>
 
             {/* Outline Button: "Explore Destinations" */}
             <Link
               href="/destinations"
-              className="inline-flex items-center gap-2 font-bold text-xs sm:text-sm px-6 sm:px-8 py-3 sm:py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/40 hover:border-white backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer active:scale-95"
+              className="inline-flex items-center justify-center gap-2 font-bold text-xs sm:text-sm px-6 sm:px-8 py-3 sm:py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/40 hover:border-white backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer active:scale-95"
             >
-              <Compass className="w-4 h-4" />
               <span>Explore Destinations</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
@@ -162,41 +159,21 @@ export default function HeroSection() {
           </span>
         </div>
 
-        {/* ━━━ Bottom Right: Interactive Slide Dots & Arrows ━━━ */}
-        <div className="absolute bottom-6 right-6 sm:bottom-8 sm:right-10 z-10 flex items-center gap-2 sm:gap-3">
-          <button
-            type="button"
-            onClick={prevSlide}
-            aria-label="Previous slide"
-            className="w-8 h-8 rounded-full bg-black/30 hover:bg-black/60 text-white/80 hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all cursor-pointer active:scale-90"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-
-          <div className="flex items-center gap-1.5 px-2">
-            {HERO_PLACES.map((place, idx) => (
-              <button
-                key={place.id}
-                type="button"
-                onClick={() => setCurrentSlide(idx)}
-                aria-label={`Go to slide ${idx + 1}`}
-                className={`transition-all duration-300 rounded-full cursor-pointer ${
-                  idx === currentSlide
-                    ? 'w-6 h-2 bg-white'
-                    : 'w-2 h-2 bg-white/40 hover:bg-white/75'
-                }`}
-              />
-            ))}
-          </div>
-
-          <button
-            type="button"
-            onClick={nextSlide}
-            aria-label="Next slide"
-            className="w-8 h-8 rounded-full bg-black/30 hover:bg-black/60 text-white/80 hover:text-white backdrop-blur-md border border-white/20 flex items-center justify-center transition-all cursor-pointer active:scale-90"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
+        {/* ━━━ Bottom Right: Minimalist Slide Indicators (Arrows removed) ━━━ */}
+        <div className="absolute bottom-5 right-6 sm:bottom-8 sm:right-10 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/35 backdrop-blur-md border border-white/20 shadow-md">
+          {HERO_PLACES.map((place, idx) => (
+            <button
+              key={place.id}
+              type="button"
+              onClick={() => setCurrentSlide(idx)}
+              aria-label={`Go to slide ${idx + 1}`}
+              className={`transition-all duration-300 rounded-full cursor-pointer ${
+                idx === currentSlide
+                  ? 'w-6 h-2 bg-white'
+                  : 'w-2 h-2 bg-white/40 hover:bg-white/75'
+              }`}
+            />
+          ))}
         </div>
 
       </section>

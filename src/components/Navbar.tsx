@@ -243,8 +243,22 @@ export default function Navbar() {
           {/* ━━━ 4. RIGHT CONTROLS: [USD] [Wishlist] [Solid Black Sign in Pill] ━━━ */}
           <div className="flex items-center gap-2 sm:gap-2.5">
             
-            {/* Currency Selector */}
-            <CurrencySelector scrolled={true} />
+            {/* Currency Selector (Desktop only) */}
+            <div className="hidden sm:block">
+              <CurrencySelector scrolled={true} />
+            </div>
+
+            {/* Mobile AI Search Button (Podiyata AI search eka) */}
+            <button
+              type="button"
+              onClick={() => setAiModalOpen(true)}
+              className="sm:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-[#00aa6c] border border-emerald-300 text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer shrink-0"
+              title="Plan with AI"
+              aria-label="AI Search & Trip Planner"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#00aa6c] animate-pulse" />
+              <span>AI</span>
+            </button>
 
             {/* Saved Wishlist Heart */}
             <button
