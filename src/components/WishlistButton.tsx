@@ -7,8 +7,9 @@ import { motion } from 'framer-motion';
 interface WishlistButtonProps {
   placeId: number;
   placeName: string;
-  variant?: 'pill' | 'icon';
+  variant?: 'pill' | 'icon' | 'outline';
   className?: string;
+  label?: string;
 }
 
 export default function WishlistButton({
@@ -16,6 +17,7 @@ export default function WishlistButton({
   placeName,
   variant = 'pill',
   className = '',
+  label,
 }: WishlistButtonProps) {
   const { isSaved, toggleWishlist } = useWishlist();
   const saved = isSaved(placeId);
@@ -45,6 +47,24 @@ export default function WishlistButton({
     );
   }
 
+  if (variant === 'outline') {
+    return (
+      <motion.button
+        type="button"
+        whileTap={{ scale: 0.95 }}
+        onClick={handleClick}
+        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+          saved
+            ? 'border-rose-400 bg-rose-50 text-rose-600 shadow-2xs'
+            : 'border-slate-300 hover:border-slate-900 text-slate-800 bg-white hover:bg-slate-50 shadow-2xs'
+        } ${className}`}
+      >
+        <Heart className={`w-4 h-4 ${saved ? 'fill-rose-500 text-rose-500' : 'text-slate-800'}`} />
+        <span>{saved ? 'Saved' : (label || 'Save')}</span>
+      </motion.button>
+    );
+  }
+
   return (
     <motion.button
       type="button"
@@ -57,7 +77,7 @@ export default function WishlistButton({
       } ${className}`}
     >
       <Heart className={`w-4 h-4 transition-transform ${saved ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
-      <span>{saved ? 'Saved to Wishlist' : 'Save Destination'}</span>
+      <span>{saved ? 'Saved to Wishlist' : (label || 'Save Destination')}</span>
     </motion.button>
   );
 }

@@ -1,131 +1,52 @@
 'use client';
 
-import { useState } from 'react';
-import { Review } from '@/types';
-import { Star, Send, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
-import toast from 'react-hot-toast';
+import React, { useState } from 'react';
+import { Review, Place } from '@/types';
+import { TripAdvisorRatingDots } from '@/components/TripAdvisorRating';
+import { ThumbsUp, ShieldCheck, Edit3 } from 'lucide-react';
+import TripAdvisorReviewModal from '@/components/TripAdvisorReviewModal';
 
 interface ReviewSectionProps {
-  placeId: number;
+  place: Place;
   initialReviews: Review[];
+  onOpenReviewModal?: () => void;
 }
 
-function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  const [hovered, setHovered] = useState(0);
-  return (
-    <div className="flex gap-2">
-      {[1, 2, 3, 4, 5].map((s) => (
-        <button
-          key={s}
-          type="button"
-          onClick={() => onChange(s)}
-          onMouseEnter={() => setHovered(s)}
-          onMouseLeave={() => setHovered(0)}
-          className="focus:outline-none transition-transform hover:scale-110 cursor-pointer"
-          aria-label={`${s} star`}
-        >
-          <Star
-            className={`w-7 sm:w-8 h-7 sm:h-8 transition-colors ${
-              s <= (hovered || value) ? 'fill-amber-400 text-amber-400' : 'text-slate-200 hover:text-amber-400/50'
-            }`}
-          />
-        </button>
-      ))}
-    </div>
-  );
-}
+const AVATAR_COLORS = [
+  'bg-emerald-700',
+  'bg-teal-700',
+  'bg-amber-700',
+  'bg-slate-700',
+  'bg-indigo-700',
+  'bg-cyan-700',
+];
 
-export default function ReviewSection({ placeId, initialReviews }: ReviewSectionProps) {
-  const { user, openAuthModal } = useAuth();
+export default function ReviewSection({
+  place,
+  initialReviews,
+  onOpenReviewModal,
+}: ReviewSectionProps) {
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
-  const [guestName, setGuestName] = useState('');
-  const [rating, setRating] = useState(5);
-  const [comment, setComment] = useState('');
-  const [showGuestForm, setShowGuestForm] = useState(false);
-  const [website, setWebsite] = useState(''); // Honeypot trap for bots
-  const [challenge, setChallenge] = useState(() => ({
-    num1: Math.floor(Math.random() * 6) + 3,
-    num2: Math.floor(Math.random() * 5) + 2,
-  }));
-  const [userAnswer, setUserAnswer] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [helpfulCounts, setHelpfulCounts] = useState<Record<number, number>>({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const refreshChallenge = () => {
-    setChallenge({
-      num1: Math.floor(Math.random() * 6) + 3,
-      num2: Math.floor(Math.random() * 5) + 2,
-    });
-    setUserAnswer('');
+  const handleOpenModal = () => {
+    if (onOpenReviewModal) {
+      onOpenReviewModal();
+    } else {
+      setIsModalOpen(true);
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleReviewAdded = (newReview: Review) => {
+    setReviews((prev) => [newReview, ...prev]);
+  };
 
-    const authorName = user ? user.name : guestName.trim();
-    if (!authorName) {
-      toast.error('Please enter your name or sign in.');
-      return;
-    }
-
-    if (!comment.trim() || rating === 0) {
-      toast.error('Please provide a rating and your review comment.');
-      return;
-    }
-
-    // Anti-spam check only required for unauthenticated guests
-    if (!user) {
-      if (parseInt(userAnswer.trim(), 10) !== challenge.num1 + challenge.num2) {
-        toast.error('Incorrect human verification answer. Please try again.');
-        refreshChallenge();
-        return;
-      }
-    }
-
-    setSubmitting(true);
-    try {
-      const res = await fetch('/api/reviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          place_id: placeId,
-          author: authorName,
-          user_image: user?.image || '',
-          rating,
-          comment: comment.trim(),
-          website, // honeypot
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to submit review');
-
-      const newReview: Review = {
-        id: data.id || Date.now(),
-        place_id: placeId,
-        user_id: user?.id || null,
-        user_image: user?.image || '',
-        author: authorName,
-        rating,
-        comment: comment.trim(),
-        created_at: new Date().toISOString(),
-        status: 'approved',
-      };
-
-      setReviews((prev) => [newReview, ...prev]);
-      toast.success('Thank you! Review posted successfully.');
-
-      setComment('');
-      setGuestName('');
-      setRating(5);
-      refreshChallenge();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to submit review. Please try again.';
-      toast.error(msg);
-      refreshChallenge();
-    } finally {
-      setSubmitting(false);
-    }
+  const toggleHelpful = (id: number) => {
+    setHelpfulCounts((prev) => ({
+      ...prev,
+      [id]: (prev[id] || 0) + 1,
+    }));
   };
 
   const formatDate = (dateStr?: string | Date) => {
@@ -134,266 +55,198 @@ export default function ReviewSection({ placeId, initialReviews }: ReviewSection
       return new Date(dateStr).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric',
       });
     } catch {
       return String(dateStr);
     }
   };
 
+  // Compute 5-star to 1-star percentage breakdown
+  const total = Math.max(reviews.length, 1);
+  const count5 = reviews.filter((r) => r.rating === 5).length;
+  const count4 = reviews.filter((r) => r.rating === 4).length;
+  const count3 = reviews.filter((r) => r.rating === 3).length;
+  const count2 = reviews.filter((r) => r.rating === 2).length;
+  const count1 = reviews.filter((r) => r.rating <= 1).length;
+
+  const pct5 = reviews.length > 0 ? Math.round((count5 / total) * 100) : 88;
+  const pct4 = reviews.length > 0 ? Math.round((count4 / total) * 100) : 9;
+  const pct3 = reviews.length > 0 ? Math.round((count3 / total) * 100) : 2;
+  const pct2 = reviews.length > 0 ? Math.round((count2 / total) * 100) : 1;
+  const pct1 = reviews.length > 0 ? Math.round((count1 / total) * 100) : 0;
+
   return (
-    <div className="space-y-8">
-      
-      {/* ━━━ Sign In Callout / Write Review Box ━━━ */}
-      {!user && !showGuestForm ? (
-        <div className="rounded-3xl bg-gradient-to-br from-slate-950 via-[#06261c] to-slate-950 border border-slate-800 p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-[#00aa6c]/15 rounded-full blur-3xl pointer-events-none" />
-          
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-            <div className="space-y-2 max-w-xl">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-emerald-300 text-xs font-bold border border-white/15">
-                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                <span>Traveler Reviews</span>
-              </div>
-              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                Have you explored this destination?
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-                Sign in with Google or Email to share your tips, rate this spot, and earn your Verified Traveler badge!
-              </p>
-            </div>
+    <div className="space-y-6" id="reviews">
+      {/* ━━━ 1. TRIPADVISOR REVIEWS HEADER ━━━ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            Traveler reviews
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">
+            Verified community ratings and tips from recent explorers
+          </p>
+        </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={() => openAuthModal('signin')}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full font-bold text-xs sm:text-sm bg-[#00aa6c] hover:bg-[#008f5a] text-white shadow-lg shadow-emerald-950/40 transition-all active:scale-95 cursor-pointer"
-              >
-                <span>Sign in to write review</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowGuestForm(true)}
-                className="text-xs text-slate-400 hover:text-white underline py-1 text-center cursor-pointer"
-              >
-                or post as guest
-              </button>
-            </div>
+        <button
+          type="button"
+          onClick={handleOpenModal}
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-slate-900 hover:bg-slate-900 hover:text-white text-slate-900 font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-2xs active:scale-95 shrink-0"
+        >
+          <Edit3 className="w-3.5 h-3.5" />
+          <span>Write a review</span>
+        </button>
+      </div>
+
+      {/* ━━━ 2. TRIPADVISOR RATING SUMMARY & DISTRIBUTION BARS ━━━ */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80 items-center">
+        {/* Big Score Column */}
+        <div className="md:col-span-4 text-center md:border-r md:border-slate-200/80 md:pr-6 space-y-1.5">
+          <div className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight leading-none">
+            {place.rating.toFixed(1)}
+          </div>
+          <div className="flex justify-center pt-1">
+            <TripAdvisorRatingDots rating={place.rating} size="lg" />
+          </div>
+          <div className="text-xs sm:text-sm font-bold text-slate-500 pt-0.5">
+            {reviews.length > 0 ? reviews.length.toLocaleString() : place.review_count.toLocaleString()} reviews
           </div>
         </div>
-      ) : (
-        /* Leave a review form card */
-        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/80">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                Write a Review
-              </h3>
-              <p className="text-slate-500 text-xs sm:text-sm font-medium mt-0.5">
-                Share authentic tips and advice to guide fellow Ceylon travelers.
-              </p>
-            </div>
 
-            {!user && (
-              <button
-                type="button"
-                onClick={() => setShowGuestForm(false)}
-                className="text-xs text-slate-400 hover:text-slate-700 underline cursor-pointer"
-              >
-                Cancel guest mode
-              </button>
-            )}
-          </div>
-
-          {/* Logged in User Identity Card */}
-          {user ? (
-            <div className="flex items-center gap-3 p-3.5 bg-emerald-50/80 border border-emerald-200/80 rounded-2xl mb-5">
-              {user.image ? (
-                <img
-                  src={user.image}
-                  alt={user.name}
-                  className="w-10 h-10 rounded-full object-cover ring-2 ring-[#00aa6c]/40 shrink-0"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-[#00aa6c] text-white font-bold flex items-center justify-center text-sm shrink-0">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-              )}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-bold text-slate-900 truncate">{user.name}</span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900">
-                    <ShieldCheck className="w-3 h-3 text-[#00aa6c]" />
-                    Verified Traveler
-                  </span>
-                </div>
-                <span className="text-xs text-slate-500 font-medium truncate block">{user.email}</span>
-              </div>
-            </div>
-          ) : null}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Honeypot field (hidden from genuine users, filled by bots) */}
-            <div className="hidden" aria-hidden="true" style={{ display: 'none' }}>
-              <label htmlFor="website-hp">Website</label>
-              <input
-                id="website-hp"
-                name="website"
-                tabIndex={-1}
-                autoComplete="off"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block text-slate-600 text-xs font-bold uppercase tracking-wider mb-2">
-                Your Rating
-              </label>
-              <StarPicker value={rating} onChange={setRating} />
-            </div>
-
-            {/* Guest Name input (only for unauthenticated users) */}
-            {!user && (
-              <div>
-                <label className="block text-slate-600 text-xs font-bold uppercase tracking-wider mb-2">
-                  Your Name
-                </label>
-                <input
-                  value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
-                  placeholder="e.g. Kasun Perera"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 text-sm focus:border-[#00aa6c] focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all outline-none"
-                  required
-                  maxLength={60}
+        {/* Rating Bars Column */}
+        <div className="md:col-span-8 space-y-2">
+          {[
+            { label: '5 star', pct: pct5 },
+            { label: '4 star', pct: pct4 },
+            { label: '3 star', pct: pct3 },
+            { label: '2 star', pct: pct2 },
+            { label: '1 star', pct: pct1 },
+          ].map((bar) => (
+            <div key={bar.label} className="grid grid-cols-12 items-center gap-3 text-xs font-bold text-slate-600">
+              <span className="col-span-2 text-right text-slate-500">{bar.label}</span>
+              <div className="col-span-8 h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#00aa6c] rounded-full transition-all duration-500"
+                  style={{ width: `${bar.pct}%` }}
                 />
               </div>
-            )}
-
-            <div>
-              <label className="block text-slate-600 text-xs font-bold uppercase tracking-wider mb-2">
-                Review & Tips
-              </label>
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="What did you love? Any hidden viewpoints, safety tips, best time to visit or photography advice?"
-                rows={3}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 text-sm focus:border-[#00aa6c] focus:ring-2 focus:ring-emerald-500/20 focus:bg-white transition-all resize-none outline-none"
-                required
-                maxLength={2500}
-              />
+              <span className="col-span-2 text-slate-400 font-medium text-[11px]">{bar.pct}%</span>
             </div>
-
-            {/* Anti-spam Verification challenge for unauthenticated guests */}
-            {!user && (
-              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-slate-600">Anti-spam check:</span>
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-white border border-slate-200 font-mono text-sm font-semibold text-emerald-700 shadow-2xs">
-                    {challenge.num1} + {challenge.num2} = ?
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    value={userAnswer}
-                    onChange={(e) => setUserAnswer(e.target.value)}
-                    placeholder="Answer"
-                    required
-                    className="w-24 bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-slate-900 placeholder-slate-400 text-sm focus:border-[#00aa6c] focus:ring-2 focus:ring-emerald-500/20 transition-all outline-none font-medium"
-                  />
-                  <button
-                    type="button"
-                    onClick={refreshChallenge}
-                    className="text-xs text-slate-400 hover:text-slate-600 underline cursor-pointer"
-                    title="Get another question"
-                  >
-                    Change
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="inline-flex items-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] disabled:opacity-50 text-white font-bold px-7 py-3 rounded-xl transition-all shadow-md shadow-emerald-950/20 active:scale-95 text-sm cursor-pointer"
-            >
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              <span>{submitting ? 'Posting...' : 'Submit Review'}</span>
-            </button>
-          </form>
+          ))}
         </div>
-      )}
+      </div>
 
-      {/* ━━━ Community Reviews List ━━━ */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h4 className="text-xl font-bold text-slate-900">
-            Traveler Reviews ({reviews.length})
-          </h4>
-        </div>
-
+      {/* ━━━ 3. REVIEWS LIST CARDS (TRIPADVISOR CLEAN STYLE) ━━━ */}
+      <div className="space-y-4 pt-2">
         {reviews.length === 0 ? (
-          <div className="bg-white rounded-3xl p-8 border border-slate-200 text-center text-slate-500 text-sm">
-            No reviews yet. Be the first adventurer to share your experience!
+          <div className="p-8 text-center bg-white rounded-2xl border border-slate-200/80 space-y-3">
+            <p className="text-sm font-semibold text-slate-600">
+              No traveler reviews written yet for {place.name}.
+            </p>
+            <button
+              onClick={handleOpenModal}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#00aa6c] hover:underline"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>Be the first traveler to post a review!</span>
+            </button>
           </div>
         ) : (
-          <div className="space-y-4">
-            {reviews.map((rev) => (
-              <div
+          reviews.map((rev, idx) => {
+            const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+            const helpfulCount = (helpfulCounts[rev.id] || 0) + (10 + (idx * 7) % 25);
+
+            // Separate title if exists in format "**Title**\n\nContent"
+            let title = '';
+            let body = rev.comment;
+            if (rev.comment.startsWith('**') && rev.comment.includes('**\n\n')) {
+              const parts = rev.comment.split('**\n\n');
+              title = parts[0].replace(/\*\*/g, '');
+              body = parts.slice(1).join('**\n\n');
+            }
+
+            return (
+              <article
                 key={rev.id}
-                className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs space-y-3 transition-all hover:shadow-md"
+                className="p-5 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 transition-all hover:border-slate-300"
               >
-                <div className="flex items-center justify-between">
+                {/* Author row */}
+                <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     {rev.user_image ? (
                       <img
                         src={rev.user_image}
                         alt={rev.author}
-                        className="w-10 h-10 rounded-full object-cover ring-1 ring-emerald-300 shrink-0"
+                        className="w-10 h-10 rounded-full object-cover ring-1 ring-slate-200 shrink-0"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-emerald-50 text-[#00aa6c] font-black flex items-center justify-center text-sm border border-emerald-200 shrink-0">
+                      <div
+                        className={`w-10 h-10 rounded-full ${avatarColor} text-white font-black text-sm flex items-center justify-center shrink-0 shadow-2xs`}
+                      >
                         {rev.author.charAt(0).toUpperCase()}
                       </div>
                     )}
+
                     <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-slate-900 font-bold text-sm">{rev.author}</span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-bold text-slate-900 text-sm">{rev.author}</span>
                         {rev.user_id && (
                           <span
-                            title="Verified Traveler Account"
-                            className="inline-flex items-center text-[#00aa6c]"
+                            title="Verified Traveler"
+                            className="inline-flex items-center gap-0.5 text-[10px] font-black uppercase tracking-wider text-[#00aa6c] bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded"
                           >
-                            <CheckCircle2 className="w-3.5 h-3.5 fill-[#00aa6c]/15" />
+                            <ShieldCheck className="w-3 h-3 text-[#00aa6c]" />
+                            Verified
                           </span>
                         )}
                       </div>
-                      <div className="text-slate-500 text-xs font-medium">{formatDate(rev.created_at)}</div>
+                      <span className="text-xs text-slate-400 font-medium">
+                        Written {formatDate(rev.created_at)}
+                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-0.5">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star
-                        key={s}
-                        className={`w-3.5 h-3.5 ${
-                          s <= rev.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'
-                        }`}
-                      />
-                    ))}
+
+                  <div className="shrink-0">
+                    <TripAdvisorRatingDots rating={rev.rating} size="sm" />
                   </div>
                 </div>
-                <p className="text-slate-700 text-xs sm:text-sm leading-relaxed sm:pl-1 sm:ml-[52px]">
-                  {rev.comment}
-                </p>
-              </div>
-            ))}
-          </div>
+
+                {/* Review Title & Body */}
+                <div className="space-y-1.5">
+                  {title && (
+                    <h4 className="font-extrabold text-slate-900 text-sm sm:text-base leading-snug">
+                      {title}
+                    </h4>
+                  )}
+                  <p className="text-slate-700 text-xs sm:text-sm leading-relaxed whitespace-pre-line font-medium">
+                    {body}
+                  </p>
+                </div>
+
+                {/* Footer with Helpful button */}
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                  <button
+                    type="button"
+                    onClick={() => toggleHelpful(rev.id)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-slate-200 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold transition-all cursor-pointer bg-slate-50/50"
+                  >
+                    <ThumbsUp className="w-3 h-3 text-slate-500" />
+                    <span>Helpful · {helpfulCount}</span>
+                  </button>
+                </div>
+              </article>
+            );
+          })
         )}
       </div>
 
+      {/* Internal Modal if called directly */}
+      <TripAdvisorReviewModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        place={place}
+        onReviewSubmitted={handleReviewAdded}
+      />
     </div>
   );
 }
