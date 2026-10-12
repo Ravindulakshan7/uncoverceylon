@@ -356,8 +356,8 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* ━━━ TIER 2: TRIPADVISOR SUB-NAV ROW (Appears on scroll - exact match to user screenshot) ━━━ */}
-        {scrolled && (
+        {/* ━━━ TIER 2: TRIPADVISOR SUB-NAV ROW (Appears on scroll on home/general pages) ━━━ */}
+        {scrolled && !pathname?.startsWith('/places') && (
           <div className="border-t border-slate-100 py-2.5 overflow-x-auto no-scrollbar flex items-center gap-6 sm:gap-8 text-xs sm:text-[13px] font-bold text-slate-600 animate-in fade-in slide-in-from-top-1 duration-200">
             <button
               type="button"

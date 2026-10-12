@@ -80,17 +80,17 @@ export default function DestinationGallery({
 
   return (
     <div className="relative">
-      {/* ━━━ TRIPADVISOR COMPACT PHOTO COLLAGE GRID (Small Gaps) ━━━ */}
-      <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-1.5 sm:gap-2 h-[340px] sm:h-[420px] lg:h-[460px] rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-900 border border-slate-200/80 shadow-xs relative">
+      {/* ━━━ TRIPADVISOR COMPACT PHOTO COLLAGE GRID (White Lines & Tight Gaps) ━━━ */}
+      <div className="grid grid-cols-2 md:grid-cols-4 md:grid-rows-2 gap-1 sm:gap-1.5 h-[340px] sm:h-[420px] lg:h-[460px] rounded-xl sm:rounded-2xl overflow-hidden bg-white border border-[#e0e0e0] shadow-xs relative">
         
         {/* Main Hero Photo (Left: spans 2 cols and 2 rows on desktop) */}
         <div
           onClick={() => openLightbox(0)}
-          className="col-span-2 row-span-2 relative h-full w-full overflow-hidden bg-slate-900 cursor-pointer group"
+          className="col-span-2 row-span-2 relative h-full w-full overflow-hidden bg-slate-100 cursor-pointer group"
         >
           {failedIndices.has(0) ? (
-            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-800 text-slate-400 p-4 text-center">
-              <ImageOff className="w-10 h-10 text-slate-600 mb-1" />
+            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 p-4 text-center">
+              <ImageOff className="w-10 h-10 text-slate-400 mb-1" />
               <p className="text-xs font-bold">Photo Unavailable</p>
             </div>
           ) : (
@@ -110,7 +110,7 @@ export default function DestinationGallery({
           <span className="absolute top-3 left-3 bg-white/95 text-slate-900 text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-md z-10">
             {category}
           </span>
-          <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors pointer-events-none" />
+          <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors pointer-events-none" />
         </div>
 
         {/* 4 Supporting Photos on Right Grid */}
@@ -118,10 +118,10 @@ export default function DestinationGallery({
           <div
             key={idx}
             onClick={() => openLightbox(idx)}
-            className="hidden sm:block relative h-full w-full overflow-hidden bg-slate-900 cursor-pointer group"
+            className="hidden sm:block relative h-full w-full overflow-hidden bg-slate-100 cursor-pointer group"
           >
             {failedIndices.has(idx) ? (
-              <div className="w-full h-full flex items-center justify-center bg-slate-800 text-slate-500">
+              <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400">
                 <ImageOff className="w-6 h-6" />
               </div>
             ) : (
@@ -135,7 +135,7 @@ export default function DestinationGallery({
                 onError={() => handleImageError(idx)}
               />
             )}
-            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors pointer-events-none" />
+            <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors pointer-events-none" />
           </div>
         ))}
 

@@ -111,12 +111,26 @@ async function getPlaceDetails(id: string): Promise<{
       created_at: p.created_at.toISOString(),
     }));
 
-    const rawNearby = await prisma.place.findMany({
+    // Fetch real nearby places from the same province first
+    const sameProvinceNearby = await prisma.place.findMany({
       where: { province: place.province, NOT: { id: numericId } },
       orderBy: { rating: 'desc' },
-      take: 3,
+      take: 6,
     });
-    const nearbyAttractions: Place[] = rawNearby.map((p) => ({
+
+    let combinedNearby = [...sameProvinceNearby];
+    if (combinedNearby.length < 6) {
+      const remaining = 6 - combinedNearby.length;
+      const excludeIds = [numericId, ...combinedNearby.map((p) => p.id)];
+      const otherNearby = await prisma.place.findMany({
+        where: { id: { notIn: excludeIds } },
+        orderBy: { rating: 'desc' },
+        take: remaining,
+      });
+      combinedNearby = [...combinedNearby, ...otherNearby];
+    }
+
+    const nearbyAttractions: Place[] = combinedNearby.map((p) => ({
       ...p,
       created_at: p.created_at.toISOString(),
     }));

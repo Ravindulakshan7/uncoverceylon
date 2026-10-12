@@ -7,7 +7,7 @@ import {
   MapPin, Tag, Ticket, Calendar, Clock,
   ChevronRight, ArrowRight, Compass,
   Star, Camera, Sparkles, Navigation,
-  Edit3, Share2, Map, Check
+  Edit3, Share2, Map, Check, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { Place, Review } from '@/types';
 import { useCurrency } from '@/context/CurrencyContext';
@@ -69,6 +69,12 @@ export default function PlaceDetailView({
 
   const feeData = getDetailedFee(place.entry_fee);
   const distanceInfo = formatDistanceTo(place.lat, place.lng, place.distance_km);
+
+  // Parse description paragraphs
+  const descriptionParagraphs = place.description
+    ? place.description.split(/\n+/).map((p) => p.trim()).filter(Boolean)
+    : [];
+  const isLongDescription = (place.description?.length || 0) > 280 || descriptionParagraphs.length > 1;
 
   // Scroll spy for sticky tabs
   useEffect(() => {
@@ -148,6 +154,9 @@ export default function PlaceDetailView({
     },
   ];
 
+  // Real places to show under "Things to do nearby" (Screenshot 4)
+  const experiencePlaces = nearbyAttractions.length > 0 ? nearbyAttractions.slice(0, 4) : [];
+
   return (
     <div className="min-h-screen bg-white text-[#000a12] pt-16 sm:pt-20 pb-20 font-['Plus_Jakarta_Sans',system-ui,-apple-system,sans-serif]">
       
@@ -216,7 +225,7 @@ export default function PlaceDetailView({
         </div>
       </div>
 
-      {/* ━━━ 3. PHOTO GALLERY COLLAGE ━━━ */}
+      {/* ━━━ 3. PHOTO GALLERY COLLAGE (White Lines, Compact Gaps) ━━━ */}
       <div className="w-[94%] max-w-[1180px] mx-auto mb-6">
         <DestinationGallery
           images={galleryImages}
@@ -228,8 +237,8 @@ export default function PlaceDetailView({
         />
       </div>
 
-      {/* ━━━ 4. STICKY TABS (Overview, Things to do, Reviews, Photos, Q&A, Nearby) ━━━ */}
-      <nav className="sticky top-14 sm:top-16 z-30 bg-white border-b border-[#e0e0e0] mb-8">
+      {/* ━━━ 4. STICKY TABS (Stays pinned under header on scroll) ━━━ */}
+      <nav className="sticky top-16 sm:top-[70px] z-40 bg-white border-b border-[#e0e0e0] mb-8 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
         <div className="w-[94%] max-w-[1180px] mx-auto">
           <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto scrollbar-none py-3 text-xs sm:text-sm font-bold">
             {[
@@ -256,7 +265,7 @@ export default function PlaceDetailView({
         </div>
       </nav>
 
-      {/* ━━━ 5. MAIN TWO-COLUMN LAYOUT ━━━ */}
+      {/* ━━━ 5. MAIN TWO-COLUMN LAYOUT (Sticky Sidebar stays fixed on scroll) ━━━ */}
       <div className="w-[94%] max-w-[1180px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10 items-start">
           
@@ -275,18 +284,45 @@ export default function PlaceDetailView({
                 </p>
               )}
 
-              <div className="text-[15px] text-[#545454] leading-[1.7] space-y-3 font-normal">
-                <p className={!isDescExpanded ? 'line-clamp-4 sm:line-clamp-6' : ''}>
-                  {place.description}
-                </p>
+              {/* Collapsible / Expandable Description with smooth fade */}
+              <div className="space-y-2">
+                <div className="relative">
+                  <div
+                    className={`text-[15px] text-[#545454] leading-[1.7] space-y-3 font-normal transition-all duration-300 ${
+                      isLongDescription && !isDescExpanded ? 'max-h-[115px] overflow-hidden' : 'max-h-none'
+                    }`}
+                  >
+                    {descriptionParagraphs.length > 0 ? (
+                      descriptionParagraphs.map((para, idx) => (
+                        <p key={idx}>{para}</p>
+                      ))
+                    ) : (
+                      <p>{place.description}</p>
+                    )}
+                  </div>
 
-                {place.description && place.description.length > 320 && (
+                  {isLongDescription && !isDescExpanded && (
+                    <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none" />
+                  )}
+                </div>
+
+                {isLongDescription && (
                   <button
                     type="button"
                     onClick={() => setIsDescExpanded(!isDescExpanded)}
-                    className="text-xs sm:text-sm font-bold text-[#000a12] underline hover:text-[#00aa6c] cursor-pointer pt-1"
+                    className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-[#000a12] hover:text-[#00aa6c] cursor-pointer pt-1"
                   >
-                    {isDescExpanded ? 'Read less' : 'Read more →'}
+                    {isDescExpanded ? (
+                      <>
+                        <span>Read less</span>
+                        <ChevronUp className="w-4 h-4" />
+                      </>
+                    ) : (
+                      <>
+                        <span>Read more</span>
+                        <ChevronDown className="w-4 h-4" />
+                      </>
+                    )}
                   </button>
                 )}
               </div>
@@ -348,54 +384,105 @@ export default function PlaceDetailView({
               </div>
             </section>
 
-            {/* ━━━ #THINGS TO DO NEARBY ━━━ */}
+            {/* ━━━ #THINGS TO DO NEARBY (SCREENSHOT 4: REAL PLACES WITH LIVE DISTANCE) ━━━ */}
             <section id="things" className="space-y-4 pt-6 border-t border-[#f0f0f0]">
               <div>
                 <h2 className="text-xl sm:text-2xl font-extrabold text-[#000a12] tracking-tight">
                   Things to do nearby
                 </h2>
                 <p className="text-xs sm:text-sm text-[#545454] font-medium">
-                  Curated activities and experiences in {place.location}
+                  Curated places and experiences near {place.location}
                 </p>
               </div>
 
               <div className="grid gap-3.5">
-                {thingsToDo.map((item, idx) => (
-                  <article
-                    key={idx}
-                    className="grid grid-cols-1 sm:grid-cols-[120px_1fr_auto] gap-4 p-3.5 sm:p-4 border border-[#e0e0e0] rounded-xl items-center hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-[#cfcfcf] transition-all bg-white group"
-                  >
-                    <div className="w-full sm:w-[120px] h-32 sm:h-[90px] rounded-lg overflow-hidden bg-[#e8e8e8] shrink-0 relative">
-                      <Image
-                        src={EXP_FALLBACK_IMAGES[idx % EXP_FALLBACK_IMAGES.length]}
-                        alt={item.title}
-                        fill
-                        className="object-cover group-hover:scale-106 transition-transform duration-700 ease-out"
-                        unoptimized
-                      />
-                    </div>
-                    <div className="space-y-1 min-w-0">
-                      <h4 className="text-[15px] font-extrabold text-[#000a12] group-hover:text-[#00aa6c] transition-colors leading-snug">
-                        {item.title}
-                      </h4>
-                      <p className="text-[13px] text-[#545454] leading-relaxed line-clamp-2">
-                        {item.desc}
-                      </p>
-                      <div className="flex items-center gap-1.5 pt-0.5 text-xs text-[#545454] font-semibold">
-                        <TripAdvisorRatingDots rating={5} size="sm" />
-                        <span>4.9 · Highly Recommended</span>
-                      </div>
-                    </div>
-                    <a
-                      href={`https://www.google.com/maps?q=${encodeURIComponent(`${place.name} ${item.title} Sri Lanka`)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-[#00aa6c] hover:bg-[#008a58] text-white text-xs font-bold transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
+                {experiencePlaces.length > 0 ? (
+                  experiencePlaces.map((np) => {
+                    const placeDist = formatDistanceTo(np.lat, np.lng, np.distance_km);
+                    return (
+                      <article
+                        key={np.id}
+                        className="grid grid-cols-1 sm:grid-cols-[120px_1fr_auto] gap-4 p-3.5 sm:p-4 border border-[#e0e0e0] rounded-xl items-center hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-[#cfcfcf] transition-all bg-white group"
+                      >
+                        <div className="w-full sm:w-[120px] h-32 sm:h-[90px] rounded-lg overflow-hidden bg-[#e8e8e8] shrink-0 relative">
+                          <Image
+                            src={np.image_url}
+                            alt={np.name}
+                            fill
+                            className="object-cover group-hover:scale-106 transition-transform duration-700 ease-out"
+                            unoptimized
+                          />
+                        </div>
+                        <div className="space-y-1 min-w-0">
+                          <Link href={`/places/${np.id}`}>
+                            <h4 className="text-[15px] font-extrabold text-[#000a12] group-hover:text-[#00aa6c] transition-colors leading-snug">
+                              {np.name}
+                            </h4>
+                          </Link>
+                          <p className="text-[13px] text-[#545454] leading-relaxed line-clamp-2">
+                            {np.short_description || np.description}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2 pt-0.5 text-xs">
+                            <div className="flex items-center gap-1.5 font-bold text-[#000a12]">
+                              <TripAdvisorRatingDots rating={np.rating} size="sm" />
+                              <span>{np.rating.toFixed(1)}</span>
+                              <span className="text-[#767676] font-normal">({np.review_count})</span>
+                            </div>
+                            <span className="text-[#c0c0c0]">·</span>
+                            {/* Live Distance Badge (podiyaya inna thna idan durath pennanna) */}
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#00aa6c] bg-[#e6f7f0] border border-[#a3e6cd] px-2 py-0.5 rounded-full">
+                              <Navigation className="w-3 h-3 shrink-0" />
+                              <span>{placeDist.isLive ? `${placeDist.text} from you` : placeDist.text}</span>
+                            </span>
+                          </div>
+                        </div>
+                        <Link
+                          href={`/places/${np.id}`}
+                          className="inline-flex items-center justify-center gap-1.5 px-5 py-2 rounded-full bg-[#00aa6c] hover:bg-[#008a58] text-white text-xs font-bold transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
+                        >
+                          View
+                        </Link>
+                      </article>
+                    );
+                  })
+                ) : (
+                  thingsToDo.map((item, idx) => (
+                    <article
+                      key={idx}
+                      className="grid grid-cols-1 sm:grid-cols-[120px_1fr_auto] gap-4 p-3.5 sm:p-4 border border-[#e0e0e0] rounded-xl items-center hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-[#cfcfcf] transition-all bg-white group"
                     >
-                      View
-                    </a>
-                  </article>
-                ))}
+                      <div className="w-full sm:w-[120px] h-32 sm:h-[90px] rounded-lg overflow-hidden bg-[#e8e8e8] shrink-0 relative">
+                        <Image
+                          src={EXP_FALLBACK_IMAGES[idx % EXP_FALLBACK_IMAGES.length]}
+                          alt={item.title}
+                          fill
+                          className="object-cover group-hover:scale-106 transition-transform duration-700 ease-out"
+                          unoptimized
+                        />
+                      </div>
+                      <div className="space-y-1 min-w-0">
+                        <h4 className="text-[15px] font-extrabold text-[#000a12] group-hover:text-[#00aa6c] transition-colors leading-snug">
+                          {item.title}
+                        </h4>
+                        <p className="text-[13px] text-[#545454] leading-relaxed line-clamp-2">
+                          {item.desc}
+                        </p>
+                        <div className="flex items-center gap-1.5 pt-0.5 text-xs text-[#545454] font-semibold">
+                          <TripAdvisorRatingDots rating={5} size="sm" />
+                          <span>4.9 · Highly Recommended</span>
+                        </div>
+                      </div>
+                      <a
+                        href={`https://www.google.com/maps?q=${encodeURIComponent(`${place.name} ${item.title} Sri Lanka`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-[#00aa6c] hover:bg-[#008a58] text-white text-xs font-bold transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
+                      >
+                        View
+                      </a>
+                    </article>
+                  ))
+                )}
               </div>
             </section>
 
@@ -466,8 +553,8 @@ export default function PlaceDetailView({
 
           </main>
 
-          {/* ━━━━ STICKY SIDEBAR (RIGHT COLUMN) ━━━━ */}
-          <aside className="sticky top-24 space-y-4">
+          {/* ━━━━ STICKY SIDEBAR (RIGHT COLUMN: NEVER DISAPPEARS ON SCROLL) ━━━━ */}
+          <aside className="sticky top-[125px] sm:top-[132px] z-20 space-y-4">
 
             {/* Admission & Quick Actions Card */}
             <div className="border border-[#e0e0e0] rounded-2xl p-5 sm:p-6 bg-white space-y-5 shadow-xs">
