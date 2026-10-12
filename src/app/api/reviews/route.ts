@@ -44,10 +44,25 @@ export async function GET(request: NextRequest) {
         orderBy: { created_at: 'desc' },
       });
 
-      const formatted = reviews.map((r) => ({
-        ...r,
-        place_name: r.place?.name || '',
-      }));
+      const parseReview = (r: any) => {
+        const photoMatch = r.comment ? r.comment.match(/<!--PHOTOS:(\[.*?\])-->/) : null;
+        let reviewImages: string[] = [];
+        let displayComment = r.comment || '';
+        if (photoMatch) {
+          try {
+            reviewImages = JSON.parse(photoMatch[1]);
+            displayComment = r.comment.replace(/<!--PHOTOS:\[.*?\]-->/, '').trim();
+          } catch {}
+        }
+        return {
+          ...r,
+          comment: displayComment,
+          images: reviewImages,
+          place_name: r.place?.name || '',
+        };
+      };
+
+      const formatted = reviews.map(parseReview);
 
       return NextResponse.json({ reviews: formatted });
     }
@@ -62,7 +77,24 @@ export async function GET(request: NextRequest) {
         orderBy: { created_at: 'desc' },
       });
 
-      return NextResponse.json({ reviews });
+      const formatted = reviews.map((r) => {
+        const photoMatch = r.comment ? r.comment.match(/<!--PHOTOS:(\[.*?\])-->/) : null;
+        let reviewImages: string[] = [];
+        let displayComment = r.comment || '';
+        if (photoMatch) {
+          try {
+            reviewImages = JSON.parse(photoMatch[1]);
+            displayComment = r.comment.replace(/<!--PHOTOS:\[.*?\]-->/, '').trim();
+          } catch {}
+        }
+        return {
+          ...r,
+          comment: displayComment,
+          images: reviewImages,
+        };
+      });
+
+      return NextResponse.json({ reviews: formatted });
     }
 
     return NextResponse.json({ error: 'Missing place_id or admin flag' }, { status: 400 });
@@ -75,7 +107,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { place_id, author, rating, comment, website } = body;
+    const { place_id, author, rating, comment, website, images } = body;
 
     if (website && String(website).trim().length > 0) {
       return NextResponse.json({ error: 'Bot detected' }, { status: 400 });
@@ -89,7 +121,10 @@ export async function POST(request: NextRequest) {
 
     const cleanAuthor = sessionUser ? sessionUser.name : String(author).trim();
     const cleanImage = sessionUser?.image || body.user_image || '';
-    const cleanComment = String(comment).trim();
+    let cleanComment = String(comment).trim();
+    if (Array.isArray(images) && images.length > 0 && !cleanComment.includes('<!--PHOTOS:')) {
+      cleanComment = `${cleanComment}\n\n<!--PHOTOS:${JSON.stringify(images)}-->`;
+    }
     const numRating = Number(rating);
     const numPlaceId = Number(place_id);
 

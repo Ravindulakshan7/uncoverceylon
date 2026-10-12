@@ -236,33 +236,51 @@ export default function DestinationEditorModal({
     }
   };
 
-  // PC File Upload Handler
-  const handleFileUpload = async (file: File) => {
-    const previewUrl = URL.createObjectURL(file);
-    setImageList((prev) => [previewUrl, ...prev]);
+  // Multiple PC File Upload Handler
+  const handleFilesUpload = async (files: FileList | File[]) => {
+    const fileArray = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    if (fileArray.length === 0) {
+      toast.error('Please select valid image files (JPG, PNG, WEBP, etc.)');
+      return;
+    }
+
     setUploadingImage(true);
+    let successCount = 0;
 
-    const data = new FormData();
-    data.append('file', file);
+    for (let i = 0; i < fileArray.length; i++) {
+      const file = fileArray[i];
+      const previewUrl = URL.createObjectURL(file);
+      setImageList((prev) => [...prev, previewUrl]);
 
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: data,
-      });
-      const resData = await res.json();
-      if (!res.ok) throw new Error(resData.error || 'Upload failed');
+      const data = new FormData();
+      data.append('file', file);
 
-      // Replace temporary blob URL with persistent server URL
-      setImageList((prev) =>
-        prev.map((img) => (img === previewUrl ? resData.url : img))
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: data,
+        });
+        const resData = await res.json();
+        if (!res.ok) throw new Error(resData.error || 'Upload failed');
+
+        setImageList((prev) =>
+          prev.map((img) => (img === previewUrl ? resData.url : img))
+        );
+        successCount++;
+      } catch (err: unknown) {
+        setImageList((prev) => prev.filter((img) => img !== previewUrl));
+        const msg = err instanceof Error ? err.message : 'Upload failed';
+        toast.error(`Failed to upload ${file.name}: ${msg}`);
+      }
+    }
+
+    setUploadingImage(false);
+    if (successCount > 0) {
+      toast.success(
+        successCount === 1
+          ? 'Photo uploaded from PC! 📸'
+          : `${successCount} photos uploaded from PC! 📸`
       );
-      toast.success('Photo uploaded from PC! 📸');
-    } catch (err: unknown) {
-      setImageList((prev) => prev.filter((img) => img !== previewUrl));
-      toast.error(err instanceof Error ? err.message : 'Upload failed');
-    } finally {
-      setUploadingImage(false);
     }
   };
 
@@ -336,6 +354,17 @@ export default function DestinationEditorModal({
   // Final Submit Handler (Add or Update)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (uploadingImage) {
+      toast.error('Please wait for photos to finish uploading before saving.');
+      return;
+    }
+
+    const hasPendingBlobs = imageList.some((img) => img.startsWith('blob:'));
+    if (hasPendingBlobs) {
+      toast.error('Some photos are still uploading or processing. Please wait a moment.');
+      return;
+    }
 
     if (!formData.name.trim() || !formData.short_description.trim() || !formData.location.trim()) {
       setActiveTab('basic');
@@ -659,14 +688,29 @@ export default function DestinationEditorModal({
           {activeTab === 'images' && (
             <div className="space-y-6 animate-fade-in">
               {/* Drag and Drop Zone */}
-              <div className="border-2 border-dashed border-sky-400/40 hover:border-sky-500 rounded-3xl p-8 flex flex-col items-center justify-center text-center bg-sky-50/30 hover:bg-sky-50/70 transition-all cursor-pointer relative group">
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    handleFilesUpload(e.dataTransfer.files);
+                  }
+                }}
+                className="border-2 border-dashed border-sky-400/40 hover:border-sky-500 rounded-3xl p-8 flex flex-col items-center justify-center text-center bg-sky-50/30 hover:bg-sky-50/70 transition-all cursor-pointer relative group"
+              >
                 <input
                   type="file"
                   accept="image/*"
+                  multiple
                   disabled={uploadingImage}
                   onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleFileUpload(file);
+                    if (e.target.files && e.target.files.length > 0) {
+                      handleFilesUpload(e.target.files);
+                    }
                   }}
                   className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
                 />
@@ -674,10 +718,10 @@ export default function DestinationEditorModal({
                   {uploadingImage ? <Loader2 className="w-7 h-7 animate-spin text-sky-600" /> : <Upload className="w-7 h-7" />}
                 </div>
                 <h4 className="text-slate-900 font-extrabold text-sm sm:text-base">
-                  {uploadingImage ? 'Uploading image to server...' : 'Drag & Drop photos here, or click to browse'}
+                  {uploadingImage ? 'Uploading photos to server...' : 'Drag & Drop photos here (supports multiple), or click to browse'}
                 </h4>
                 <p className="text-slate-500 text-xs mt-1">
-                  Supports JPG, PNG, WEBP files up to 10MB
+                  Supports multiple JPG, PNG, WEBP files up to 15MB each
                 </p>
               </div>
 
@@ -1159,10 +1203,10 @@ export default function DestinationEditorModal({
 
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || uploadingImage}
                 className="inline-flex items-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] disabled:opacity-50 text-white font-bold px-7 py-2.5 rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-emerald-950/40 active:scale-95 cursor-pointer"
               >
-                {isSubmitting ? (
+                {isSubmitting || uploadingImage ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Save className="w-4 h-4" />
@@ -1170,6 +1214,8 @@ export default function DestinationEditorModal({
                 <span>
                   {isSubmitting
                     ? 'Saving...'
+                    : uploadingImage
+                    ? 'Uploading photos...'
                     : isEditMode
                     ? 'Save Changes'
                     : 'Publish Destination'}

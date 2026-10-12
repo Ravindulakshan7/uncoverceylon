@@ -29,6 +29,7 @@ export interface Review {
   author: string;
   rating: number;
   comment: string;
+  images?: string[];
   status?: 'approved' | 'pending' | 'spam' | string;
   created_at: string;
 }

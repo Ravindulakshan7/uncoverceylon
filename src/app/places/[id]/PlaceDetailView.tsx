@@ -40,13 +40,7 @@ interface PlaceDetailViewProps {
   };
 }
 
-const EXP_FALLBACK_IMAGES = [
-  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=400&q=80',
-];
-
+// Clean Real Traveler Photos (NO fake stock images)
 type TabId = 'overview' | 'things' | 'reviews' | 'photos' | 'qa' | 'nearby';
 
 export default function PlaceDetailView({
@@ -69,6 +63,35 @@ export default function PlaceDetailView({
 
   const feeData = getDetailedFee(place.entry_fee);
   const distanceInfo = formatDistanceTo(place.lat, place.lng, place.distance_km);
+
+  // Extract real traveler photos from reviews & place gallery (NO fake photos)
+  const reviewPhotos: string[] = reviews.flatMap((r) => {
+    if (r.images && Array.isArray(r.images) && r.images.length > 0) {
+      return r.images;
+    }
+    const match = r.comment ? r.comment.match(/<!--PHOTOS:(\[.*?\])-->/) : null;
+    if (match) {
+      try {
+        const parsed = JSON.parse(match[1]);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {}
+    }
+    return [];
+  });
+
+  const allRealPhotos: string[] = [];
+  reviewPhotos.forEach((img) => {
+    if (img && !allRealPhotos.includes(img)) allRealPhotos.push(img);
+  });
+  (galleryImages || []).forEach((img) => {
+    if (img && !allRealPhotos.includes(img)) allRealPhotos.push(img);
+  });
+  if (place.image_url && !allRealPhotos.includes(place.image_url)) {
+    allRealPhotos.push(place.image_url);
+  }
+
+  const travelerPhotos = allRealPhotos.filter(Boolean);
+  const photoStripList = travelerPhotos.slice(0, 5);
 
   // Parse description paragraphs
   const descriptionParagraphs = place.description
@@ -118,17 +141,6 @@ export default function PlaceDetailView({
       toast.success('Link copied to clipboard!');
     }
   };
-
-  // 5 photos for traveler photo strip
-  const photoStripList = galleryImages.length >= 5
-    ? galleryImages.slice(0, 5)
-    : [
-        place.image_url,
-        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=400&q=80',
-        'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=400&q=80',
-        'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=400&q=80',
-        'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=400&q=80',
-      ];
 
   // Q&A list matching deepseek HTML format
   const qaItems = [
@@ -228,7 +240,7 @@ export default function PlaceDetailView({
       {/* ━━━ 3. PHOTO GALLERY COLLAGE (White Lines, Compact Gaps) ━━━ */}
       <div className="w-[94%] max-w-[1180px] mx-auto mb-6">
         <DestinationGallery
-          images={galleryImages}
+          images={travelerPhotos.length > 0 ? travelerPhotos : (galleryImages.length > 0 ? galleryImages : [place.image_url])}
           title={place.name}
           category={place.category}
           location={place.location}
@@ -430,9 +442,14 @@ export default function PlaceDetailView({
                             </div>
                             <span className="text-[#c0c0c0]">·</span>
                             {/* Live Distance Badge (podiyaya inna thna idan durath pennanna) */}
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#00aa6c] bg-[#e6f7f0] border border-[#a3e6cd] px-2 py-0.5 rounded-full">
+                            <span
+                              suppressHydrationWarning={true}
+                              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#00aa6c] bg-[#e6f7f0] border border-[#a3e6cd] px-2 py-0.5 rounded-full"
+                            >
                               <Navigation className="w-3 h-3 shrink-0" />
-                              <span>{placeDist.isLive ? `${placeDist.text} from you` : placeDist.text}</span>
+                              <span suppressHydrationWarning={true}>
+                                {placeDist.isLive ? `${placeDist.text} from you` : placeDist.text}
+                              </span>
                             </span>
                           </div>
                         </div>
@@ -453,7 +470,7 @@ export default function PlaceDetailView({
                     >
                       <div className="w-full sm:w-[120px] h-32 sm:h-[90px] rounded-lg overflow-hidden bg-[#e8e8e8] shrink-0 relative">
                         <Image
-                          src={EXP_FALLBACK_IMAGES[idx % EXP_FALLBACK_IMAGES.length]}
+                          src={travelerPhotos[idx % travelerPhotos.length] || place.image_url}
                           alt={item.title}
                           fill
                           className="object-cover group-hover:scale-106 transition-transform duration-700 ease-out"
@@ -495,36 +512,88 @@ export default function PlaceDetailView({
               />
             </section>
 
-            {/* ━━━ #PHOTOS (5-THUMBNAIL STRIP WITH HOVER SCALE) ━━━ */}
+            {/* ━━━ #PHOTOS (REAL TRAVELER PHOTOS - NO FAKE STOCK PHOTOS) ━━━ */}
             <section id="photos" className="space-y-4 pt-6 border-t border-[#f0f0f0]">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-[#000a12] tracking-tight">
-                Traveler photos
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
-                {photoStripList.map((img, idx) => (
-                  <div
-                    key={idx}
-                    onClick={() => setPhotoStripIndex(idx)}
-                    className="group relative aspect-square rounded-lg overflow-hidden bg-[#e8e8e8] border border-[#e0e0e0] cursor-pointer"
-                  >
-                    <Image
-                      src={img}
-                      alt={`${place.name} photo ${idx + 1}`}
-                      fill
-                      className="object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
-                      unoptimized
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                  </div>
-                ))}
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-[#000a12] tracking-tight">
+                    Traveler photos
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#545454]">
+                    Real photos shared by recent explorers &amp; visitors
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsReviewModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#e0e0e0] hover:border-[#000a12] hover:bg-[#f2f2f2] text-[#000a12] font-bold text-xs transition-all cursor-pointer bg-white shrink-0"
+                >
+                  <Camera className="w-3.5 h-3.5 text-[#00aa6c]" />
+                  <span>Add a photo with review</span>
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setPhotoStripIndex(0)}
-                className="inline-flex items-center gap-1.5 text-sm font-bold text-[#00aa6c] hover:text-[#008a58] hover:underline cursor-pointer pt-1"
-              >
-                <span>See all {Math.max(galleryImages.length, 12)} photos →</span>
-              </button>
+
+              {photoStripList.length > 0 ? (
+                <>
+                  <div className={`grid gap-2.5 ${
+                    photoStripList.length === 1 ? 'grid-cols-1 sm:grid-cols-2 max-w-md' :
+                    photoStripList.length === 2 ? 'grid-cols-2 max-w-lg' :
+                    photoStripList.length === 3 ? 'grid-cols-2 sm:grid-cols-3' :
+                    photoStripList.length === 4 ? 'grid-cols-2 sm:grid-cols-4' :
+                    'grid-cols-2 sm:grid-cols-3 md:grid-cols-5'
+                  }`}>
+                    {photoStripList.map((img, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => setPhotoStripIndex(idx)}
+                        className="group relative aspect-square rounded-lg overflow-hidden bg-[#e8e8e8] border border-[#e0e0e0] cursor-pointer shadow-2xs"
+                      >
+                        <Image
+                          src={img}
+                          alt={`${place.name} traveler photo ${idx + 1}`}
+                          fill
+                          className="object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
+                          unoptimized
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setPhotoStripIndex(0)}
+                      className="inline-flex items-center gap-1.5 text-sm font-bold text-[#00aa6c] hover:text-[#008a58] hover:underline cursor-pointer"
+                    >
+                      <span>See all {travelerPhotos.length} {travelerPhotos.length === 1 ? 'photo' : 'photos'} →</span>
+                    </button>
+                    <span className="text-xs text-[#767676] font-medium hidden sm:inline">
+                      Verified community uploads
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="bg-[#fafafa] border border-dashed border-[#e0e0e0] rounded-2xl p-8 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-white border border-[#e0e0e0] flex items-center justify-center text-[#00aa6c] mx-auto shadow-xs">
+                    <Camera className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-base font-extrabold text-[#000a12]">No traveler photos yet</h3>
+                    <p className="text-xs sm:text-sm text-[#545454] max-w-sm mx-auto">
+                      Be the first explorer to upload your real photos of {place.name} when sharing your review!
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsReviewModalOpen(true)}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#00aa6c] hover:bg-[#008a58] text-white font-bold text-xs sm:text-sm transition-all shadow-xs cursor-pointer active:scale-95"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span>Upload photos with your review</span>
+                  </button>
+                </div>
+              )}
             </section>
 
             {/* ━━━ #QA (QUESTIONS & ANSWERS) ━━━ */}
@@ -553,13 +622,13 @@ export default function PlaceDetailView({
 
           </main>
 
-          {/* ━━━━ STICKY SIDEBAR (RIGHT COLUMN: NEVER DISAPPEARS ON SCROLL) ━━━━ */}
-          <aside className="sticky top-[125px] sm:top-[132px] z-20 space-y-4">
+          {/* ━━━━ STICKY SIDEBAR (RIGHT COLUMN: NEVER DISAPPEARS ON SCROLL & NEVER CUT OFF) ━━━━ */}
+          <aside className="sticky top-[105px] sm:top-[115px] z-20 space-y-3.5 max-h-[calc(100vh-125px)] overflow-y-auto scrollbar-none pr-0.5 pb-2">
 
             {/* Admission & Quick Actions Card */}
-            <div className="border border-[#e0e0e0] rounded-2xl p-5 sm:p-6 bg-white space-y-5 shadow-xs">
-              <div className="pb-4 border-b border-[#f0f0f0]">
-                <div className="flex items-center justify-between gap-2 mb-1.5">
+            <div className="border border-[#e0e0e0] rounded-2xl p-4 sm:p-5 bg-white space-y-3.5 shadow-xs">
+              <div className="pb-3 border-b border-[#f0f0f0]">
+                <div className="flex items-center justify-between gap-2 mb-1">
                   <h4 className="text-[11px] font-extrabold uppercase tracking-widest text-[#545454]">
                     Standard admission
                   </h4>
@@ -567,21 +636,21 @@ export default function PlaceDetailView({
                     <CurrencySelector scrolled={true} />
                   </div>
                 </div>
-                <div className="text-3xl font-extrabold text-[#000a12] tracking-tight">
+                <div className="text-2xl sm:text-3xl font-extrabold text-[#000a12] tracking-tight">
                   {feeData.primary}
                 </div>
-                <div className="text-xs text-[#545454] mt-1 font-medium">
+                <div className="text-xs text-[#545454] mt-0.5 font-medium">
                   {feeData.secondary}
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 <a
                   href={`https://www.google.com/maps?q=${place.lat},${place.lng}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 bg-[#00aa6c] hover:bg-[#008a58] text-white font-bold py-3.5 px-5 rounded-full text-sm transition-all shadow-[0_8px_20px_-8px_rgba(0,170,108,0.45)] hover:-translate-y-0.5 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 bg-[#00aa6c] hover:bg-[#008a58] text-white font-bold py-2.5 px-4 rounded-full text-xs sm:text-sm transition-all shadow-[0_8px_20px_-8px_rgba(0,170,108,0.45)] hover:-translate-y-0.5 cursor-pointer"
                 >
                   <MapPin className="w-4 h-4" />
                   <span>Open in Google Maps</span>
@@ -597,7 +666,7 @@ export default function PlaceDetailView({
                 <button
                   type="button"
                   onClick={() => setIsReviewModalOpen(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-white hover:bg-[#f0f0f0] border border-[#e0e0e0] hover:border-[#000a12] text-[#000a12] font-bold py-3 px-5 rounded-full text-sm transition-all cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 bg-white hover:bg-[#f0f0f0] border border-[#e0e0e0] hover:border-[#000a12] text-[#000a12] font-bold py-2.5 px-4 rounded-full text-xs sm:text-sm transition-all cursor-pointer"
                 >
                   <Edit3 className="w-4 h-4" />
                   <span>Write a traveler review</span>
@@ -605,7 +674,7 @@ export default function PlaceDetailView({
 
                 <Link
                   href="/map"
-                  className="w-full flex items-center justify-center gap-2 bg-white hover:bg-[#f0f0f0] border border-[#e0e0e0] hover:border-[#000a12] text-[#000a12] font-bold py-3 px-5 rounded-full text-sm transition-all"
+                  className="w-full flex items-center justify-center gap-2 bg-white hover:bg-[#f0f0f0] border border-[#e0e0e0] hover:border-[#000a12] text-[#000a12] font-bold py-2.5 px-4 rounded-full text-xs sm:text-sm transition-all"
                 >
                   <Map className="w-4 h-4 text-[#00aa6c]" />
                   <span>View on Ceylon Live Map</span>
@@ -614,49 +683,49 @@ export default function PlaceDetailView({
             </div>
 
             {/* Quick Facts Info Card */}
-            <div className="border border-[#e0e0e0] rounded-2xl p-5 sm:p-6 bg-white space-y-4 shadow-xs">
-              <div className="space-y-4">
-                <div className="flex items-start gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-[#f0f0f0] text-[#000a12] flex items-center justify-center shrink-0">
-                    <MapPin className="w-4 h-4" />
+            <div className="border border-[#e0e0e0] rounded-2xl p-4 sm:p-5 bg-white space-y-3 shadow-xs">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#f0f0f0] text-[#000a12] flex items-center justify-center shrink-0">
+                    <MapPin className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#545454]">Location</div>
-                    <div className="text-sm font-bold text-[#000a12] leading-snug">{place.location}</div>
+                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#545454]">Location</div>
+                    <div className="text-xs sm:text-sm font-bold text-[#000a12] leading-snug">{place.location}</div>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-[#f0f0f0] text-[#000a12] flex items-center justify-center shrink-0">
-                    <Tag className="w-4 h-4" />
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#f0f0f0] text-[#000a12] flex items-center justify-center shrink-0">
+                    <Tag className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#545454]">Province</div>
-                    <div className="text-sm font-bold text-[#000a12] leading-snug">{place.province}</div>
+                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#545454]">Province</div>
+                    <div className="text-xs sm:text-sm font-bold text-[#000a12] leading-snug">{place.province}</div>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-[#f0f0f0] text-[#000a12] flex items-center justify-center shrink-0">
-                    <Navigation className="w-4 h-4" />
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#f0f0f0] text-[#000a12] flex items-center justify-center shrink-0">
+                    <Navigation className="w-3.5 h-3.5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#545454] flex items-center justify-between">
-                      <span>{distanceInfo.isLive ? 'From Your Location' : 'From Colombo'}</span>
+                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#545454] flex items-center justify-between">
+                      <span suppressHydrationWarning={true}>{distanceInfo.isLive ? 'From Your Location' : 'From Colombo'}</span>
                       {distanceInfo.isLive && (
-                        <span className="text-[10px] text-[#00aa6c] font-bold bg-[#e6f7f0] px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] text-[#00aa6c] font-bold bg-[#e6f7f0] px-1.5 py-0.2 rounded">
                           Live GPS
                         </span>
                       )}
                     </div>
-                    <div className="text-sm font-bold text-[#000a12] flex items-center justify-between gap-2 mt-0.5">
-                      <span>{distanceInfo.text}</span>
+                    <div className="text-xs sm:text-sm font-bold text-[#000a12] flex items-center justify-between gap-2 mt-0.5">
+                      <span suppressHydrationWarning={true}>{distanceInfo.text}</span>
                       {!distanceInfo.isLive && (
                         <button
                           type="button"
                           onClick={() => requestLocation()}
                           disabled={locationStatus === 'requesting'}
-                          className="text-[11px] font-bold text-[#00aa6c] hover:underline cursor-pointer"
+                          className="text-[10px] font-bold text-[#00aa6c] hover:underline cursor-pointer"
                         >
                           {locationStatus === 'requesting' ? 'Detecting...' : 'Use my GPS'}
                         </button>
@@ -665,28 +734,28 @@ export default function PlaceDetailView({
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-[#f0f0f0] text-[#000a12] flex items-center justify-center shrink-0">
-                    <Ticket className="w-4 h-4" />
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#f0f0f0] text-[#000a12] flex items-center justify-center shrink-0">
+                    <Ticket className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#545454]">Entry Fee</div>
-                    <div className="text-sm font-bold text-[#000a12] leading-snug">
+                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#545454]">Entry Fee</div>
+                    <div className="text-xs sm:text-sm font-bold text-[#000a12] leading-snug">
                       {feeData.primary}
-                      <small className="block text-xs text-[#545454] font-medium mt-0.5">{feeData.secondary}</small>
+                      <small className="block text-[11px] text-[#545454] font-medium mt-0.5">{feeData.secondary}</small>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3.5">
-                  <div className="w-9 h-9 rounded-full bg-[#f0f0f0] text-[#000a12] flex items-center justify-center shrink-0">
-                    <Calendar className="w-4 h-4" />
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#f0f0f0] text-[#000a12] flex items-center justify-center shrink-0">
+                    <Calendar className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#545454]">Best Season</div>
-                    <div className="text-sm font-bold text-[#000a12] leading-snug">
+                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#545454]">Best Season</div>
+                    <div className="text-xs sm:text-sm font-bold text-[#000a12] leading-snug">
                       {place.best_time || 'Year-round'}
-                      <small className="block text-xs text-[#545454] font-medium mt-0.5">Early morning or late afternoon</small>
+                      <small className="block text-[11px] text-[#545454] font-medium mt-0.5">Early morning or late afternoon</small>
                     </div>
                   </div>
                 </div>

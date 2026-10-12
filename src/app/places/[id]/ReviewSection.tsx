@@ -165,6 +165,20 @@ export default function ReviewSection({
               body = parts.slice(1).join('**\n\n');
             }
 
+            // Extract attached review photos
+            let photos: string[] = [];
+            if (rev.images && Array.isArray(rev.images) && rev.images.length > 0) {
+              photos = rev.images;
+            } else {
+              const photoMatch = body.match(/<!--PHOTOS:(\[.*?\])-->/);
+              if (photoMatch) {
+                try {
+                  photos = JSON.parse(photoMatch[1]);
+                } catch {}
+              }
+            }
+            body = body.replace(/<!--PHOTOS:\[.*?\]-->/, '').trim();
+
             return (
               <article
                 key={rev.id}
@@ -222,6 +236,25 @@ export default function ReviewSection({
                     {body}
                   </p>
                 </div>
+
+                {/* Attached traveler photos */}
+                {photos.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {photos.map((imgUrl, pIdx) => (
+                      <div
+                        key={pIdx}
+                        className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-[#e0e0e0] bg-[#f5f5f5] group"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={imgUrl}
+                          alt={`${rev.author} traveler photo ${pIdx + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-300"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Footer with Helpful button */}
                 <div className="pt-2 border-t border-[#f0f0f0] flex items-center justify-between text-xs text-[#545454]">

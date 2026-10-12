@@ -46,21 +46,13 @@ export default function DestinationGallery({
     });
   };
 
-  // Ensure fallback scenic photos if fewer than 5
-  const fallbackList = [
-    'https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?w=1600&q=80',
-    'https://images.unsplash.com/photo-1546708973-b339540b5162?w=1200&q=80',
-    'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&q=80',
-    'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?w=1200&q=80',
-    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80',
-  ];
+  // Clean authentic photos: repeat destination's own images if fewer than 5 (no fake stock photos)
+  const validImages = images.filter(Boolean);
+  const displayImages = validImages.length > 0 ? validImages : ['/hero-bg.jpg'];
 
-  const displayImages = images.length > 0 ? images : fallbackList;
-
-  // For the 5-photo collage grid: ensure 5 images
   const gridImages = [...displayImages];
-  while (gridImages.length < 5) {
-    gridImages.push(fallbackList[gridImages.length % fallbackList.length]);
+  while (gridImages.length < 5 && displayImages.length > 0) {
+    gridImages.push(displayImages[gridImages.length % displayImages.length]);
   }
 
   const openLightbox = (index: number) => {

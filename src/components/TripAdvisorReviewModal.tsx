@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Check, ShieldCheck, Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { X, Check, ShieldCheck, Loader2, Sparkles, AlertCircle, Camera, Upload, Trash2 } from 'lucide-react';
 import { Place, Review } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
@@ -68,6 +68,10 @@ export default function TripAdvisorReviewModal({
   const [website, setWebsite] = useState(''); // honeypot
   const [certified, setCertified] = useState(false);
 
+  // Traveler photos
+  const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+
   // Anti-spam math for guests
   const [challenge, setChallenge] = useState(() => ({
     num1: Math.floor(Math.random() * 6) + 3,
@@ -91,8 +95,73 @@ export default function TripAdvisorReviewModal({
     }
   };
 
+  const handlePhotosUpload = async (files: FileList | File[]) => {
+    const fileArray = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    if (fileArray.length === 0) {
+      toast.error('Please select valid image files (JPG, PNG, WEBP, etc.)');
+      return;
+    }
+
+    if (uploadedPhotos.length + fileArray.length > 6) {
+      toast.error('You can upload a maximum of 6 photos per review.');
+      return;
+    }
+
+    setUploadingPhotos(true);
+    let successCount = 0;
+
+    for (let i = 0; i < fileArray.length; i++) {
+      const file = fileArray[i];
+      const previewUrl = URL.createObjectURL(file);
+      setUploadedPhotos((prev) => [...prev, previewUrl]);
+
+      const data = new FormData();
+      data.append('file', file);
+
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: data,
+        });
+        const resData = await res.json();
+        if (!res.ok) throw new Error(resData.error || 'Upload failed');
+
+        setUploadedPhotos((prev) =>
+          prev.map((img) => (img === previewUrl ? resData.url : img))
+        );
+        successCount++;
+      } catch (err: unknown) {
+        setUploadedPhotos((prev) => prev.filter((img) => img !== previewUrl));
+        const msg = err instanceof Error ? err.message : 'Upload failed';
+        toast.error(`Failed to upload ${file.name}: ${msg}`);
+      }
+    }
+
+    setUploadingPhotos(false);
+    if (successCount > 0) {
+      toast.success(
+        successCount === 1 ? 'Photo attached! 📸' : `${successCount} photos attached! 📸`
+      );
+    }
+  };
+
+  const removePhoto = (index: number) => {
+    setUploadedPhotos((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (uploadingPhotos) {
+      toast.error('Please wait for photos to finish uploading before submitting.');
+      return;
+    }
+
+    const hasPendingBlobs = uploadedPhotos.some((img) => img.startsWith('blob:'));
+    if (hasPendingBlobs) {
+      toast.error('Some photos are still uploading. Please wait a moment.');
+      return;
+    }
 
     const authorName = user ? user.name : guestName.trim();
     if (!authorName) {
@@ -126,9 +195,13 @@ export default function TripAdvisorReviewModal({
 
     setSubmitting(true);
     try {
-      const fullComment = reviewTitle.trim()
+      let fullComment = reviewTitle.trim()
         ? `**${reviewTitle.trim()}**\n\n${comment.trim()}`
         : comment.trim();
+
+      if (uploadedPhotos.length > 0) {
+        fullComment = `${fullComment}\n\n<!--PHOTOS:${JSON.stringify(uploadedPhotos)}-->`;
+      }
 
       const res = await fetch('/api/reviews', {
         method: 'POST',
@@ -139,6 +212,7 @@ export default function TripAdvisorReviewModal({
           user_image: user?.image || '',
           rating,
           comment: fullComment,
+          images: uploadedPhotos,
           website, // honeypot
         }),
       });
@@ -154,6 +228,7 @@ export default function TripAdvisorReviewModal({
         author: authorName,
         rating,
         comment: fullComment,
+        images: uploadedPhotos,
         created_at: new Date().toISOString(),
         status: 'approved',
       };
@@ -469,6 +544,93 @@ export default function TripAdvisorReviewModal({
                 />
               </div>
 
+              {/* 5b. Add Traveler Photos (Screenshot 2: Real Traveler Photos) */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <Camera className="w-4 h-4 text-[#00aa6c]" />
+                    <span>Add photos of your visit (Optional)</span>
+                  </label>
+                  <span className="text-[11px] font-bold text-slate-400">
+                    {uploadedPhotos.length} / 6 photos
+                  </span>
+                </div>
+
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                      handlePhotosUpload(e.dataTransfer.files);
+                    }
+                  }}
+                  className="border-2 border-dashed border-slate-300 hover:border-[#00aa6c] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 hover:bg-emerald-50/40 transition-all relative cursor-pointer"
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={uploadingPhotos}
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        handlePhotosUpload(e.target.files);
+                      }
+                    }}
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                  />
+                  <div className="flex items-center gap-3 text-center sm:text-left">
+                    <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 text-[#00aa6c] flex items-center justify-center shrink-0 shadow-xs">
+                      {uploadingPhotos ? (
+                        <Loader2 className="w-5 h-5 animate-spin text-[#00aa6c]" />
+                      ) : (
+                        <Upload className="w-5 h-5" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs sm:text-sm font-bold text-slate-900">
+                        {uploadingPhotos ? 'Uploading photos from device...' : 'Drag & drop photos or click to browse'}
+                      </p>
+                      <p className="text-[11px] text-slate-500">
+                        Upload real traveler pictures of views, trails, or tickets (JPG, PNG, WEBP)
+                      </p>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-[#00aa6c] bg-white border border-[#a3e6cd] px-3.5 py-1.5 rounded-full shrink-0 shadow-xs">
+                    Choose photos
+                  </span>
+                </div>
+
+                {uploadedPhotos.length > 0 && (
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 pt-1">
+                    {uploadedPhotos.map((img, idx) => (
+                      <div
+                        key={idx}
+                        className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 group shadow-xs"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={img}
+                          alt={`Uploaded preview ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(idx)}
+                          className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 hover:bg-rose-600 text-white flex items-center justify-center transition-colors cursor-pointer z-20"
+                          title="Remove photo"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* 6. Guest Name & Anti-Spam Check if not logged in */}
               {!user && (
                 <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3">
@@ -544,13 +706,13 @@ export default function TripAdvisorReviewModal({
 
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || uploadingPhotos}
                   className="inline-flex items-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] disabled:opacity-50 text-white font-bold px-8 py-3 rounded-full text-xs sm:text-sm transition-all shadow-md shadow-emerald-950/20 active:scale-95 cursor-pointer"
                 >
-                  {submitting ? (
+                  {submitting || uploadingPhotos ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Posting review...</span>
+                      <span>{uploadingPhotos ? 'Uploading photos...' : 'Posting review...'}</span>
                     </>
                   ) : (
                     <span>Continue &amp; Post Review</span>

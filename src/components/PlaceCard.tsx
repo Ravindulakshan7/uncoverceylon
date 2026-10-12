@@ -90,6 +90,7 @@ export default function PlaceCard({ place, index = 0, variant = 'grid' }: PlaceC
                 <span className="truncate font-semibold text-slate-600">{place.location}</span>
               </div>
               <span
+                suppressHydrationWarning={true}
                 className={`text-[9.5px] sm:text-[11px] shrink-0 font-bold px-1.5 py-0.5 rounded ${
                   distanceInfo.isLive
                     ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/60'
