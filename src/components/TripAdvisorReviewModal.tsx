@@ -207,14 +207,10 @@ export default function TripAdvisorReviewModal({
         comment: fullComment,
         images: uploadedPhotos,
         created_at: new Date().toISOString(),
-        status: 'approved',
+        status: 'pending',
       };
 
-      if (onReviewSubmitted) {
-        onReviewSubmitted(createdReview);
-      }
-
-      toast.success('Thank you! Your review has been published.');
+      toast.success('Thank you! Your review has been submitted for moderation. It will appear once approved by an admin. ⏳');
       onClose();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to submit review';

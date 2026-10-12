@@ -53,20 +53,31 @@ const INITIAL_REVIEWS = [
   },
 ];
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const isAdmin = request.nextUrl.searchParams.get('admin') === 'true';
     const setting = await prisma.siteSetting.findUnique({
       where: { key: 'site_reviews' },
     });
 
-    if (!setting || !setting.value) {
-      return NextResponse.json({ reviews: INITIAL_REVIEWS });
+    let currentList = INITIAL_REVIEWS.map(r => ({ ...r, status: 'approved' }));
+    if (setting && setting.value) {
+      try {
+        const parsed = JSON.parse(setting.value);
+        if (Array.isArray(parsed)) currentList = parsed;
+      } catch (e) {}
     }
 
-    const savedReviews = JSON.parse(setting.value);
-    return NextResponse.json({
-      reviews: Array.isArray(savedReviews) ? savedReviews : INITIAL_REVIEWS,
-    });
+    // If admin is requesting, return all including pending & spam
+    if (isAdmin) {
+      return NextResponse.json({ reviews: currentList });
+    }
+
+    // Public view: ONLY approved reviews are shown
+    const approvedReviews = currentList.filter(
+      (r: any) => r.status === 'approved' || (!r.status && !String(r.id).startsWith('rev-17'))
+    );
+    return NextResponse.json({ reviews: approvedReviews });
   } catch (error) {
     console.error('Error fetching site reviews:', error);
     return NextResponse.json({ reviews: INITIAL_REVIEWS });
@@ -98,6 +109,7 @@ export async function POST(request: NextRequest) {
       comment: comment.trim(),
       rating: Number(rating) || 5,
       date: dateFormatted,
+      status: 'pending', // All user submissions go to pending moderation!
     };
 
     // Retrieve existing reviews or default
@@ -105,7 +117,7 @@ export async function POST(request: NextRequest) {
       where: { key: 'site_reviews' },
     });
 
-    let currentList = INITIAL_REVIEWS;
+    let currentList = INITIAL_REVIEWS.map(r => ({ ...r, status: 'approved' }));
     if (setting && setting.value) {
       try {
         const parsed = JSON.parse(setting.value);
@@ -115,7 +127,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Prepend new review
+    // Prepend new review with pending status
     const updatedList = [newReview, ...currentList];
 
     await prisma.siteSetting.upsert({
@@ -124,10 +136,55 @@ export async function POST(request: NextRequest) {
       create: { key: 'site_reviews', value: JSON.stringify(updatedList) },
     });
 
-    return NextResponse.json({ success: true, review: newReview, reviews: updatedList });
+    return NextResponse.json({
+      success: true,
+      review: newReview,
+      message: 'Review submitted for moderation! It will be published once approved by an admin.',
+    });
   } catch (error: any) {
     console.error('Error saving site review:', error);
     return NextResponse.json({ error: error.message || 'Failed to submit review' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, status } = body;
+
+    if (!id || !status) {
+      return NextResponse.json({ error: 'id and status are required' }, { status: 400 });
+    }
+
+    const setting = await prisma.siteSetting.findUnique({
+      where: { key: 'site_reviews' },
+    });
+
+    let currentList = INITIAL_REVIEWS.map(r => ({ ...r, status: 'approved' }));
+    if (setting && setting.value) {
+      try {
+        const parsed = JSON.parse(setting.value);
+        if (Array.isArray(parsed)) currentList = parsed;
+      } catch (e) {}
+    }
+
+    const updatedList = currentList.map((r: any) => {
+      if (String(r.id) === String(id)) {
+        return { ...r, status };
+      }
+      return r;
+    });
+
+    await prisma.siteSetting.upsert({
+      where: { key: 'site_reviews' },
+      update: { value: JSON.stringify(updatedList) },
+      create: { key: 'site_reviews', value: JSON.stringify(updatedList) },
+    });
+
+    return NextResponse.json({ success: true, reviews: updatedList });
+  } catch (error: any) {
+    console.error('Error updating site review status:', error);
+    return NextResponse.json({ error: error.message || 'Failed to update status' }, { status: 500 });
   }
 }
 
@@ -202,6 +259,7 @@ export async function PUT(request: NextRequest) {
           rating: rating !== undefined ? Number(rating) : r.rating,
           role: role !== undefined ? role : r.role,
           visited: visited !== undefined ? visited : r.visited,
+          status: body.status !== undefined ? body.status : r.status,
         };
       }
       return r;

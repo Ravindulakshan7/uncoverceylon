@@ -1,65 +1,100 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, MapPin } from 'lucide-react';
 
-const HERO_PLACES = [
+export interface HeroSlideData {
+  id: number | string;
+  image_url: string;
+  location: string;
+  province: string;
+  sort_order?: number;
+}
+
+const SIGIRIYA_MAIN_SLIDE = {
+  id: 'sigiriya-main',
+  title: 'Sigiriya Rock Fortress',
+  province: 'Central Province',
+  image: 'https://images.unsplash.com/photo-1588598198321-9735fd52455b?auto=format&fit=crop&w=2400&q=85',
+};
+
+const FALLBACK_SLIDES = [
   {
-    id: 1,
-    title: 'Sigiriya Rock Fortress',
-    province: 'Central Province',
-    tag: 'Ancient Citadel',
-    image: 'https://images.unsplash.com/photo-1588598198321-9735fd52455b?auto=format&fit=crop&w=2400&q=85',
-  },
-  {
-    id: 2,
+    id: 'nine-arch',
     title: 'Nine Arch Bridge, Ella',
     province: 'Uva Province',
-    tag: 'Scenic Railway',
     image: 'https://images.unsplash.com/photo-1546708973-b339540b5162?auto=format&fit=crop&w=2400&q=85',
   },
   {
-    id: 3,
+    id: 'mirissa-hill',
     title: 'Coconut Tree Hill, Mirissa',
     province: 'Southern Coast',
-    tag: 'Tropical Shores',
     image: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=2400&q=85',
   },
   {
-    id: 4,
+    id: 'tea-country',
     title: 'Misty Tea Country, Nuwara Eliya',
     province: 'Central Highlands',
-    tag: 'Emerald Valleys',
     image: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=2400&q=85',
   },
   {
-    id: 5,
+    id: 'galle-fort',
     title: 'Historic Galle Fort Lighthouse',
     province: 'Southern Coast',
-    tag: 'Maritime Citadel',
     image: 'https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?auto=format&fit=crop&w=2400&q=85',
   },
 ];
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  initialSlides?: HeroSlideData[];
+}
+
+export default function HeroSection({ initialSlides = [] }: HeroSectionProps) {
+  const [dbSlides, setDbSlides] = useState<HeroSlideData[]>(initialSlides);
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  // Fetch latest slides from admin-configured database endpoint
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_PLACES.length);
-    }, 6000);
-    return () => clearInterval(timer);
+    fetch('/api/hero-slides')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.slides)) {
+          setDbSlides(data.slides);
+        }
+      })
+      .catch(() => {});
   }, []);
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % HERO_PLACES.length);
-  };
+  // Compute carousel slides: Sigiriya Rock Fortress is ALWAYS #1 as required
+  const slides = useMemo(() => {
+    const additionalSlides =
+      dbSlides.length > 0
+        ? dbSlides
+            .filter((s) => !s.location?.toLowerCase().includes('sigiriya'))
+            .map((s) => ({
+              id: s.id,
+              title: s.location,
+              province: s.province,
+              image: s.image_url,
+            }))
+        : FALLBACK_SLIDES;
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + HERO_PLACES.length) % HERO_PLACES.length);
-  };
+    return [SIGIRIYA_MAIN_SLIDE, ...additionalSlides];
+  }, [dbSlides]);
+
+  // Slide rotation timer
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [slides.length]);
+
+  const activeIndex = currentSlide % slides.length;
+  const activeSlide = slides[activeIndex] || SIGIRIYA_MAIN_SLIDE;
 
   const scrollToInterests = () => {
     if (typeof window !== 'undefined') {
@@ -76,11 +111,11 @@ export default function HeroSection() {
         
         {/* ━━━ Multi-Photo Destination Carousel with Smooth Crossfade & Ken Burns ━━━ */}
         <div className="absolute inset-0 z-0 overflow-hidden">
-          {HERO_PLACES.map((place, idx) => (
+          {slides.map((place, idx) => (
             <div
               key={place.id}
               className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                idx === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                idx === activeIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
               }`}
             >
               <Image
@@ -90,7 +125,7 @@ export default function HeroSection() {
                 priority={idx === 0}
                 sizes="100vw"
                 className={`object-cover object-[center_42%] transition-transform duration-[8000ms] ease-out ${
-                  idx === currentSlide ? 'scale-108' : 'scale-100'
+                  idx === activeIndex ? 'scale-108' : 'scale-100'
                 }`}
                 unoptimized
               />
@@ -152,23 +187,25 @@ export default function HeroSection() {
         <div className="absolute bottom-6 left-6 sm:bottom-8 sm:left-10 z-10 hidden sm:flex items-center gap-2.5 px-4 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white shadow-lg pointer-events-none">
           <MapPin className="w-3.5 h-3.5 text-[#3ddc9a] shrink-0" />
           <span className="text-xs font-bold tracking-wide">
-            {HERO_PLACES[currentSlide].title}
+            {activeSlide.title}
           </span>
-          <span className="text-[11px] text-white/70 font-medium">
-            · {HERO_PLACES[currentSlide].province}
-          </span>
+          {activeSlide.province && (
+            <span className="text-[11px] text-white/70 font-medium">
+              · {activeSlide.province}
+            </span>
+          )}
         </div>
 
-        {/* ━━━ Bottom Right: Minimalist Slide Indicators (Arrows removed) ━━━ */}
+        {/* ━━━ Bottom Right: Minimalist Slide Indicators ━━━ */}
         <div className="absolute bottom-5 right-6 sm:bottom-8 sm:right-10 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/35 backdrop-blur-md border border-white/20 shadow-md">
-          {HERO_PLACES.map((place, idx) => (
+          {slides.map((place, idx) => (
             <button
               key={place.id}
               type="button"
               onClick={() => setCurrentSlide(idx)}
               aria-label={`Go to slide ${idx + 1}`}
               className={`transition-all duration-300 rounded-full cursor-pointer ${
-                idx === currentSlide
+                idx === activeIndex
                   ? 'w-6 h-2 bg-white'
                   : 'w-2 h-2 bg-white/40 hover:bg-white/75'
               }`}

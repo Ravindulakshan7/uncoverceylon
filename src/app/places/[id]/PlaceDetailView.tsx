@@ -42,7 +42,7 @@ interface PlaceDetailViewProps {
 }
 
 // Clean Real Traveler Photos (NO fake stock images)
-type TabId = 'overview' | 'things' | 'reviews' | 'photos' | 'qa' | 'nearby';
+type TabId = 'overview' | 'reviews' | 'photos' | 'qa' | 'nearby';
 
 export default function PlaceDetailView({
   place,
@@ -114,7 +114,7 @@ export default function PlaceDetailView({
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY + 140;
-      const sectionIds: TabId[] = ['overview', 'things', 'reviews', 'photos', 'qa', 'nearby'];
+      const sectionIds: TabId[] = ['overview', 'reviews', 'photos', 'qa', 'nearby'];
       for (let i = sectionIds.length - 1; i >= 0; i--) {
         const el = document.getElementById(sectionIds[i]);
         if (el && el.offsetTop <= scrollY) {
@@ -266,7 +266,6 @@ export default function PlaceDetailView({
           <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto scrollbar-none py-3 text-xs sm:text-sm font-bold">
             {[
               { id: 'overview' as TabId, label: 'Overview' },
-              { id: 'things' as TabId, label: 'Things to do' },
               { id: 'reviews' as TabId, label: `Reviews (${reviews.length > 0 ? reviews.length : place.review_count})` },
               { id: 'photos' as TabId, label: 'Photos' },
               { id: 'qa' as TabId, label: 'Q&A' },
@@ -404,113 +403,6 @@ export default function PlaceDetailView({
                     </li>
                   ))}
                 </ul>
-              </div>
-            </section>
-
-            {/* ━━━ #THINGS TO DO NEARBY (SCREENSHOT 4: REAL PLACES WITH LIVE DISTANCE) ━━━ */}
-            <section id="things" className="space-y-4 pt-6 border-t border-[#f0f0f0]">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-extrabold text-[#000a12] tracking-tight">
-                  Things to do nearby
-                </h2>
-                <p className="text-xs sm:text-sm text-[#545454] font-medium">
-                  Curated places and experiences near {place.location}
-                </p>
-              </div>
-
-              <div className="grid gap-3.5">
-                {experiencePlaces.length > 0 ? (
-                  experiencePlaces.map((np) => {
-                    const placeDist = formatDistanceTo(np.lat, np.lng, np.distance_km);
-                    return (
-                      <article
-                        key={np.id}
-                        className="grid grid-cols-1 sm:grid-cols-[120px_1fr_auto] gap-4 p-3.5 sm:p-4 border border-[#e0e0e0] rounded-xl items-center hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-[#cfcfcf] transition-all bg-white group"
-                      >
-                        <div className="w-full sm:w-[120px] h-32 sm:h-[90px] rounded-lg overflow-hidden bg-[#e8e8e8] shrink-0 relative">
-                          <Image
-                            src={np.image_url}
-                            alt={np.name}
-                            fill
-                            className="object-cover group-hover:scale-106 transition-transform duration-700 ease-out"
-                            unoptimized
-                          />
-                        </div>
-                        <div className="space-y-1 min-w-0">
-                          <Link href={`/places/${np.id}`}>
-                            <h4 className="text-[15px] font-extrabold text-[#000a12] group-hover:text-[#00aa6c] transition-colors leading-snug">
-                              {np.name}
-                            </h4>
-                          </Link>
-                          <p className="text-[13px] text-[#545454] leading-relaxed line-clamp-2">
-                            {np.short_description || np.description}
-                          </p>
-                          <div className="flex flex-wrap items-center gap-2 pt-0.5 text-xs">
-                            <div className="flex items-center gap-1.5 font-bold text-[#000a12]">
-                              <TripAdvisorRatingDots rating={np.rating} size="sm" />
-                              <span>{np.rating.toFixed(1)}</span>
-                              <span className="text-[#767676] font-normal">({np.review_count})</span>
-                            </div>
-                            <span className="text-[#c0c0c0]">·</span>
-                            {/* Live Distance Badge (podiyaya inna thna idan durath pennanna) */}
-                            <span
-                              suppressHydrationWarning={true}
-                              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#00aa6c] bg-[#e6f7f0] border border-[#a3e6cd] px-2 py-0.5 rounded-full"
-                            >
-                              <Navigation className="w-3 h-3 shrink-0" />
-                              <span suppressHydrationWarning={true}>
-                                {placeDist.isLive ? `${placeDist.text} from you` : placeDist.text}
-                              </span>
-                            </span>
-                          </div>
-                        </div>
-                        <Link
-                          href={`/places/${np.id}`}
-                          className="inline-flex items-center justify-center gap-1.5 px-5 py-2 rounded-full bg-[#00aa6c] hover:bg-[#008a58] text-white text-xs font-bold transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
-                        >
-                          View
-                        </Link>
-                      </article>
-                    );
-                  })
-                ) : (
-                  thingsToDo.map((item, idx) => (
-                    <article
-                      key={idx}
-                      className="grid grid-cols-1 sm:grid-cols-[120px_1fr_auto] gap-4 p-3.5 sm:p-4 border border-[#e0e0e0] rounded-xl items-center hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-[#cfcfcf] transition-all bg-white group"
-                    >
-                      <div className="w-full sm:w-[120px] h-32 sm:h-[90px] rounded-lg overflow-hidden bg-[#e8e8e8] shrink-0 relative">
-                        <Image
-                          src={travelerPhotos[idx % travelerPhotos.length] || place.image_url}
-                          alt={item.title}
-                          fill
-                          className="object-cover group-hover:scale-106 transition-transform duration-700 ease-out"
-                          unoptimized
-                        />
-                      </div>
-                      <div className="space-y-1 min-w-0">
-                        <h4 className="text-[15px] font-extrabold text-[#000a12] group-hover:text-[#00aa6c] transition-colors leading-snug">
-                          {item.title}
-                        </h4>
-                        <p className="text-[13px] text-[#545454] leading-relaxed line-clamp-2">
-                          {item.desc}
-                        </p>
-                        <div className="flex items-center gap-1.5 pt-0.5 text-xs text-[#545454] font-semibold">
-                          <TripAdvisorRatingDots rating={5} size="sm" />
-                          <span>4.9 · Highly Recommended</span>
-                        </div>
-                      </div>
-                      <a
-                        href={`https://www.google.com/maps?q=${encodeURIComponent(`${place.name} ${item.title} Sri Lanka`)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-[#00aa6c] hover:bg-[#008a58] text-white text-xs font-bold transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
-                      >
-                        View
-                      </a>
-                    </article>
-                  ))
-                )}
               </div>
             </section>
 

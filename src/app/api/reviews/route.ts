@@ -142,16 +142,14 @@ export async function POST(request: NextRequest) {
         author: cleanAuthor,
         rating: numRating,
         comment: cleanComment,
-        status: 'approved',
+        status: 'pending',
       },
     });
 
-    await updatePlaceReviewStats(numPlaceId);
-
     return NextResponse.json({
       id: newReview.id,
-      status: 'approved',
-      message: 'Thank you! Review posted successfully.',
+      status: 'pending',
+      message: 'Thank you! Your review has been submitted for moderation and will appear once approved.',
     }, { status: 201 });
   } catch (error) {
     console.error('POST /api/reviews error:', error);

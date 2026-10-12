@@ -122,8 +122,7 @@ export default function TravelerReviewsSection() {
 
       const data = await res.json();
       if (res.ok && data.review) {
-        setReviews((prev) => [data.review, ...prev]);
-        toast.success('Thank you! Your review has been published.');
+        toast.success('Thank you! Your review has been submitted for moderation. It will appear once approved by an admin. ⏳');
         setModalOpen(false);
         setComment('');
       } else {

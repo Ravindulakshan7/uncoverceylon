@@ -13,7 +13,7 @@ import { ArrowRight, Map, Compass, Sun, Train, ShieldCheck } from 'lucide-react'
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [placesCount, foodsCount, cultureCount, experiencesCount, topPlacesRaw] = await Promise.all([
+  const [placesCount, foodsCount, cultureCount, experiencesCount, topPlacesRaw, heroSlides] = await Promise.all([
     prisma.place.count().catch(() => 0),
     prisma.foodItem.count().catch(() => 98),
     prisma.cultureItem.count().catch(() => 76),
@@ -22,6 +22,11 @@ export default async function HomePage() {
       .findMany({
         take: 8,
         orderBy: [{ featured: 'desc' }, { rating: 'desc' }],
+      })
+      .catch(() => []),
+    prisma.heroSlide
+      .findMany({
+        orderBy: { sort_order: 'asc' },
       })
       .catch(() => []),
   ]);
@@ -48,7 +53,7 @@ export default async function HomePage() {
     <div className="min-h-screen w-full max-w-none bg-white text-slate-900 font-sans">
       
       {/* ━━━ 1. WANDER.LK FULL-SCREEN ROUNDED HERO SLIDER ━━━ */}
-      <HeroSection />
+      <HeroSection initialSlides={heroSlides} />
 
       {/* ━━━ 2. UNCOVER CEYLON BY INTEREST (4 Cards Grid) ━━━ */}
       <InterestsSection counts={interestCounts} />
