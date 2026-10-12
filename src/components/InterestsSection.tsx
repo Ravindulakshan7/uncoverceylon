@@ -75,13 +75,13 @@ export default function InterestsSection({ counts }: InterestsSectionProps) {
         </p>
       </div>
 
-      {/* ━━━ 4 Portrait Cards Grid ━━━ */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
+      {/* ━━━ 4 Portrait Cards Grid (All 4 in 1 row on mobile & desktop) ━━━ */}
+      <div className="grid grid-cols-4 gap-2 sm:gap-6 px-1 sm:px-0">
         {items.map((item) => (
           <Link
             key={item.id}
             href={item.href}
-            className="group relative aspect-[4/5] w-full rounded-[26px] overflow-hidden isolate shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-[#0f1b2d] cursor-pointer block"
+            className="group relative aspect-[3/4] sm:aspect-[4/5] w-full rounded-2xl sm:rounded-[26px] overflow-hidden isolate shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 bg-[#0f1b2d] cursor-pointer block"
           >
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
@@ -89,44 +89,44 @@ export default function InterestsSection({ counts }: InterestsSectionProps) {
                 src={item.image}
                 alt={item.title}
                 fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                sizes="(max-width: 640px) 25vw, (max-width: 1024px) 25vw, 25vw"
                 className="object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
                 unoptimized
               />
             </div>
 
             {/* Rich Multi-Stop Dark Gradient for readability */}
-            <div className="absolute inset-0 z-[1] bg-gradient-to-t from-[#0f1b2d]/95 via-[#0f1b2d]/35 via-50% to-transparent group-hover:from-[#0f1b2d] transition-colors pointer-events-none" />
+            <div className="absolute inset-0 z-[1] bg-gradient-to-t from-[#0f1b2d]/95 via-[#0f1b2d]/40 via-50% to-transparent group-hover:from-[#0f1b2d] transition-colors pointer-events-none" />
 
             {/* Top Right Frosted Count Badge */}
-            <div className="absolute top-4 right-4 z-10 pointer-events-none">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/25 text-white text-[11px] font-bold shadow-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#3ddc9a] shadow-[0_0_0_2px_rgba(61,220,154,0.3)] animate-pulse" />
+            <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 pointer-events-none">
+              <span className="inline-flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-black/40 sm:bg-white/20 backdrop-blur-md border border-white/20 text-white text-[9px] sm:text-[11px] font-bold shadow-xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#3ddc9a] shadow-[0_0_0_2px_rgba(61,220,154,0.3)] animate-pulse hidden xs:inline-block" />
                 <span>{item.count}</span>
               </span>
             </div>
 
-            {/* Bottom Content Area with Smooth Collapse & Settle Animation */}
-            <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 z-10 flex flex-col justify-end text-white">
+            {/* Bottom Content Area */}
+            <div className="absolute inset-x-0 bottom-0 p-2 sm:p-6 z-10 flex flex-col justify-end text-white">
               
               {/* Title & Animated Underline */}
               <div
                 className={`transition-all duration-700 ease-in-out ${
-                  isAutoHidden ? 'translate-y-3 group-hover:translate-y-0' : 'translate-y-0'
+                  isAutoHidden ? 'sm:translate-y-3 sm:group-hover:translate-y-0' : 'translate-y-0'
                 }`}
               >
-                <div className="relative inline-block w-fit">
-                  <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight">
+                <div className="relative inline-block w-full sm:w-fit text-center sm:text-left">
+                  <h3 className="text-xs sm:text-2xl font-black text-white tracking-tight leading-tight truncate sm:whitespace-normal">
                     {item.title}
                   </h3>
                   {/* Animated Green Underline on Hover */}
-                  <div className="h-[2.5px] w-0 group-hover:w-full bg-gradient-to-r from-[#00aa6c] to-[#3ddc9a] rounded-full transition-all duration-300 mt-1" />
+                  <div className="hidden sm:block h-[2.5px] w-0 group-hover:w-full bg-gradient-to-r from-[#00aa6c] to-[#3ddc9a] rounded-full transition-all duration-300 mt-1" />
                 </div>
               </div>
 
-              {/* Subtitle Sentence: Initially visible, smoothly collapses and fades after delay, re-expands on hover */}
+              {/* Subtitle Sentence: hidden on small screens, expands on hover on desktop */}
               <div
-                className={`transition-all duration-700 ease-in-out overflow-hidden ${
+                className={`hidden sm:block transition-all duration-700 ease-in-out overflow-hidden ${
                   isAutoHidden
                     ? 'max-h-0 opacity-0 translate-y-2 group-hover:max-h-16 group-hover:opacity-100 group-hover:translate-y-0 group-hover:mt-2'
                     : 'max-h-16 opacity-100 translate-y-0 mt-2'

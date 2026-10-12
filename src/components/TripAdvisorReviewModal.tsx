@@ -40,7 +40,7 @@ export default function TripAdvisorReviewModal({
   place,
   onReviewSubmitted,
 }: TripAdvisorReviewModalProps) {
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
 
   // Primary Rating
   const [rating, setRating] = useState<number>(5);
@@ -64,29 +64,13 @@ export default function TripAdvisorReviewModal({
   // Review text & title
   const [reviewTitle, setReviewTitle] = useState('');
   const [comment, setComment] = useState('');
-  const [guestName, setGuestName] = useState('');
   const [website, setWebsite] = useState(''); // honeypot
   const [certified, setCertified] = useState(false);
 
   // Traveler photos
   const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
-
-  // Anti-spam math for guests
-  const [challenge, setChallenge] = useState(() => ({
-    num1: Math.floor(Math.random() * 6) + 3,
-    num2: Math.floor(Math.random() * 5) + 2,
-  }));
-  const [userAnswer, setUserAnswer] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  const refreshChallenge = () => {
-    setChallenge({
-      num1: Math.floor(Math.random() * 6) + 3,
-      num2: Math.floor(Math.random() * 5) + 2,
-    });
-    setUserAnswer('');
-  };
 
   const handleChipClick = (chip: string) => {
     const chipText = `${chip}: `;
@@ -163,11 +147,13 @@ export default function TripAdvisorReviewModal({
       return;
     }
 
-    const authorName = user ? user.name : guestName.trim();
-    if (!authorName) {
-      toast.error('Please enter your name or sign in.');
+    if (!user) {
+      toast.error('Please sign in to submit a review.');
+      openAuthModal('signin');
       return;
     }
+
+    const authorName = user.name;
 
     if (rating === 0) {
       toast.error('Please select an overall rating score.');
@@ -182,15 +168,6 @@ export default function TripAdvisorReviewModal({
     if (!certified) {
       toast.error('Please check the certification box to verify your review.');
       return;
-    }
-
-    // Anti-spam check for guests
-    if (!user) {
-      if (parseInt(userAnswer.trim(), 10) !== challenge.num1 + challenge.num2) {
-        toast.error('Incorrect human verification answer. Please try again.');
-        refreshChallenge();
-        return;
-      }
     }
 
     setSubmitting(true);
@@ -242,7 +219,6 @@ export default function TripAdvisorReviewModal({
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to submit review';
       toast.error(msg);
-      refreshChallenge();
     } finally {
       setSubmitting(false);
     }
@@ -631,47 +607,52 @@ export default function TripAdvisorReviewModal({
                 )}
               </div>
 
-              {/* 6. Guest Name & Anti-Spam Check if not logged in */}
-              {!user && (
-                <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3">
-                  <div>
-                    <label className="block text-xs font-extrabold text-slate-900 uppercase tracking-wider mb-1">
-                      Your Name <span className="text-rose-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={guestName}
-                      onChange={(e) => setGuestName(e.target.value)}
-                      placeholder="e.g. Kasun Perera"
-                      required
-                      className="w-full bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 text-sm focus:border-[#00aa6c] outline-none"
+              {/* 6. Signed-in User Info or Sign In Prompt */}
+              {user ? (
+                <div className="flex items-center gap-3 p-4 bg-emerald-50/80 border border-emerald-200 rounded-2xl">
+                  {user.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={user.image}
+                      alt={user.name}
+                      className="w-10 h-10 rounded-full object-cover border border-emerald-300 shrink-0"
                     />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-[#00aa6c] text-white font-black flex items-center justify-center shrink-0">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800 block">
+                      Posting as verified traveler
+                    </span>
+                    <span className="text-sm font-extrabold text-[#000a12]">{user.name}</span>
                   </div>
-
-                  <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
-                      <span>Anti-spam check:</span>
-                      <span className="px-2 py-0.5 rounded bg-white border border-slate-300 font-mono text-emerald-800 font-bold">
-                        {challenge.num1} + {challenge.num2} = ?
-                      </span>
+                </div>
+              ) : (
+                <div className="p-5 bg-amber-50 border border-amber-200 rounded-2xl space-y-2.5">
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-sm font-extrabold text-[#000a12]">
+                        Sign in required to post a review
+                      </h4>
+                      <p className="text-xs text-[#545454] leading-relaxed mt-0.5">
+                        Only registered and signed-in explorers can submit reviews and photos to protect community authenticity.
+                      </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        value={userAnswer}
-                        onChange={(e) => setUserAnswer(e.target.value)}
-                        placeholder="Answer"
-                        required
-                        className="w-20 bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-slate-900 text-sm focus:border-[#00aa6c] outline-none font-bold"
-                      />
-                      <button
-                        type="button"
-                        onClick={refreshChallenge}
-                        className="text-xs text-slate-400 hover:text-slate-600 underline cursor-pointer"
-                      >
-                        Change
-                      </button>
-                    </div>
+                  </div>
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        openAuthModal('signin');
+                      }}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold text-xs shadow-xs cursor-pointer active:scale-95"
+                    >
+                      <span>Sign in to continue</span>
+                    </button>
                   </div>
                 </div>
               )}

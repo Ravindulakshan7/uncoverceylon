@@ -561,13 +561,13 @@ function MapTopToolbar({
   }, [map, userLocation, setUserLocation]);
 
   return (
-    <div className="absolute top-4 right-4 z-[400] flex flex-wrap items-center justify-end gap-2 max-w-[calc(100vw-2rem)]">
+    <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-[400] flex flex-wrap items-center justify-end gap-1.5 sm:gap-2 max-w-[calc(100vw-1.5rem)]">
       {/* 1. Map Layer Switcher */}
-      <div className="flex items-center bg-white/95 backdrop-blur-md rounded-xl p-1 border border-slate-200/90 shadow-md">
+      <div className="flex items-center bg-white/95 backdrop-blur-md rounded-xl p-0.5 sm:p-1 border border-slate-200/90 shadow-md">
         <button
           type="button"
           onClick={() => setMapStyle('streets')}
-          className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+          className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer ${
             mapStyle === 'streets'
               ? 'bg-sky-600 text-white shadow-xs'
               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -578,18 +578,18 @@ function MapTopToolbar({
         <button
           type="button"
           onClick={() => setMapStyle('satellite')}
-          className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+          className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer ${
             mapStyle === 'satellite'
               ? 'bg-sky-600 text-white shadow-xs'
               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
-          🛰️ Satellite
+          🛰️ Sat
         </button>
         <button
           type="button"
           onClick={() => setMapStyle('terrain')}
-          className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+          className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer ${
             mapStyle === 'terrain'
               ? 'bg-sky-600 text-white shadow-xs'
               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -605,9 +605,9 @@ function MapTopToolbar({
           type="button"
           onClick={onResetView}
           title="Reset map view to whole island"
-          className="bg-white/95 hover:bg-slate-50 text-slate-800 px-3 py-1.5 rounded-xl shadow-md border border-slate-200/90 transition-all hover:scale-105 active:scale-95 text-xs font-bold flex items-center gap-1.5 backdrop-blur-md cursor-pointer h-[34px]"
+          className="bg-white/95 hover:bg-slate-50 text-slate-800 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl shadow-md border border-slate-200/90 transition-all hover:scale-105 active:scale-95 text-[11px] sm:text-xs font-bold flex items-center gap-1 sm:gap-1.5 backdrop-blur-md cursor-pointer h-[30px] sm:h-[34px]"
         >
-          <Globe className="w-3.5 h-3.5 text-sky-600" />
+          <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-600" />
           <span className="hidden sm:inline">Whole Island</span>
         </button>
       )}
@@ -618,7 +618,7 @@ function MapTopToolbar({
         onClick={handleLocateMe}
         disabled={isLocating}
         title="Find my location (Live GPS)"
-        className={`px-3 py-1.5 rounded-xl shadow-md border transition-all hover:scale-105 active:scale-95 text-xs font-bold flex items-center gap-1.5 backdrop-blur-md cursor-pointer h-[34px] ${
+        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl shadow-md border transition-all hover:scale-105 active:scale-95 text-[11px] sm:text-xs font-bold flex items-center gap-1 sm:gap-1.5 backdrop-blur-md cursor-pointer h-[30px] sm:h-[34px] ${
           userLocation
             ? 'bg-sky-50 border-sky-300 text-sky-700 ring-2 ring-sky-500/20'
             : 'bg-white/95 hover:bg-slate-50 border-slate-200/90 text-slate-800'
@@ -626,7 +626,7 @@ function MapTopToolbar({
       >
         {isLocating ? (
           <>
-            <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-600" />
+            <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin text-sky-600" />
             <span>Locating...</span>
           </>
         ) : userLocation ? (
@@ -635,11 +635,11 @@ function MapTopToolbar({
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
             </span>
-            <span>My Location</span>
+            <span>My GPS</span>
           </>
         ) : (
           <>
-            <Navigation className="w-3.5 h-3.5 text-sky-600 fill-sky-500/20" />
+            <Navigation className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-600 fill-sky-500/20" />
             <span>Locate Me</span>
           </>
         )}

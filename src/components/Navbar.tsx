@@ -174,11 +174,11 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {/* ━━━ "PLAN WITH AI" PILL BUTTON (Matching User's Screenshot) ━━━ */}
+            {/* ━━━ "PLAN WITH AI" PILL BUTTON (Desktop only; available in mobile drawer) ━━━ */}
             <button
               type="button"
               onClick={() => setAiModalOpen(true)}
-              className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-white hover:bg-emerald-50/60 border border-emerald-400 text-[#0f1b2d] font-bold text-xs sm:text-[13px] shadow-[0_2px_8px_rgba(16,185,129,0.12)] hover:border-[#00aa6c] hover:shadow-[0_4px_14px_rgba(16,185,129,0.22)] transition-all cursor-pointer active:scale-95 shrink-0"
+              className="hidden md:inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-white hover:bg-emerald-50/60 border border-emerald-400 text-[#0f1b2d] font-bold text-xs sm:text-[13px] shadow-[0_2px_8px_rgba(16,185,129,0.12)] hover:border-[#00aa6c] hover:shadow-[0_4px_14px_rgba(16,185,129,0.22)] transition-all cursor-pointer active:scale-95 shrink-0"
             >
               <Sparkles className="w-4 h-4 text-[#00aa6c]" />
               <span>Plan with AI</span>
@@ -279,7 +279,7 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200/80 text-[#002b11] text-xs sm:text-[13px] font-bold border border-slate-200 transition-all cursor-pointer active:scale-95"
+                  className="flex items-center gap-1.5 sm:gap-2 p-1 sm:pl-1.5 sm:pr-3 sm:py-1 rounded-full bg-slate-100 hover:bg-slate-200/80 text-[#002b11] text-xs sm:text-[13px] font-bold border border-slate-200 transition-all cursor-pointer active:scale-95"
                 >
                   {user.image ? (
                     <img
@@ -292,8 +292,8 @@ export default function Navbar() {
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                   )}
-                  <span className="max-w-[100px] truncate">{user.name.split(' ')[0]}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-500" />
+                  <span className="hidden sm:inline max-w-[100px] truncate">{user.name.split(' ')[0]}</span>
+                  <ChevronDown className="hidden sm:inline w-3.5 h-3.5 text-slate-500" />
                 </button>
 
                 {/* Dropdown Card */}

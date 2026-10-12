@@ -118,9 +118,15 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionUser = getUserFromRequest(request);
+    if (!sessionUser) {
+      return NextResponse.json(
+        { error: 'Sign in required. Only registered and signed-in travelers can post reviews.' },
+        { status: 401 }
+      );
+    }
 
-    const cleanAuthor = sessionUser ? sessionUser.name : String(author).trim();
-    const cleanImage = sessionUser?.image || body.user_image || '';
+    const cleanAuthor = sessionUser.name;
+    const cleanImage = sessionUser.image || body.user_image || '';
     let cleanComment = String(comment).trim();
     if (Array.isArray(images) && images.length > 0 && !cleanComment.includes('<!--PHOTOS:')) {
       cleanComment = `${cleanComment}\n\n<!--PHOTOS:${JSON.stringify(images)}-->`;

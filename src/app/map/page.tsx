@@ -133,10 +133,10 @@ export default function MapPage() {
     minRating > 0;
 
   return (
-    <div className="pt-16 sm:pt-20 h-screen flex flex-col bg-[#f8fafc] overflow-hidden">
+    <div className="h-[calc(100dvh-64px)] sm:h-[calc(100dvh-70px)] flex flex-col bg-[#f8fafc] overflow-hidden">
       
       {/* ━━━ TOP BAR / EXPEDITION HEADER ━━━ */}
-      <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex-shrink-0 z-30 shadow-xs">
+      <div className="bg-white border-b border-slate-200 px-3 sm:px-6 py-2.5 sm:py-3 flex-shrink-0 z-30 shadow-xs">
         <div className="max-w-full flex items-center justify-between gap-4">
           
           {/* Title & Stats */}

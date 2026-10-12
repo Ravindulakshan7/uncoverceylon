@@ -12,6 +12,7 @@ import {
 import { Place, Review } from '@/types';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useLocation } from '@/context/LocationContext';
+import { useAuth } from '@/context/AuthContext';
 import DestinationGallery from './DestinationGallery';
 import ReviewSection from './ReviewSection';
 import { TripAdvisorRatingDots } from '@/components/TripAdvisorRating';
@@ -60,6 +61,16 @@ export default function PlaceDetailView({
 
   const { getDetailedFee } = useCurrency();
   const { formatDistanceTo, requestLocation, status: locationStatus } = useLocation();
+  const { user, openAuthModal } = useAuth();
+
+  const handleOpenReviewModal = () => {
+    if (!user) {
+      toast('Please sign in to write a review and upload photos! ✈️', { icon: '🔐' });
+      openAuthModal('signin');
+      return;
+    }
+    setIsReviewModalOpen(true);
+  };
 
   const feeData = getDetailedFee(place.entry_fee);
   const distanceInfo = formatDistanceTo(place.lat, place.lng, place.distance_km);
@@ -217,7 +228,7 @@ export default function PlaceDetailView({
 
             <button
               type="button"
-              onClick={() => setIsReviewModalOpen(true)}
+              onClick={handleOpenReviewModal}
               className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-[#e0e0e0] hover:border-[#000a12] hover:bg-[#f2f2f2] text-[#000a12] font-bold text-xs sm:text-sm transition-all cursor-pointer bg-white"
             >
               <Edit3 className="w-3.5 h-3.5" />
@@ -508,7 +519,7 @@ export default function PlaceDetailView({
               <ReviewSection
                 place={place}
                 initialReviews={reviews}
-                onOpenReviewModal={() => setIsReviewModalOpen(true)}
+                onOpenReviewModal={handleOpenReviewModal}
               />
             </section>
 
@@ -525,7 +536,7 @@ export default function PlaceDetailView({
                 </div>
                 <button
                   type="button"
-                  onClick={() => setIsReviewModalOpen(true)}
+                  onClick={handleOpenReviewModal}
                   className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#e0e0e0] hover:border-[#000a12] hover:bg-[#f2f2f2] text-[#000a12] font-bold text-xs transition-all cursor-pointer bg-white shrink-0"
                 >
                   <Camera className="w-3.5 h-3.5 text-[#00aa6c]" />
