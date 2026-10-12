@@ -78,12 +78,12 @@ export default function ReviewSection({
   return (
     <div className="space-y-6" id="reviews">
       {/* ━━━ 1. TRIPADVISOR REVIEWS HEADER ━━━ */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#f0f0f0]">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-[#000a12] tracking-tight">
             Traveler reviews
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium">
+          <p className="text-xs sm:text-sm text-[#545454] font-medium">
             Verified community ratings and tips from recent explorers
           </p>
         </div>
@@ -91,7 +91,7 @@ export default function ReviewSection({
         <button
           type="button"
           onClick={handleOpenModal}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-slate-900 hover:bg-slate-900 hover:text-white text-slate-900 font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-2xs active:scale-95 shrink-0"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-[#e0e0e0] hover:border-[#000a12] hover:bg-[#f2f2f2] text-[#000a12] font-bold text-xs sm:text-sm transition-all cursor-pointer shadow-xs active:scale-95 shrink-0 bg-white"
         >
           <Edit3 className="w-3.5 h-3.5" />
           <span>Write a review</span>
@@ -99,16 +99,16 @@ export default function ReviewSection({
       </div>
 
       {/* ━━━ 2. TRIPADVISOR RATING SUMMARY & DISTRIBUTION BARS ━━━ */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 rounded-2xl bg-slate-50/70 border border-slate-200/80 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-5 sm:p-6 rounded-xl bg-[#fafafa] border border-[#e0e0e0] items-center">
         {/* Big Score Column */}
-        <div className="md:col-span-4 text-center md:border-r md:border-slate-200/80 md:pr-6 space-y-1.5">
-          <div className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight leading-none">
+        <div className="md:col-span-4 text-center md:border-r md:border-[#e0e0e0] md:pr-6 space-y-1.5">
+          <div className="text-5xl font-extrabold text-[#000a12] tracking-tight leading-none">
             {place.rating.toFixed(1)}
           </div>
           <div className="flex justify-center pt-1">
             <TripAdvisorRatingDots rating={place.rating} size="lg" />
           </div>
-          <div className="text-xs sm:text-sm font-bold text-slate-500 pt-0.5">
+          <div className="text-xs sm:text-sm font-bold text-[#545454] pt-0.5">
             {reviews.length > 0 ? reviews.length.toLocaleString() : place.review_count.toLocaleString()} reviews
           </div>
         </div>
@@ -168,7 +168,7 @@ export default function ReviewSection({
             return (
               <article
                 key={rev.id}
-                className="p-5 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-2xs space-y-3 transition-all hover:border-slate-300"
+                className="p-5 sm:p-6 bg-white rounded-xl border border-[#e0e0e0] shadow-xs space-y-3 transition-all hover:border-[#cfcfcf]"
               >
                 {/* Author row */}
                 <div className="flex items-center justify-between gap-3">
@@ -177,11 +177,11 @@ export default function ReviewSection({
                       <img
                         src={rev.user_image}
                         alt={rev.author}
-                        className="w-10 h-10 rounded-full object-cover ring-1 ring-slate-200 shrink-0"
+                        className="w-10 h-10 rounded-full object-cover ring-1 ring-[#e0e0e0] shrink-0"
                       />
                     ) : (
                       <div
-                        className={`w-10 h-10 rounded-full ${avatarColor} text-white font-black text-sm flex items-center justify-center shrink-0 shadow-2xs`}
+                        className={`w-10 h-10 rounded-full ${avatarColor} text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs`}
                       >
                         {rev.author.charAt(0).toUpperCase()}
                       </div>
@@ -189,18 +189,18 @@ export default function ReviewSection({
 
                     <div>
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-bold text-slate-900 text-sm">{rev.author}</span>
+                        <span className="font-bold text-[#000a12] text-sm">{rev.author}</span>
                         {rev.user_id && (
                           <span
                             title="Verified Traveler"
-                            className="inline-flex items-center gap-0.5 text-[10px] font-black uppercase tracking-wider text-[#00aa6c] bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded"
+                            className="inline-flex items-center gap-0.5 text-[10px] font-black uppercase tracking-wider text-[#00aa6c] bg-[#e6f7f0] border border-[#a3e6cd] px-1.5 py-0.2 rounded"
                           >
                             <ShieldCheck className="w-3 h-3 text-[#00aa6c]" />
                             Verified
                           </span>
                         )}
                       </div>
-                      <span className="text-xs text-slate-400 font-medium">
+                      <span className="text-xs text-[#767676] font-medium">
                         Written {formatDate(rev.created_at)}
                       </span>
                     </div>
@@ -214,23 +214,23 @@ export default function ReviewSection({
                 {/* Review Title & Body */}
                 <div className="space-y-1.5">
                   {title && (
-                    <h4 className="font-extrabold text-slate-900 text-sm sm:text-base leading-snug">
+                    <h4 className="font-extrabold text-[#000a12] text-sm sm:text-base leading-snug">
                       {title}
                     </h4>
                   )}
-                  <p className="text-slate-700 text-xs sm:text-sm leading-relaxed whitespace-pre-line font-medium">
+                  <p className="text-[#1a1a1a] text-xs sm:text-sm leading-relaxed whitespace-pre-line font-normal">
                     {body}
                   </p>
                 </div>
 
                 {/* Footer with Helpful button */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <div className="pt-2 border-t border-[#f0f0f0] flex items-center justify-between text-xs text-[#545454]">
                   <button
                     type="button"
                     onClick={() => toggleHelpful(rev.id)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-slate-200 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold transition-all cursor-pointer bg-slate-50/50"
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#e0e0e0] hover:border-[#000a12] text-[#000a12] font-semibold transition-all cursor-pointer bg-white"
                   >
-                    <ThumbsUp className="w-3 h-3 text-slate-500" />
+                    <ThumbsUp className="w-3 h-3 text-[#545454]" />
                     <span>Helpful · {helpfulCount}</span>
                   </button>
                 </div>

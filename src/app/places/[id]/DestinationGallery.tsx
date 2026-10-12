@@ -10,6 +10,8 @@ interface DestinationGalleryProps {
   title: string;
   category: string;
   location: string;
+  externalLightboxIndex?: number | null;
+  onCloseExternalLightbox?: () => void;
 }
 
 export default function DestinationGallery({
@@ -17,10 +19,24 @@ export default function DestinationGallery({
   title,
   category,
   location,
+  externalLightboxIndex,
+  onCloseExternalLightbox,
 }: DestinationGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [failedIndices, setFailedIndices] = useState<Set<number>>(new Set());
+
+  React.useEffect(() => {
+    if (externalLightboxIndex !== undefined && externalLightboxIndex !== null) {
+      setActiveIndex(externalLightboxIndex);
+      setIsLightboxOpen(true);
+    }
+  }, [externalLightboxIndex]);
+
+  const closeLightbox = () => {
+    setIsLightboxOpen(false);
+    onCloseExternalLightbox?.();
+  };
 
   const handleImageError = (index: number) => {
     setFailedIndices((prev) => {
@@ -142,7 +158,7 @@ export default function DestinationGallery({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6"
-            onClick={() => setIsLightboxOpen(false)}
+            onClick={closeLightbox}
           >
             {/* Header bar */}
             <div
@@ -159,7 +175,7 @@ export default function DestinationGallery({
                   {activeIndex + 1} / {displayImages.length}
                 </span>
                 <button
-                  onClick={() => setIsLightboxOpen(false)}
+                  onClick={closeLightbox}
                   className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />

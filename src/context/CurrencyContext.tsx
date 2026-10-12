@@ -26,11 +26,20 @@ const RATES_FROM_USD: Record<CurrencyCode, number> = {
   GBP: 0.78,
 };
 
+export interface DetailedFee {
+  primary: string;
+  secondary: string;
+  isFree: boolean;
+  amountUSD: number;
+  amountInCurrency: number;
+}
+
 interface CurrencyContextType {
   currency: CurrencyCode;
   setCurrency: (c: CurrencyCode) => void;
   currencyInfo: CurrencyInfo;
   convertFee: (feeStr: string | null | undefined) => string;
+  getDetailedFee: (feeStr: string | null | undefined) => DetailedFee;
 }
 
 const CurrencyContext = createContext<CurrencyContextType>({
@@ -38,6 +47,13 @@ const CurrencyContext = createContext<CurrencyContextType>({
   setCurrency: () => {},
   currencyInfo: CURRENCIES.USD,
   convertFee: (str) => str || 'Free',
+  getDetailedFee: () => ({
+    primary: 'Free',
+    secondary: 'Free admission for all travelers',
+    isFree: true,
+    amountUSD: 0,
+    amountInCurrency: 0,
+  }),
 });
 
 const STORAGE_KEY = 'uc_preferred_currency';
@@ -122,6 +138,88 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     return trimmed;
   };
 
+  const getDetailedFee = (feeStr: string | null | undefined): DetailedFee => {
+    if (!feeStr || typeof feeStr !== 'string') {
+      return {
+        primary: 'Free',
+        secondary: 'Free admission for all travelers',
+        isFree: true,
+        amountUSD: 0,
+        amountInCurrency: 0,
+      };
+    }
+    const trimmed = feeStr.trim();
+    if (trimmed.toLowerCase().includes('free')) {
+      return {
+        primary: 'Free',
+        secondary: 'Free admission for all travelers',
+        isFree: true,
+        amountUSD: 0,
+        amountInCurrency: 0,
+      };
+    }
+
+    let amountUSD = 0;
+    const usdMatch = trimmed.match(/(?:USD|\$)\s*(\d+(?:\.\d+)?)/i);
+    if (usdMatch) {
+      amountUSD = parseFloat(usdMatch[1]);
+    } else {
+      const lkrMatch = trimmed.match(/(?:LKR|Rs\.?)\s*(\d+(?:,\d+)?)/i);
+      if (lkrMatch) {
+        const lkr = parseFloat(lkrMatch[1].replace(/,/g, ''));
+        amountUSD = lkr / RATES_FROM_USD.LKR;
+      } else {
+        const anyNum = trimmed.match(/(\d+(?:\.\d+)?)/);
+        if (anyNum) {
+          amountUSD = parseFloat(anyNum[1]);
+        }
+      }
+    }
+
+    if (amountUSD <= 0) {
+      return {
+        primary: trimmed,
+        secondary: 'Standard admission rate',
+        isFree: false,
+        amountUSD: 0,
+        amountInCurrency: 0,
+      };
+    }
+
+    const rate = RATES_FROM_USD[currency];
+    const amountInCurrency = amountUSD * rate;
+    const amountLKR = amountUSD * RATES_FROM_USD.LKR;
+
+    let primary = '';
+    if (currency === 'LKR') {
+      primary = `Rs. ${Math.round(amountInCurrency).toLocaleString('en-US')}`;
+    } else if (currency === 'USD') {
+      primary = `$${amountUSD < 10 && amountUSD % 1 !== 0 ? amountUSD.toFixed(2) : Math.round(amountUSD)}`;
+    } else if (currency === 'EUR') {
+      primary = `€${amountInCurrency < 10 && amountInCurrency % 1 !== 0 ? amountInCurrency.toFixed(2) : Math.round(amountInCurrency)}`;
+    } else if (currency === 'GBP') {
+      primary = `£${amountInCurrency < 10 && amountInCurrency % 1 !== 0 ? amountInCurrency.toFixed(2) : Math.round(amountInCurrency)}`;
+    }
+
+    const usdFormatted = `$${amountUSD < 10 && amountUSD % 1 !== 0 ? amountUSD.toFixed(2) : Math.round(amountUSD)} USD`;
+    const lkrFormatted = `${Math.round(amountLKR).toLocaleString('en-US')} LKR`;
+
+    let secondary = '';
+    if (currency === 'USD') {
+      secondary = `for Foreigners · approx. ${lkrFormatted}`;
+    } else {
+      secondary = `for Foreigners · approx. ${usdFormatted}`;
+    }
+
+    return {
+      primary,
+      secondary,
+      isFree: false,
+      amountUSD,
+      amountInCurrency,
+    };
+  };
+
   return (
     <CurrencyContext.Provider
       value={{
@@ -129,6 +227,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
         setCurrency,
         currencyInfo: CURRENCIES[currency],
         convertFee,
+        getDetailedFee,
       }}
     >
       {children}

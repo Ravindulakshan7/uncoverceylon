@@ -1,25 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  MapPin, Clock, Tag, Ticket, Calendar,
-  ChevronLeft, ArrowUpRight, ArrowRight,
-  CheckCircle2, Compass, Sun, CloudSun,
-  Thermometer, Wind, ShieldCheck, Navigation,
-  Info, Edit3, Heart, Share2, Sparkles, Map,
-  Check
+  MapPin, Tag, Ticket, Calendar, Clock,
+  ChevronRight, ArrowRight, Compass,
+  Star, Camera, Sparkles, Navigation,
+  Edit3, Share2, Map, Check
 } from 'lucide-react';
 import { Place, Review } from '@/types';
+import { useCurrency } from '@/context/CurrencyContext';
+import { useLocation } from '@/context/LocationContext';
 import DestinationGallery from './DestinationGallery';
-import PlaceMap from './PlaceMap';
-import PlaceSidebarQuickFacts from './PlaceSidebarQuickFacts';
 import ReviewSection from './ReviewSection';
-import TripAdvisorRating, { TripAdvisorRatingDots } from '@/components/TripAdvisorRating';
+import { TripAdvisorRatingDots } from '@/components/TripAdvisorRating';
 import TripAdvisorReviewModal from '@/components/TripAdvisorReviewModal';
 import WishlistButton from '@/components/WishlistButton';
-import PlaceCard from '@/components/PlaceCard';
+import CurrencySelector from '@/components/CurrencySelector';
 import toast from 'react-hot-toast';
 
 interface PlaceDetailViewProps {
@@ -42,6 +40,15 @@ interface PlaceDetailViewProps {
   };
 }
 
+const EXP_FALLBACK_IMAGES = [
+  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=400&q=80',
+];
+
+type TabId = 'overview' | 'things' | 'reviews' | 'photos' | 'qa' | 'nearby';
+
 export default function PlaceDetailView({
   place,
   reviews: initialReviews,
@@ -54,13 +61,37 @@ export default function PlaceDetailView({
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'things' | 'weather' | 'reviews' | 'map'>('overview');
+  const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [photoStripIndex, setPhotoStripIndex] = useState<number | null>(null);
 
-  const scrollToSection = (id: string, tab: typeof activeTab) => {
-    setActiveTab(tab);
+  const { getDetailedFee } = useCurrency();
+  const { formatDistanceTo, requestLocation, status: locationStatus } = useLocation();
+
+  const feeData = getDetailedFee(place.entry_fee);
+  const distanceInfo = formatDistanceTo(place.lat, place.lng, place.distance_km);
+
+  // Scroll spy for sticky tabs
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY + 140;
+      const sectionIds: TabId[] = ['overview', 'things', 'reviews', 'photos', 'qa', 'nearby'];
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sectionIds[i]);
+        if (el && el.offsetTop <= scrollY) {
+          setActiveTab(sectionIds[i]);
+          break;
+        }
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToSection = (id: TabId) => {
+    setActiveTab(id);
     const el = document.getElementById(id);
     if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - 100;
+      const top = el.offsetTop - 110;
       window.scrollTo({ top, behavior: 'smooth' });
     }
   };
@@ -82,66 +113,79 @@ export default function PlaceDetailView({
     }
   };
 
-  const isFree = !place.entry_fee || place.entry_fee.toLowerCase().includes('free');
+  // 5 photos for traveler photo strip
+  const photoStripList = galleryImages.length >= 5
+    ? galleryImages.slice(0, 5)
+    : [
+        place.image_url,
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=400&q=80',
+        'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=400&q=80',
+        'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=400&q=80',
+        'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=400&q=80',
+      ];
+
+  // Q&A list matching deepseek HTML format
+  const qaItems = [
+    {
+      q: 'How long does the visit or hike take?',
+      a: `Most travelers spend around ${seasonality.recommendedDuration || '1 to 2.5 hours'} at ${place.name}, allowing plenty of time to explore scenic vantage points and take photos.`,
+    },
+    {
+      q: 'What is the entry fee for foreigners and locals?',
+      a: feeData.isFree
+        ? 'Admission is completely free for both local and foreign travelers. No tickets required.'
+        : `Standard admission is ${place.entry_fee || 'approx. 1,000 LKR'}. Cash is recommended for local ticket counters.`,
+    },
+    {
+      q: 'Is it suitable for children or elderly visitors?',
+      a: 'The lower trails and main viewing areas are accessible. For uneven or steeper terrain, comfortable walking shoes and hydration are strongly recommended.',
+    },
+    {
+      q: 'Best time of day to visit?',
+      a: place.best_time
+        ? `${place.best_time}. Early mornings and late afternoons offer the best light and cooler temperatures.`
+        : 'Early morning (6:00–8:30 AM) for sunrise, or late afternoon (4:00–6:00 PM) for golden sunset views.',
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 pt-16 sm:pt-20 pb-20 font-['Plus_Jakarta_Sans',sans-serif]">
+    <div className="min-h-screen bg-white text-[#000a12] pt-16 sm:pt-20 pb-20 font-['Plus_Jakarta_Sans',system-ui,-apple-system,sans-serif]">
       
-      {/* ━━━ 1. BREADCRUMBS & TOP NAVIGATION (COMPACT) ━━━ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-3">
-        <nav className="flex items-center gap-1.5 sm:gap-2 text-xs font-semibold text-slate-500 overflow-x-auto whitespace-nowrap scrollbar-none py-1">
-          <Link href="/" className="hover:text-slate-900 transition-colors">Home</Link>
-          <span className="text-slate-300">/</span>
-          <Link href={`/?category=${encodeURIComponent(place.category)}#explore`} className="hover:text-slate-900 transition-colors">
-            {place.category}
+      {/* ━━━ 1. BREADCRUMBS ━━━ */}
+      <div className="w-[94%] max-w-[1180px] mx-auto mb-3">
+        <nav className="flex items-center gap-1.5 text-xs font-semibold text-[#545454] overflow-x-auto whitespace-nowrap scrollbar-none py-1">
+          <Link href="/" className="hover:text-[#000a12] transition-colors">Home</Link>
+          <span className="text-[#b0b0b0]">/</span>
+          <Link href={`/?province=${encodeURIComponent(place.province)}#explore`} className="hover:text-[#000a12] transition-colors">
+            {place.province}
           </Link>
-          <span className="text-slate-300">/</span>
-          <span className="text-slate-400">{place.province}</span>
-          <span className="text-slate-300">/</span>
-          <span className="text-slate-900 font-bold">{place.name}</span>
+          <span className="text-[#b0b0b0]">/</span>
+          <span className="text-[#545454]">{place.location}</span>
+          <span className="text-[#b0b0b0]">/</span>
+          <span className="text-[#000a12] font-bold">{place.name}</span>
         </nav>
       </div>
 
-      {/* ━━━ 2. DESTINATION TITLE HEADER (SCREENSHOT 2 STYLE) ━━━ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4">
+      {/* ━━━ 2. PAGE HEADER (TITLE & TRIPADVISOR METRICS) ━━━ */}
+      <div className="w-[94%] max-w-[1180px] mx-auto mb-4">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div className="space-y-2 flex-1 min-w-0">
-            {/* Lowest price / Verified label */}
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded border border-emerald-300 bg-emerald-50 text-emerald-800">
-                <Check className="w-3 h-3 text-[#00aa6c]" />
-                Verified Travel Guide
-              </span>
-              <span className="text-xs font-semibold text-slate-500">
-                {place.category} in {place.province}
-              </span>
-            </div>
-
-            {/* Destination Name */}
-            <h1 className="text-2xl sm:text-4xl lg:text-[42px] font-black text-slate-900 tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-4xl lg:text-[42px] font-extrabold text-[#000a12] tracking-tight leading-tight">
               {place.name}
             </h1>
 
-            {/* TripAdvisor Rating Row (Screenshot 1 & 2) */}
-            <div className="flex flex-wrap items-center gap-3 pt-0.5">
-              <TripAdvisorRating
-                rating={place.rating}
-                reviewCount={reviews.length > 0 ? reviews.length : place.review_count}
-                showBadge={true}
-                showRecommend={true}
-                size="md"
-              />
-
-              <span className="text-slate-300 hidden sm:inline">·</span>
-
-              <div className="flex items-center gap-1 text-xs sm:text-sm font-semibold text-slate-600">
-                <MapPin className="w-3.5 h-3.5 text-[#00aa6c] shrink-0" />
-                <span>{place.location}, Sri Lanka</span>
-              </div>
+            {/* TripAdvisor Rating Row */}
+            <div className="flex flex-wrap items-center gap-2.5 text-sm text-[#545454]">
+              <TripAdvisorRatingDots rating={place.rating} size="md" />
+              <b className="text-[#000a12] font-bold">{place.rating.toFixed(1)}</b>
+              <span className="text-[#c0c0c0]">·</span>
+              <span>{(reviews.length > 0 ? reviews.length : place.review_count).toLocaleString()} reviews</span>
+              <span className="text-[#c0c0c0]">·</span>
+              <span className="font-semibold text-[#00aa6c]">Top attraction in {place.province}</span>
             </div>
           </div>
 
-          {/* Action Buttons: Save & Review side by side (Screenshot 2) */}
+          {/* Action Buttons: Save, Review, Share */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 self-start">
             <WishlistButton
               placeId={place.id}
@@ -153,7 +197,7 @@ export default function PlaceDetailView({
             <button
               type="button"
               onClick={() => setIsReviewModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border border-slate-800 hover:bg-slate-900 hover:text-white text-slate-900 font-bold text-xs sm:text-sm transition-all cursor-pointer bg-white shadow-2xs active:scale-95"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-[#e0e0e0] hover:border-[#000a12] hover:bg-[#f2f2f2] text-[#000a12] font-bold text-xs sm:text-sm transition-all cursor-pointer bg-white"
             >
               <Edit3 className="w-3.5 h-3.5" />
               <span>Review</span>
@@ -162,7 +206,7 @@ export default function PlaceDetailView({
             <button
               type="button"
               onClick={handleShare}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full border border-slate-300 hover:border-slate-800 text-slate-700 hover:text-slate-900 font-bold text-xs sm:text-sm transition-all cursor-pointer bg-white shadow-2xs active:scale-95"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#e0e0e0] hover:border-[#000a12] hover:bg-[#f2f2f2] text-[#000a12] font-bold text-xs sm:text-sm transition-all cursor-pointer bg-white"
               title="Share destination"
             >
               <Share2 className="w-3.5 h-3.5" />
@@ -172,298 +216,191 @@ export default function PlaceDetailView({
         </div>
       </div>
 
-      {/* ━━━ 3. TRIPADVISOR COMPACT PHOTO COLLAGE GRID (SCREENSHOT 4 STYLE) ━━━ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+      {/* ━━━ 3. PHOTO GALLERY COLLAGE ━━━ */}
+      <div className="w-[94%] max-w-[1180px] mx-auto mb-6">
         <DestinationGallery
           images={galleryImages}
           title={place.name}
           category={place.category}
           location={place.location}
+          externalLightboxIndex={photoStripIndex}
+          onCloseExternalLightbox={() => setPhotoStripIndex(null)}
         />
       </div>
 
-      {/* ━━━ 4. STICKY SUB-NAVIGATION TABS BAR (SCREENSHOT 5 STYLE) ━━━ */}
-      <div className="sticky top-14 sm:top-16 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 mb-8 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ━━━ 4. STICKY TABS (Overview, Things to do, Reviews, Photos, Q&A, Nearby) ━━━ */}
+      <nav className="sticky top-14 sm:top-16 z-30 bg-white border-b border-[#e0e0e0] mb-8">
+        <div className="w-[94%] max-w-[1180px] mx-auto">
           <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto scrollbar-none py-3 text-xs sm:text-sm font-bold">
-            <button
-              onClick={() => scrollToSection('sec-overview', 'overview')}
-              className={`pb-1 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'overview'
-                  ? 'border-slate-900 text-slate-900 font-black'
-                  : 'border-transparent text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              Overview
-            </button>
-
-            <button
-              onClick={() => scrollToSection('sec-things', 'things')}
-              className={`pb-1 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'things'
-                  ? 'border-slate-900 text-slate-900 font-black'
-                  : 'border-transparent text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              Things to do ({thingsToDo.length})
-            </button>
-
-            <button
-              onClick={() => scrollToSection('sec-weather', 'weather')}
-              className={`pb-1 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'weather'
-                  ? 'border-slate-900 text-slate-900 font-black'
-                  : 'border-transparent text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              Weather &amp; Timing
-            </button>
-
-            <button
-              onClick={() => scrollToSection('sec-reviews', 'reviews')}
-              className={`pb-1 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'reviews'
-                  ? 'border-slate-900 text-slate-900 font-black'
-                  : 'border-transparent text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              Reviews ({reviews.length > 0 ? reviews.length : place.review_count})
-            </button>
-
-            <button
-              onClick={() => scrollToSection('sec-map', 'map')}
-              className={`pb-1 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'map'
-                  ? 'border-slate-900 text-slate-900 font-black'
-                  : 'border-transparent text-slate-500 hover:text-slate-900'
-              }`}
-            >
-              Location &amp; Map
-            </button>
+            {[
+              { id: 'overview' as TabId, label: 'Overview' },
+              { id: 'things' as TabId, label: 'Things to do' },
+              { id: 'reviews' as TabId, label: `Reviews (${reviews.length > 0 ? reviews.length : place.review_count})` },
+              { id: 'photos' as TabId, label: 'Photos' },
+              { id: 'qa' as TabId, label: 'Q&A' },
+              { id: 'nearby' as TabId, label: 'Nearby' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => scrollToSection(tab.id)}
+                className={`pb-1 border-b-[2.5px] transition-all whitespace-nowrap cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'border-[#000a12] text-[#000a12] font-black'
+                    : 'border-transparent text-[#545454] hover:text-[#000a12]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
-      </div>
+      </nav>
 
-      {/* ━━━ 5. MAIN TWO-COLUMN CONTENT LAYOUT (TIGHT SPACING) ━━━ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-12 gap-8 items-start">
+      {/* ━━━ 5. MAIN TWO-COLUMN LAYOUT ━━━ */}
+      <div className="w-[94%] max-w-[1180px] mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10 items-start">
           
-          {/* ━━━━ LEFT COLUMN (8 COLS): ABOUT, WHY TRAVELERS LOVE, THINGS TO DO, WEATHER, REVIEWS, MAP ━━━━ */}
-          <div className="lg:col-span-8 space-y-8">
-            
-            {/* ━━━ SECTION 1: ABOUT & DESTINATION OVERVIEW ━━━ */}
-            <section id="sec-overview" className="space-y-4">
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+          {/* ━━━━ MAIN CONTENT (LEFT COLUMN) ━━━━ */}
+          <main className="space-y-10 min-w-0">
+
+            {/* ━━━ #OVERVIEW ━━━ */}
+            <section id="overview" className="space-y-4">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-[#000a12] tracking-tight">
                 About {place.name}
               </h2>
 
-              {/* Lead short description */}
               {place.short_description && (
-                <p className="text-slate-900 font-semibold text-base sm:text-lg leading-relaxed">
+                <p className="text-[17px] font-medium text-[#000a12] leading-[1.65]">
                   {place.short_description}
                 </p>
               )}
 
-              {/* Full description with Read More */}
-              <div className="text-slate-700 text-sm sm:text-base leading-relaxed space-y-3 whitespace-pre-line font-medium">
-                <p className={!isDescExpanded ? 'line-clamp-4 sm:line-clamp-5' : ''}>
+              <div className="text-[15px] text-[#545454] leading-[1.7] space-y-3 font-normal">
+                <p className={!isDescExpanded ? 'line-clamp-4 sm:line-clamp-6' : ''}>
                   {place.description}
                 </p>
 
-                {place.description && place.description.length > 300 && (
+                {place.description && place.description.length > 320 && (
                   <button
                     type="button"
                     onClick={() => setIsDescExpanded(!isDescExpanded)}
-                    className="text-xs sm:text-sm font-bold text-slate-900 underline hover:text-[#00aa6c] cursor-pointer pt-1"
+                    className="text-xs sm:text-sm font-bold text-[#000a12] underline hover:text-[#00aa6c] cursor-pointer pt-1"
                   >
                     {isDescExpanded ? 'Read less' : 'Read more →'}
                   </button>
                 )}
               </div>
 
-              {/* ━━━ WHY TRAVELERS LOVE THIS (SCREENSHOT 5 SIGNATURE FEATURE) ━━━ */}
-              <div className="mt-4 p-5 sm:p-6 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3.5">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base sm:text-lg font-black text-slate-900 tracking-tight flex items-center gap-1.5">
-                    <span>Why travelers love this</span>
-                    <Info className="w-4 h-4 text-slate-400" />
-                  </h3>
-                  <div className="flex items-center gap-1 text-xs font-bold text-slate-700">
-                    <TripAdvisorRatingDots rating={place.rating} size="sm" />
-                    <span>({(reviews.length > 0 ? reviews.length : place.review_count).toLocaleString()} reviews)</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <div className="p-3.5 bg-white rounded-xl border border-slate-200/80 shadow-2xs space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
-                      <TripAdvisorRatingDots rating={5} size="sm" />
-                      <span>Prime Panoramas</span>
-                    </div>
-                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                      Spectacular vantage points overlooking lush jungle canopies and rolling Ceylon mountain valleys.
-                    </p>
+              {/* Why travelers love it (deepseek HTML signature box) */}
+              <div className="bg-[#fafafa] border border-[#f0f0f0] rounded-xl p-5 sm:p-6 my-6 space-y-3.5">
+                <h3 className="text-base sm:text-lg font-extrabold text-[#000a12] tracking-tight">
+                  Why travelers love it
+                </h3>
+                <div className="grid gap-3 pt-1">
+                  <div className="flex gap-3.5 items-start">
+                    <span className="w-9 h-9 rounded-full bg-white border border-[#e0e0e0] flex items-center justify-center text-[#00aa6c] shrink-0">
+                      <Star className="w-4 h-4 fill-current" />
+                    </span>
+                    <span className="text-sm text-[#1a1a1a] leading-relaxed">
+                      <b className="text-[#000a12] font-bold">Prime panoramic views &amp; vistas.</b> Watch breathtaking sunrises and rolling Ceylon highlands from unparalleled vantage points.
+                    </span>
                   </div>
 
-                  <div className="p-3.5 bg-white rounded-xl border border-slate-200/80 shadow-2xs space-y-1">
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
-                      <TripAdvisorRatingDots rating={5} size="sm" />
-                      <span>Authentic &amp; Uncrowded</span>
-                    </div>
-                    <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                      A peaceful escape with natural trails, tranquil viewpoints, and budget-friendly admission.
-                    </p>
+                  <div className="flex gap-3.5 items-start">
+                    <span className="w-9 h-9 rounded-full bg-white border border-[#e0e0e0] flex items-center justify-center text-[#00aa6c] shrink-0">
+                      <Compass className="w-4 h-4" />
+                    </span>
+                    <span className="text-sm text-[#1a1a1a] leading-relaxed">
+                      <b className="text-[#000a12] font-bold">Authentic &amp; peaceful atmosphere.</b> Enjoy an unhurried, natural setting away from overwhelming tourist crowds.
+                    </span>
+                  </div>
+
+                  <div className="flex gap-3.5 items-start">
+                    <span className="w-9 h-9 rounded-full bg-white border border-[#e0e0e0] flex items-center justify-center text-[#00aa6c] shrink-0">
+                      <Camera className="w-4 h-4" />
+                    </span>
+                    <span className="text-sm text-[#1a1a1a] leading-relaxed">
+                      <b className="text-[#000a12] font-bold">Unbeatable photo opportunities.</b> Iconic landscape views and vibrant cultural memories make this a must-visit destination.
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* Key metadata list (Screenshot 5 metadata list with clean icons) */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                <div className="p-3 rounded-xl border border-slate-200/80 bg-white">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Duration</span>
-                  <span className="text-xs sm:text-sm font-extrabold text-slate-900">{seasonality.recommendedDuration}</span>
-                </div>
-
-                <div className="p-3 rounded-xl border border-slate-200/80 bg-white">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Best Window</span>
-                  <span className="text-xs sm:text-sm font-extrabold text-slate-900">{place.best_time || 'Nov to Apr'}</span>
-                </div>
-
-                <div className="p-3 rounded-xl border border-slate-200/80 bg-white">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Admission</span>
-                  <span className="text-xs sm:text-sm font-extrabold text-slate-900">{place.entry_fee || 'Free'}</span>
-                </div>
-
-                <div className="p-3 rounded-xl border border-slate-200/80 bg-white">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Live Guide</span>
-                  <span className="text-xs sm:text-sm font-extrabold text-slate-900">Local or Self-guided</span>
-                </div>
+              {/* Highlights Bullet List with green dots */}
+              <div className="pt-2">
+                <h3 className="text-base sm:text-lg font-extrabold text-[#000a12] mb-3">
+                  Highlights
+                </h3>
+                <ul className="space-y-2.5">
+                  {[
+                    `Explore the scenic vantage points overlooking ${place.location} and surrounding valleys`,
+                    `Ideal for sunrise and sunset excursions — approximately ${seasonality.recommendedDuration || '1–2 hours'} recommended`,
+                    `Standard admission: ${place.entry_fee || 'Free admission'} — budget-friendly for all travelers`,
+                    `Located in ${place.province}, approximately ${place.distance_km} km from Colombo`,
+                    `Rich local heritage, pristine flora, and authentic Sri Lankan hospitality`,
+                  ].map((hl, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5 text-sm text-[#1a1a1a] leading-relaxed">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#00aa6c] mt-2 shrink-0" />
+                      <span>{hl}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </section>
 
-            {/* ━━━ SECTION 2: THINGS TO DO NEARBY (SCREENSHOT 5 STYLE) ━━━ */}
-            <section id="sec-things" className="space-y-4 pt-4 border-t border-slate-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    Things to do &amp; experiences
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                    Curated activities recommended by local explorers in {place.location}
-                  </p>
-                </div>
+            {/* ━━━ #THINGS TO DO NEARBY ━━━ */}
+            <section id="things" className="space-y-4 pt-6 border-t border-[#f0f0f0]">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-extrabold text-[#000a12] tracking-tight">
+                  Things to do nearby
+                </h2>
+                <p className="text-xs sm:text-sm text-[#545454] font-medium">
+                  Curated activities and experiences in {place.location}
+                </p>
               </div>
 
-              <div className="space-y-3">
+              <div className="grid gap-3.5">
                 {thingsToDo.map((item, idx) => (
                   <article
                     key={idx}
-                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 hover:border-slate-400 transition-all shadow-2xs group"
+                    className="grid grid-cols-1 sm:grid-cols-[120px_1fr_auto] gap-4 p-3.5 sm:p-4 border border-[#e0e0e0] rounded-xl items-center hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] hover:border-[#cfcfcf] transition-all bg-white group"
                   >
-                    <div className="flex items-start gap-4 flex-1 min-w-0">
-                      <div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-center text-2xl shrink-0 group-hover:scale-105 transition-transform">
-                        {item.icon}
-                      </div>
-
-                      <div className="space-y-1 min-w-0">
-                        <h3 className="font-extrabold text-slate-900 text-sm sm:text-base leading-snug group-hover:text-[#00aa6c] transition-colors">
-                          {item.title}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
-                          {item.desc}
-                        </p>
-                        <div className="flex items-center gap-1.5 pt-0.5">
-                          <TripAdvisorRatingDots rating={5} size="sm" />
-                          <span className="text-[11px] font-semibold text-slate-500">4.9 · Highly Recommended</span>
-                        </div>
+                    <div className="w-full sm:w-[120px] h-32 sm:h-[90px] rounded-lg overflow-hidden bg-[#e8e8e8] shrink-0 relative">
+                      <Image
+                        src={EXP_FALLBACK_IMAGES[idx % EXP_FALLBACK_IMAGES.length]}
+                        alt={item.title}
+                        fill
+                        className="object-cover group-hover:scale-106 transition-transform duration-700 ease-out"
+                        unoptimized
+                      />
+                    </div>
+                    <div className="space-y-1 min-w-0">
+                      <h4 className="text-[15px] font-extrabold text-[#000a12] group-hover:text-[#00aa6c] transition-colors leading-snug">
+                        {item.title}
+                      </h4>
+                      <p className="text-[13px] text-[#545454] leading-relaxed line-clamp-2">
+                        {item.desc}
+                      </p>
+                      <div className="flex items-center gap-1.5 pt-0.5 text-xs text-[#545454] font-semibold">
+                        <TripAdvisorRatingDots rating={5} size="sm" />
+                        <span>4.9 · Highly Recommended</span>
                       </div>
                     </div>
-
                     <a
                       href={`https://www.google.com/maps?q=${encodeURIComponent(`${place.name} ${item.title} Sri Lanka`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 rounded-full bg-slate-100 hover:bg-[#00aa6c] hover:text-white text-slate-800 text-xs font-bold transition-all shrink-0 cursor-pointer"
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-full bg-[#00aa6c] hover:bg-[#008a58] text-white text-xs font-bold transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
                     >
-                      View on Map
+                      View
                     </a>
                   </article>
                 ))}
               </div>
             </section>
 
-            {/* ━━━ SECTION 3: WEATHER & SEASONALITY ━━━ */}
-            <section id="sec-weather" className="space-y-4 pt-4 border-t border-slate-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                    Seasonality &amp; Weather Guide
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                    12-month travel matrix and prime visiting windows
-                  </p>
-                </div>
-
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 border border-slate-200">
-                  <span className="w-2 h-2 rounded-full bg-[#00aa6c] animate-pulse" />
-                  <span>{seasonality.currentMonthName}: {seasonality.currentStatus.label}</span>
-                </div>
-              </div>
-
-              {/* 4 Stats Cards */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Climate</span>
-                  <span className="text-xs sm:text-sm font-extrabold text-slate-900">{seasonality.climateType}</span>
-                </div>
-                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Temperature</span>
-                  <span className="text-xs sm:text-sm font-extrabold text-slate-900">{seasonality.tempRange}</span>
-                </div>
-                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Humidity</span>
-                  <span className="text-xs sm:text-sm font-extrabold text-slate-900">{seasonality.humidity}</span>
-                </div>
-                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Prime Hours</span>
-                  <span className="text-xs sm:text-sm font-extrabold text-slate-900">{seasonality.primeHours}</span>
-                </div>
-              </div>
-
-              {/* 12-Month Calendar Bar */}
-              <div className="space-y-2 pt-1">
-                <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-12 gap-1.5">
-                  {seasonality.monthStatuses.map((m, idx) => {
-                    const isCurrent = m.name === seasonality.currentMonthName;
-                    const isPeak = m.status === 'peak';
-                    const isGood = m.status === 'good';
-                    return (
-                      <div
-                        key={idx}
-                        className={`rounded-xl p-2 text-center border transition-all ${
-                          isCurrent ? 'ring-2 ring-slate-900 shadow-xs' : ''
-                        } ${
-                          isPeak
-                            ? 'bg-emerald-50 border-emerald-200 text-emerald-950 font-bold'
-                            : isGood
-                            ? 'bg-amber-50 border-amber-200 text-amber-950 font-bold'
-                            : 'bg-teal-50 border-teal-200 text-teal-950 font-bold'
-                        }`}
-                      >
-                        <span className="text-[11px] block">{m.name}</span>
-                        <span className="text-sm my-0.5 block">{isPeak ? '☀️' : isGood ? '🌤️' : '🌧️'}</span>
-                        <span className="text-[9px] uppercase tracking-tighter opacity-80 block">
-                          {isPeak ? 'Peak' : isGood ? 'Good' : 'Wet'}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </section>
-
-            {/* ━━━ SECTION 4: TRAVELER REVIEWS (CONNECTED WITH TRIPADVISOR MODAL) ━━━ */}
-            <section id="sec-reviews" className="pt-4 border-t border-slate-100">
+            {/* ━━━ #REVIEWS (TRIPADVISOR RATING SYSTEM & PROGRESS BARS) ━━━ */}
+            <section id="reviews" className="pt-6 border-t border-[#f0f0f0]">
               <ReviewSection
                 place={place}
                 initialReviews={reviews}
@@ -471,90 +408,270 @@ export default function PlaceDetailView({
               />
             </section>
 
-            {/* ━━━ SECTION 5: INTERACTIVE LOCATION MAP ━━━ */}
-            <section id="sec-map" className="pt-4 border-t border-slate-100">
-              <PlaceMap place={place} />
+            {/* ━━━ #PHOTOS (5-THUMBNAIL STRIP WITH HOVER SCALE) ━━━ */}
+            <section id="photos" className="space-y-4 pt-6 border-t border-[#f0f0f0]">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-[#000a12] tracking-tight">
+                Traveler photos
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
+                {photoStripList.map((img, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => setPhotoStripIndex(idx)}
+                    className="group relative aspect-square rounded-lg overflow-hidden bg-[#e8e8e8] border border-[#e0e0e0] cursor-pointer"
+                  >
+                    <Image
+                      src={img}
+                      alt={`${place.name} photo ${idx + 1}`}
+                      fill
+                      className="object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
+                      unoptimized
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setPhotoStripIndex(0)}
+                className="inline-flex items-center gap-1.5 text-sm font-bold text-[#00aa6c] hover:text-[#008a58] hover:underline cursor-pointer pt-1"
+              >
+                <span>See all {Math.max(galleryImages.length, 12)} photos →</span>
+              </button>
             </section>
-          </div>
 
-          {/* ━━━━ RIGHT COLUMN (4 COLS): STICKY TRIPADVISOR SIDEBAR ━━━━ */}
-          <aside className="lg:col-span-4 sticky top-24 space-y-4">
-            {/* Admission & Primary Booking Card */}
-            <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-sm space-y-5">
-              <PlaceSidebarQuickFacts place={place} />
+            {/* ━━━ #QA (QUESTIONS & ANSWERS) ━━━ */}
+            <section id="qa" className="space-y-4 pt-6 border-t border-[#f0f0f0]">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-[#000a12] tracking-tight">
+                Questions &amp; answers
+              </h2>
+              <div className="space-y-3">
+                {qaItems.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 sm:p-5 rounded-xl border border-[#e0e0e0] bg-white hover:border-[#cfcfcf] transition-colors space-y-2"
+                  >
+                    <div className="flex items-start gap-2.5 text-sm sm:text-[15px] font-bold text-[#000a12]">
+                      <span className="text-[#00aa6c] font-black text-base shrink-0">Q</span>
+                      <span>{item.q}</span>
+                    </div>
+                    <div className="flex items-start gap-2.5 text-xs sm:text-sm text-[#545454] leading-relaxed pl-5">
+                      <span className="text-[#000a12] font-black text-sm shrink-0">A</span>
+                      <span>{item.a}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+          </main>
+
+          {/* ━━━━ STICKY SIDEBAR (RIGHT COLUMN) ━━━━ */}
+          <aside className="sticky top-24 space-y-4">
+
+            {/* Admission & Quick Actions Card */}
+            <div className="border border-[#e0e0e0] rounded-2xl p-5 sm:p-6 bg-white space-y-5 shadow-xs">
+              <div className="pb-4 border-b border-[#f0f0f0]">
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <h4 className="text-[11px] font-extrabold uppercase tracking-widest text-[#545454]">
+                    Standard admission
+                  </h4>
+                  <div className="scale-90 origin-right">
+                    <CurrencySelector scrolled={true} />
+                  </div>
+                </div>
+                <div className="text-3xl font-extrabold text-[#000a12] tracking-tight">
+                  {feeData.primary}
+                </div>
+                <div className="text-xs text-[#545454] mt-1 font-medium">
+                  {feeData.secondary}
+                </div>
+              </div>
 
               {/* Action Buttons */}
-              <div className="space-y-2.5 pt-2 border-t border-slate-100">
+              <div className="space-y-2.5">
                 <a
                   href={`https://www.google.com/maps?q=${place.lat},${place.lng}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 bg-[#00aa6c] hover:bg-[#008f5a] text-white font-extrabold py-3.5 px-6 rounded-full text-xs sm:text-sm transition-all shadow-md shadow-emerald-950/15 active:scale-95"
+                  className="w-full flex items-center justify-center gap-2 bg-[#00aa6c] hover:bg-[#008a58] text-white font-bold py-3.5 px-5 rounded-full text-sm transition-all shadow-[0_8px_20px_-8px_rgba(0,170,108,0.45)] hover:-translate-y-0.5 cursor-pointer"
                 >
                   <MapPin className="w-4 h-4" />
                   <span>Open in Google Maps</span>
-                  <ArrowUpRight className="w-4 h-4" />
                 </a>
+
+                <WishlistButton
+                  placeId={place.id}
+                  placeName={place.name}
+                  variant="outline"
+                  label="Save destination"
+                />
 
                 <button
                   type="button"
                   onClick={() => setIsReviewModalOpen(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-800 text-slate-800 font-extrabold py-3 px-6 rounded-full text-xs sm:text-sm transition-all cursor-pointer active:scale-95 shadow-2xs"
+                  className="w-full flex items-center justify-center gap-2 bg-white hover:bg-[#f0f0f0] border border-[#e0e0e0] hover:border-[#000a12] text-[#000a12] font-bold py-3 px-5 rounded-full text-sm transition-all cursor-pointer"
                 >
-                  <Edit3 className="w-4 h-4 text-slate-700" />
-                  <span>Write a Traveler Review</span>
+                  <Edit3 className="w-4 h-4" />
+                  <span>Write a traveler review</span>
                 </button>
 
                 <Link
                   href="/map"
-                  className="w-full flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 font-extrabold py-2.5 px-6 rounded-full text-xs sm:text-sm transition-all active:scale-95"
+                  className="w-full flex items-center justify-center gap-2 bg-white hover:bg-[#f0f0f0] border border-[#e0e0e0] hover:border-[#000a12] text-[#000a12] font-bold py-3 px-5 rounded-full text-sm transition-all"
                 >
                   <Map className="w-4 h-4 text-[#00aa6c]" />
                   <span>View on Ceylon Live Map</span>
                 </Link>
               </div>
+            </div>
 
-              {/* Trust Guarantee */}
-              <div className="pt-2 border-t border-slate-100 flex items-center gap-2 text-[11px] text-slate-500 font-semibold">
-                <ShieldCheck className="w-4 h-4 text-[#00aa6c] shrink-0" />
-                <span>Verified travel information updated by Sri Lanka travel network.</span>
+            {/* Quick Facts Info Card */}
+            <div className="border border-[#e0e0e0] rounded-2xl p-5 sm:p-6 bg-white space-y-4 shadow-xs">
+              <div className="space-y-4">
+                <div className="flex items-start gap-3.5">
+                  <div className="w-9 h-9 rounded-full bg-[#f0f0f0] text-[#000a12] flex items-center justify-center shrink-0">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#545454]">Location</div>
+                    <div className="text-sm font-bold text-[#000a12] leading-snug">{place.location}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3.5">
+                  <div className="w-9 h-9 rounded-full bg-[#f0f0f0] text-[#000a12] flex items-center justify-center shrink-0">
+                    <Tag className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#545454]">Province</div>
+                    <div className="text-sm font-bold text-[#000a12] leading-snug">{place.province}</div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3.5">
+                  <div className="w-9 h-9 rounded-full bg-[#f0f0f0] text-[#000a12] flex items-center justify-center shrink-0">
+                    <Navigation className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#545454] flex items-center justify-between">
+                      <span>{distanceInfo.isLive ? 'From Your Location' : 'From Colombo'}</span>
+                      {distanceInfo.isLive && (
+                        <span className="text-[10px] text-[#00aa6c] font-bold bg-[#e6f7f0] px-1.5 py-0.5 rounded">
+                          Live GPS
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm font-bold text-[#000a12] flex items-center justify-between gap-2 mt-0.5">
+                      <span>{distanceInfo.text}</span>
+                      {!distanceInfo.isLive && (
+                        <button
+                          type="button"
+                          onClick={() => requestLocation()}
+                          disabled={locationStatus === 'requesting'}
+                          className="text-[11px] font-bold text-[#00aa6c] hover:underline cursor-pointer"
+                        >
+                          {locationStatus === 'requesting' ? 'Detecting...' : 'Use my GPS'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3.5">
+                  <div className="w-9 h-9 rounded-full bg-[#f0f0f0] text-[#000a12] flex items-center justify-center shrink-0">
+                    <Ticket className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#545454]">Entry Fee</div>
+                    <div className="text-sm font-bold text-[#000a12] leading-snug">
+                      {feeData.primary}
+                      <small className="block text-xs text-[#545454] font-medium mt-0.5">{feeData.secondary}</small>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3.5">
+                  <div className="w-9 h-9 rounded-full bg-[#f0f0f0] text-[#000a12] flex items-center justify-center shrink-0">
+                    <Calendar className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#545454]">Best Season</div>
+                    <div className="text-sm font-bold text-[#000a12] leading-snug">
+                      {place.best_time || 'Year-round'}
+                      <small className="block text-xs text-[#545454] font-medium mt-0.5">Early morning or late afternoon</small>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+
           </aside>
         </div>
-      </div>
 
-      {/* ━━━ 6. NEARBY ATTRACTIONS SECTION (CLEAN 3-COLUMN CARDS) ━━━ */}
-      {nearbyAttractions.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 pt-10 border-t border-slate-200">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 gap-3">
-            <div>
-              <span className="text-xs font-extrabold text-[#00aa6c] uppercase tracking-wider block mb-1">
-                Explore More in {place.province}
-              </span>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                Nearby Attractions
+        {/* ━━━ #NEARBY ATTRACTIONS (3-COLUMN TRIPADVISOR CARDS) ━━━ */}
+        {nearbyAttractions.length > 0 && (
+          <section id="nearby" className="pt-12 border-t border-[#f0f0f0] mt-16">
+            <div className="flex items-baseline justify-between mb-6 flex-wrap gap-3">
+              <h2 className="text-xl sm:text-2xl font-extrabold text-[#000a12] tracking-tight">
+                Nearby attractions
               </h2>
+              <Link
+                href={`/?province=${encodeURIComponent(place.province)}#explore`}
+                className="text-sm font-bold text-[#00aa6c] hover:underline flex items-center gap-1"
+              >
+                <span>Explore all in {place.province} →</span>
+              </Link>
             </div>
 
-            <Link
-              href={`/?province=${encodeURIComponent(place.province)}#explore`}
-              className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-[#00aa6c] hover:underline"
-            >
-              <span>Explore all in {place.province}</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {nearbyAttractions.slice(0, 3).map((nearby) => {
+                const nearbyFee = getDetailedFee(nearby.entry_fee);
+                return (
+                  <Link
+                    key={nearby.id}
+                    href={`/places/${nearby.id}`}
+                    className="border border-[#e0e0e0] rounded-xl overflow-hidden bg-white hover:shadow-[0_14px_34px_rgba(0,0,0,0.1)] hover:-translate-y-1 hover:border-transparent transition-all duration-300 flex flex-col group cursor-pointer"
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                      <Image
+                        src={nearby.image_url}
+                        alt={nearby.name}
+                        fill
+                        className="object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
+                        unoptimized
+                      />
+                    </div>
+                    <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-2">
+                      <div>
+                        <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#545454] mb-1">
+                          {nearby.category}
+                        </div>
+                        <h3 className="text-base font-extrabold text-[#000a12] group-hover:text-[#00aa6c] transition-colors leading-snug">
+                          {nearby.name}
+                        </h3>
+                      </div>
+                      <div className="pt-2 border-t border-[#f0f0f0] flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-1.5 font-bold text-[#000a12]">
+                          <TripAdvisorRatingDots rating={nearby.rating} size="sm" />
+                          <span>{nearby.rating.toFixed(1)}</span>
+                          <span className="text-[#767676] font-normal">({nearby.review_count})</span>
+                        </div>
+                        <div className="font-extrabold text-[#000a12]">
+                          {nearbyFee.primary}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-            {nearbyAttractions.map((nearby, idx) => (
-              <PlaceCard key={nearby.id} place={nearby} index={idx} />
-            ))}
-          </div>
-        </section>
-      )}
+      </div>
 
-      {/* ━━━ 7. TRIPADVISOR REVIEW MODAL (SCREENSHOT 3) ━━━ */}
+      {/* ━━━ 7. TRIPADVISOR REVIEW MODAL ━━━ */}
       <TripAdvisorReviewModal
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}

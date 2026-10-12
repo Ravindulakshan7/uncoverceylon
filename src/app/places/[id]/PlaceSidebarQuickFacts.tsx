@@ -15,13 +15,12 @@ interface PlaceSidebarQuickFactsProps {
 }
 
 export default function PlaceSidebarQuickFacts({ place }: PlaceSidebarQuickFactsProps) {
-  const { convertFee, currencyInfo } = useCurrency();
+  const { getDetailedFee, convertFee, currencyInfo } = useCurrency();
   const { formatDistanceTo, userCoords, requestLocation, status: locationStatus } = useLocation();
 
   const distanceInfo = formatDistanceTo(place.lat, place.lng, place.distance_km);
+  const feeData = getDetailedFee(place.entry_fee);
   const convertedFee = convertFee(place.entry_fee);
-
-  const isFree = !place.entry_fee || place.entry_fee.toLowerCase().includes('free');
 
   return (
     <div className="space-y-6">
@@ -39,18 +38,16 @@ export default function PlaceSidebarQuickFacts({ place }: PlaceSidebarQuickFacts
 
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-black text-slate-900 tracking-tight break-words">
-            {convertedFee}
+            {feeData.primary}
           </span>
-          {!isFree && (
+          {!feeData.isFree && (
             <span className="text-xs text-slate-500 font-semibold">per adult</span>
           )}
         </div>
 
-        {!isFree && (
-          <p className="text-[11px] text-slate-400 mt-1 font-medium">
-            Approximate converted rate in {currencyInfo.name} ({currencyInfo.code})
-          </p>
-        )}
+        <p className="text-[12px] text-slate-500 mt-1 font-medium">
+          {feeData.secondary}
+        </p>
       </div>
 
       {/* ━━━ 2. KEY FACTS LIST (WITH DYNAMIC GPS DISTANCE & FULL TEXT) ━━━ */}
