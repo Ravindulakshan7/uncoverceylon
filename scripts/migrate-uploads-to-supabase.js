@@ -6,11 +6,15 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 require('dotenv').config({ path: path.join(__dirname, '..', '.env.local') });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ldhiegcbjngptvlcwuep.supabase.co';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+const supabaseKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+  process.env.SUPABASE_ANON_KEY;
 const bucketName = process.env.SUPABASE_STORAGE_BUCKET || 'uploads';
 
 if (!supabaseKey) {
-  console.error('❌ Error: Supabase API Key (SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY) is not set in .env or .env.local');
+  console.error('❌ Error: Supabase API Key (NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY / ANON_KEY) is not set in .env or .env.local');
   console.log('👉 Please add your Supabase key to .env.local and run this script again.');
   process.exit(1);
 }
