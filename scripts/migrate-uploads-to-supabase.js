@@ -86,35 +86,38 @@ async function migrate() {
   if (urlMap.size > 0) {
     console.log('\n🔄 Updating database references...');
 
-    // 1. Update Places images
+    // 1. Update Places
     try {
       const places = await prisma.place.findMany();
       for (const place of places) {
-        if (!place.images) continue;
-        let images;
-        try {
-          images = typeof place.images === 'string' ? JSON.parse(place.images) : place.images;
-        } catch {
-          continue;
+        let changed = false;
+        let newImageUrl = place.image_url;
+        let newGallery = place.gallery;
+
+        if (urlMap.has(place.image_url)) {
+          newImageUrl = urlMap.get(place.image_url);
+          changed = true;
         }
 
-        if (Array.isArray(images)) {
-          let changed = false;
-          const updated = images.map(img => {
-            if (urlMap.has(img)) {
-              changed = true;
-              return urlMap.get(img);
+        if (place.gallery) {
+          try {
+            const galleryArr = JSON.parse(place.gallery);
+            if (Array.isArray(galleryArr)) {
+              const updatedGallery = galleryArr.map(img => urlMap.has(img) ? urlMap.get(img) : img);
+              if (JSON.stringify(galleryArr) !== JSON.stringify(updatedGallery)) {
+                newGallery = JSON.stringify(updatedGallery);
+                changed = true;
+              }
             }
-            return img;
-          });
+          } catch {}
+        }
 
-          if (changed) {
-            await prisma.place.update({
-              where: { id: place.id },
-              data: { images: JSON.stringify(updated) },
-            });
-            console.log(`  Updated place images for: ${place.name}`);
-          }
+        if (changed) {
+          await prisma.place.update({
+            where: { id: place.id },
+            data: { image_url: newImageUrl, gallery: newGallery },
+          });
+          console.log(`  Updated place: ${place.name}`);
         }
       }
     } catch (e) {
@@ -125,12 +128,12 @@ async function migrate() {
     try {
       const slides = await prisma.heroSlide.findMany();
       for (const slide of slides) {
-        if (urlMap.has(slide.imageUrl)) {
+        if (urlMap.has(slide.image_url)) {
           await prisma.heroSlide.update({
             where: { id: slide.id },
-            data: { imageUrl: urlMap.get(slide.imageUrl) },
+            data: { image_url: urlMap.get(slide.image_url) },
           });
-          console.log(`  Updated hero slide: ${slide.title}`);
+          console.log(`  Updated hero slide: ${slide.location}`);
         }
       }
     } catch (e) {
@@ -141,10 +144,10 @@ async function migrate() {
     try {
       const slides = await prisma.regionSlide.findMany();
       for (const slide of slides) {
-        if (urlMap.has(slide.imageUrl)) {
+        if (urlMap.has(slide.image_url)) {
           await prisma.regionSlide.update({
             where: { id: slide.id },
-            data: { imageUrl: urlMap.get(slide.imageUrl) },
+            data: { image_url: urlMap.get(slide.image_url) },
           });
           console.log(`  Updated region slide: ${slide.title}`);
         }
@@ -153,30 +156,30 @@ async function migrate() {
       console.warn('RegionSlide table update notice:', e.message);
     }
 
-    // 4. Update Food
+    // 4. Update FoodItem
     try {
-      const foods = await prisma.food.findMany();
+      const foods = await prisma.foodItem.findMany();
       for (const food of foods) {
-        if (urlMap.has(food.imageUrl)) {
-          await prisma.food.update({
+        if (urlMap.has(food.image)) {
+          await prisma.foodItem.update({
             where: { id: food.id },
-            data: { imageUrl: urlMap.get(food.imageUrl) },
+            data: { image: urlMap.get(food.image) },
           });
-          console.log(`  Updated food: ${food.name}`);
+          console.log(`  Updated food item: ${food.title}`);
         }
       }
     } catch (e) {
-      console.warn('Food table update notice:', e.message);
+      console.warn('FoodItem table update notice:', e.message);
     }
 
     // 5. Update CultureItem
     try {
       const items = await prisma.cultureItem.findMany();
       for (const item of items) {
-        if (urlMap.has(item.imageUrl)) {
+        if (urlMap.has(item.image)) {
           await prisma.cultureItem.update({
             where: { id: item.id },
-            data: { imageUrl: urlMap.get(item.imageUrl) },
+            data: { image: urlMap.get(item.image) },
           });
           console.log(`  Updated culture item: ${item.title}`);
         }
@@ -185,20 +188,20 @@ async function migrate() {
       console.warn('CultureItem table update notice:', e.message);
     }
 
-    // 6. Update Experience
+    // 6. Update ExperienceItem
     try {
-      const items = await prisma.experience.findMany();
+      const items = await prisma.experienceItem.findMany();
       for (const item of items) {
-        if (urlMap.has(item.imageUrl)) {
-          await prisma.experience.update({
+        if (urlMap.has(item.image)) {
+          await prisma.experienceItem.update({
             where: { id: item.id },
-            data: { imageUrl: urlMap.get(item.imageUrl) },
+            data: { image: urlMap.get(item.image) },
           });
-          console.log(`  Updated experience: ${item.title}`);
+          console.log(`  Updated experience item: ${item.title}`);
         }
       }
     } catch (e) {
-      console.warn('Experience table update notice:', e.message);
+      console.warn('ExperienceItem table update notice:', e.message);
     }
   }
 
