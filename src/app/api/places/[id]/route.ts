@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, logActivity } from '@/lib/db';
 import { verifyAdminPassword } from '@/lib/auth';
+import { getSupabaseClient, SUPABASE_STORAGE_BUCKET } from '@/lib/supabase';
+import fs from 'fs';
+import path from 'path';
 
 export async function GET(
   request: NextRequest,
@@ -102,8 +105,55 @@ export async function DELETE(
 
     const existing = await prisma.place.findUnique({
       where: { id: numericId },
-      select: { name: true },
+      select: { name: true, image_url: true, gallery: true },
     });
+
+    if (existing) {
+      // Collect image URLs associated with this destination
+      const imagesToDelete: string[] = [];
+      if (existing.image_url) imagesToDelete.push(existing.image_url);
+      try {
+        const parsed = JSON.parse(existing.gallery || '[]');
+        if (Array.isArray(parsed)) {
+          parsed.forEach((img: any) => {
+            if (typeof img === 'string' && !imagesToDelete.includes(img)) {
+              imagesToDelete.push(img);
+            }
+          });
+        }
+      } catch {}
+
+      // 1. Delete from Supabase Storage bucket
+      const supabase = getSupabaseClient();
+      if (supabase && imagesToDelete.length > 0) {
+        const supabaseFileNames: string[] = [];
+        imagesToDelete.forEach((url) => {
+          if (url.includes(`/storage/v1/object/public/${SUPABASE_STORAGE_BUCKET}/`)) {
+            const fileName = url.split(`/storage/v1/object/public/${SUPABASE_STORAGE_BUCKET}/`)[1];
+            if (fileName) supabaseFileNames.push(fileName);
+          }
+        });
+        if (supabaseFileNames.length > 0) {
+          try {
+            await supabase.storage.from(SUPABASE_STORAGE_BUCKET).remove(supabaseFileNames);
+          } catch (storageErr) {
+            console.error('Failed to remove images from Supabase Storage:', storageErr);
+          }
+        }
+      }
+
+      // 2. Also clean up local disk backup files if they exist in public/uploads/
+      for (const url of imagesToDelete) {
+        if (url.startsWith('/uploads/')) {
+          const localPath = path.join(process.cwd(), 'public', url);
+          try {
+            if (fs.existsSync(localPath)) {
+              fs.unlinkSync(localPath);
+            }
+          } catch {}
+        }
+      }
+    }
 
     await prisma.place.delete({
       where: { id: numericId },
