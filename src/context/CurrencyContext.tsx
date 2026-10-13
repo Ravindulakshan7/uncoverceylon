@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export type CurrencyCode = 'USD' | 'LKR' | 'EUR' | 'GBP';
+export type CurrencyCode = 'USD' | 'EUR' | 'GBP' | 'AUD' | 'LKR';
 
 export interface CurrencyInfo {
   code: CurrencyCode;
@@ -11,19 +11,24 @@ export interface CurrencyInfo {
   flag: string;
 }
 
+// Foreign currencies available for travelers (LKR removed from foreign selector)
+export const FOREIGN_CURRENCY_CODES: CurrencyCode[] = ['USD', 'EUR', 'GBP', 'AUD'];
+
 export const CURRENCIES: Record<CurrencyCode, CurrencyInfo> = {
   USD: { code: 'USD', symbol: '$', name: 'US Dollar', flag: '🇺🇸' },
-  LKR: { code: 'LKR', symbol: 'Rs.', name: 'Sri Lankan Rupee', flag: '🇱🇰' },
   EUR: { code: 'EUR', symbol: '€', name: 'Euro', flag: '🇪🇺' },
   GBP: { code: 'GBP', symbol: '£', name: 'British Pound', flag: '🇬🇧' },
+  AUD: { code: 'AUD', symbol: 'A$', name: 'Australian Dollar', flag: '🇦🇺' },
+  LKR: { code: 'LKR', symbol: 'Rs.', name: 'Sri Lankan Rupee', flag: '🇱🇰' },
 };
 
-// Rates normalized to USD
-const RATES_FROM_USD: Record<CurrencyCode, number> = {
+// Default fallback exchange rates normalized to 1 USD
+const DEFAULT_RATES: Record<CurrencyCode, number> = {
   USD: 1.0,
-  LKR: 305.0,
   EUR: 0.92,
   GBP: 0.78,
+  AUD: 1.54,
+  LKR: 305.0,
 };
 
 export interface DetailedFee {
@@ -32,6 +37,7 @@ export interface DetailedFee {
   isFree: boolean;
   amountUSD: number;
   amountInCurrency: number;
+  amountLKR: number;
 }
 
 interface CurrencyContextType {
@@ -40,6 +46,8 @@ interface CurrencyContextType {
   currencyInfo: CurrencyInfo;
   convertFee: (feeStr: string | null | undefined) => string;
   getDetailedFee: (feeStr: string | null | undefined) => DetailedFee;
+  rates: Record<CurrencyCode, number>;
+  isLiveRates: boolean;
 }
 
 const CurrencyContext = createContext<CurrencyContextType>({
@@ -53,23 +61,69 @@ const CurrencyContext = createContext<CurrencyContextType>({
     isFree: true,
     amountUSD: 0,
     amountInCurrency: 0,
+    amountLKR: 0,
   }),
+  rates: DEFAULT_RATES,
+  isLiveRates: false,
 });
 
 const STORAGE_KEY = 'uc_preferred_currency';
 
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
   const [currency, setCurrencyState] = useState<CurrencyCode>('USD');
+  const [rates, setRates] = useState<Record<CurrencyCode, number>>(DEFAULT_RATES);
+  const [isLiveRates, setIsLiveRates] = useState(false);
 
+  // 1. Load saved currency on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY) as CurrencyCode;
       if (saved && CURRENCIES[saved]) {
-        setCurrencyState(saved);
+        // If saved was LKR, default back to USD for foreign traveler view
+        if (saved === 'LKR') {
+          setCurrencyState('USD');
+        } else {
+          setCurrencyState(saved);
+        }
       }
     } catch {
-      // ignore local storage errors
+      // ignore
     }
+  }, []);
+
+  // 2. Fetch live currency exchange rates from open exchange API
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchLiveRates() {
+      try {
+        const res = await fetch('https://open.er-api.com/v6/latest/USD');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data && data.rates && isMounted) {
+          const lkr = Number(data.rates.LKR) || DEFAULT_RATES.LKR;
+          const eur = Number(data.rates.EUR) || DEFAULT_RATES.EUR;
+          const gbp = Number(data.rates.GBP) || DEFAULT_RATES.GBP;
+          const aud = Number(data.rates.AUD) || DEFAULT_RATES.AUD;
+
+          setRates({
+            USD: 1.0,
+            LKR: lkr,
+            EUR: eur,
+            GBP: gbp,
+            AUD: aud,
+          });
+          setIsLiveRates(true);
+        }
+      } catch (err) {
+        // Fallback to DEFAULT_RATES
+      }
+    }
+
+    fetchLiveRates();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const setCurrency = (c: CurrencyCode) => {
@@ -96,17 +150,20 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
       const amountUSD = parseFloat(usdMatch[1]);
       const suffix = (usdMatch[2] || '').trim();
 
-      let converted = amountUSD * RATES_FROM_USD[currency];
+      const rate = rates[currency] || 1.0;
+      const converted = amountUSD * rate;
       let formatted = '';
 
-      if (currency === 'LKR') {
-        formatted = `Rs. ${Math.round(converted).toLocaleString('en-US')}`;
-      } else if (currency === 'USD') {
+      if (currency === 'USD') {
         formatted = `$${amountUSD % 1 === 0 ? amountUSD : amountUSD.toFixed(2)}`;
       } else if (currency === 'EUR') {
         formatted = `€${Math.round(converted)}`;
       } else if (currency === 'GBP') {
         formatted = `£${Math.round(converted)}`;
+      } else if (currency === 'AUD') {
+        formatted = `A$${Math.round(converted)}`;
+      } else if (currency === 'LKR') {
+        formatted = `Rs. ${Math.round(converted).toLocaleString('en-US')}`;
       }
 
       return suffix ? `${formatted} ${suffix}` : formatted;
@@ -118,18 +175,22 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
       const amountLKR = parseFloat(lkrMatch[1].replace(/,/g, ''));
       const suffix = (lkrMatch[2] || '').trim();
 
-      const amountUSD = amountLKR / RATES_FROM_USD.LKR;
-      const converted = amountUSD * RATES_FROM_USD[currency];
+      const lkrPerUsd = rates.LKR || DEFAULT_RATES.LKR;
+      const amountUSD = amountLKR / lkrPerUsd;
+      const rate = rates[currency] || 1.0;
+      const converted = amountUSD * rate;
       let formatted = '';
 
-      if (currency === 'LKR') {
-        formatted = `Rs. ${Math.round(amountLKR).toLocaleString('en-US')}`;
-      } else if (currency === 'USD') {
+      if (currency === 'USD') {
         formatted = `$${converted < 5 ? converted.toFixed(2) : Math.round(converted)}`;
       } else if (currency === 'EUR') {
         formatted = `€${converted < 5 ? converted.toFixed(2) : Math.round(converted)}`;
       } else if (currency === 'GBP') {
         formatted = `£${converted < 5 ? converted.toFixed(2) : Math.round(converted)}`;
+      } else if (currency === 'AUD') {
+        formatted = `A$${converted < 5 ? converted.toFixed(2) : Math.round(converted)}`;
+      } else if (currency === 'LKR') {
+        formatted = `Rs. ${Math.round(amountLKR).toLocaleString('en-US')}`;
       }
 
       return suffix ? `${formatted} ${suffix}` : formatted;
@@ -138,6 +199,10 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     return trimmed;
   };
 
+  /**
+   * Computes clean detailed fee with primary foreign currency display
+   * and secondary local LKR fee for foreigners visiting Sri Lanka.
+   */
   const getDetailedFee = (feeStr: string | null | undefined): DetailedFee => {
     if (!feeStr || typeof feeStr !== 'string') {
       return {
@@ -146,8 +211,10 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
         isFree: true,
         amountUSD: 0,
         amountInCurrency: 0,
+        amountLKR: 0,
       };
     }
+
     const trimmed = feeStr.trim();
     if (trimmed.toLowerCase().includes('free')) {
       return {
@@ -156,6 +223,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
         isFree: true,
         amountUSD: 0,
         amountInCurrency: 0,
+        amountLKR: 0,
       };
     }
 
@@ -167,7 +235,8 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
       const lkrMatch = trimmed.match(/(?:LKR|Rs\.?)\s*(\d+(?:,\d+)?)/i);
       if (lkrMatch) {
         const lkr = parseFloat(lkrMatch[1].replace(/,/g, ''));
-        amountUSD = lkr / RATES_FROM_USD.LKR;
+        const lkrPerUsd = rates.LKR || DEFAULT_RATES.LKR;
+        amountUSD = lkr / lkrPerUsd;
       } else {
         const anyNum = trimmed.match(/(\d+(?:\.\d+)?)/);
         if (anyNum) {
@@ -183,33 +252,31 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
         isFree: false,
         amountUSD: 0,
         amountInCurrency: 0,
+        amountLKR: 0,
       };
     }
 
-    const rate = RATES_FROM_USD[currency];
-    const amountInCurrency = amountUSD * rate;
-    const amountLKR = amountUSD * RATES_FROM_USD.LKR;
+    const currentRate = rates[currency] || 1.0;
+    const amountInCurrency = amountUSD * currentRate;
+    const lkrPerUsd = rates.LKR || DEFAULT_RATES.LKR;
+    const amountLKR = amountUSD * lkrPerUsd;
 
     let primary = '';
-    if (currency === 'LKR') {
-      primary = `Rs. ${Math.round(amountInCurrency).toLocaleString('en-US')}`;
-    } else if (currency === 'USD') {
+    if (currency === 'USD') {
       primary = `$${amountUSD < 10 && amountUSD % 1 !== 0 ? amountUSD.toFixed(2) : Math.round(amountUSD)}`;
     } else if (currency === 'EUR') {
       primary = `€${amountInCurrency < 10 && amountInCurrency % 1 !== 0 ? amountInCurrency.toFixed(2) : Math.round(amountInCurrency)}`;
     } else if (currency === 'GBP') {
       primary = `£${amountInCurrency < 10 && amountInCurrency % 1 !== 0 ? amountInCurrency.toFixed(2) : Math.round(amountInCurrency)}`;
+    } else if (currency === 'AUD') {
+      primary = `A$${amountInCurrency < 10 && amountInCurrency % 1 !== 0 ? amountInCurrency.toFixed(2) : Math.round(amountInCurrency)}`;
+    } else if (currency === 'LKR') {
+      primary = `Rs. ${Math.round(amountLKR).toLocaleString('en-US')}`;
     }
 
-    const usdFormatted = `$${amountUSD < 10 && amountUSD % 1 !== 0 ? amountUSD.toFixed(2) : Math.round(amountUSD)} USD`;
-    const lkrFormatted = `${Math.round(amountLKR).toLocaleString('en-US')} LKR`;
-
-    let secondary = '';
-    if (currency === 'USD') {
-      secondary = `for Foreigners · approx. ${lkrFormatted}`;
-    } else {
-      secondary = `for Foreigners · approx. ${usdFormatted}`;
-    }
+    // Always show Sri Lankan Rupees (LKR) in the secondary subtitle for foreigners
+    const lkrFormatted = `Rs. ${Math.round(amountLKR).toLocaleString('en-US')} LKR`;
+    const secondary = `for Foreigners · approx. ${lkrFormatted}`;
 
     return {
       primary,
@@ -217,6 +284,7 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
       isFree: false,
       amountUSD,
       amountInCurrency,
+      amountLKR,
     };
   };
 
@@ -225,9 +293,11 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
       value={{
         currency,
         setCurrency,
-        currencyInfo: CURRENCIES[currency],
+        currencyInfo: CURRENCIES[currency] || CURRENCIES.USD,
         convertFee,
         getDetailedFee,
+        rates,
+        isLiveRates,
       }}
     >
       {children}

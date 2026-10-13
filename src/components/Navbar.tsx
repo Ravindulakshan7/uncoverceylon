@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Menu, X, Heart, Search, ChevronDown, LogOut, ShieldCheck, User as UserIcon, Sparkles } from 'lucide-react';
 import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
-import CurrencySelector from '@/components/CurrencySelector';
+import CountrySelector from '@/components/CountrySelector';
 import AiTripModal from '@/components/AiTripModal';
 
 export default function Navbar() {
@@ -243,9 +243,9 @@ export default function Navbar() {
           {/* ━━━ 4. RIGHT CONTROLS: [USD] [Wishlist] [Solid Black Sign in Pill] ━━━ */}
           <div className="flex items-center gap-2 sm:gap-2.5">
             
-            {/* Currency Selector (Desktop only) */}
+            {/* Country & Region Selector (Desktop) */}
             <div className="hidden sm:block">
-              <CurrencySelector scrolled={true} />
+              <CountrySelector scrolled={true} />
             </div>
 
             {/* Mobile AI Search Button (Podiyata AI search eka) */}
@@ -454,6 +454,12 @@ export default function Navbar() {
             >
               <span>About Serandib Co.</span>
             </Link>
+
+            {/* Mobile Country & Language Selector */}
+            <div className="px-3.5 py-2 flex items-center justify-between border-y border-slate-100 my-1">
+              <span className="text-xs font-bold text-slate-500">Country / Region</span>
+              <CountrySelector scrolled={true} />
+            </div>
 
             {/* Mobile AI Trip Planner Trigger */}
             <button

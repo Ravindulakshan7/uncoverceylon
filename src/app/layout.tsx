@@ -199,6 +199,25 @@ export default function RootLayout({
             gtag('config', 'G-5FZLF5MSDE');
           `}
         </Script>
+        {/* Google Website Translate Element for instant auto language change */}
+        <div id="google_translate_element" style={{ display: 'none' }} />
+        <Script id="google-translate-init" strategy="afterInteractive">
+          {`
+            function googleTranslateElementInit() {
+              if (window.google && window.google.translate) {
+                new window.google.translate.TranslateElement({
+                  pageLanguage: 'en',
+                  includedLanguages: 'en,de,fr,ru,zh-CN,it,es,si,ar',
+                  autoDisplay: false
+                }, 'google_translate_element');
+              }
+            }
+          `}
+        </Script>
+        <Script
+          strategy="afterInteractive"
+          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+        />
         <LanguageProvider>
           <CurrencyProvider>
             <LocationProvider>

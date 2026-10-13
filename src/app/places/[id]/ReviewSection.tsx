@@ -62,18 +62,19 @@ export default function ReviewSection({
   };
 
   // Compute 5-star to 1-star percentage breakdown
-  const total = Math.max(reviews.length, 1);
+  const hasReviews = reviews.length > 0;
+  const total = reviews.length;
   const count5 = reviews.filter((r) => r.rating === 5).length;
   const count4 = reviews.filter((r) => r.rating === 4).length;
   const count3 = reviews.filter((r) => r.rating === 3).length;
   const count2 = reviews.filter((r) => r.rating === 2).length;
   const count1 = reviews.filter((r) => r.rating <= 1).length;
 
-  const pct5 = reviews.length > 0 ? Math.round((count5 / total) * 100) : 88;
-  const pct4 = reviews.length > 0 ? Math.round((count4 / total) * 100) : 9;
-  const pct3 = reviews.length > 0 ? Math.round((count3 / total) * 100) : 2;
-  const pct2 = reviews.length > 0 ? Math.round((count2 / total) * 100) : 1;
-  const pct1 = reviews.length > 0 ? Math.round((count1 / total) * 100) : 0;
+  const pct5 = hasReviews ? Math.round((count5 / total) * 100) : 0;
+  const pct4 = hasReviews ? Math.round((count4 / total) * 100) : 0;
+  const pct3 = hasReviews ? Math.round((count3 / total) * 100) : 0;
+  const pct2 = hasReviews ? Math.round((count2 / total) * 100) : 0;
+  const pct1 = hasReviews ? Math.round((count1 / total) * 100) : 0;
 
   return (
     <div className="space-y-6" id="reviews">

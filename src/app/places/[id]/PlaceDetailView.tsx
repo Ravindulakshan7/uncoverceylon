@@ -181,7 +181,7 @@ export default function PlaceDetailView({
   const experiencePlaces = nearbyAttractions.length > 0 ? nearbyAttractions.slice(0, 4) : [];
 
   return (
-    <div className="min-h-screen bg-white text-[#000a12] pt-16 sm:pt-20 pb-20 font-['Plus_Jakarta_Sans',system-ui,-apple-system,sans-serif]">
+    <div className="min-h-screen bg-white text-[#000a12] pt-3 sm:pt-4 pb-20 font-['Plus_Jakarta_Sans',system-ui,-apple-system,sans-serif]">
       
       {/* ━━━ 1. BREADCRUMBS ━━━ */}
       <div className="w-[94%] max-w-[1180px] mx-auto mb-3">
