@@ -80,7 +80,8 @@ export default function TripAdvisorReviewModal({
   };
 
   const handlePhotosUpload = async (files: FileList | File[]) => {
-    const fileArray = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    const isImage = (f: File) => f.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|avif|heic|heif|jfif|bmp|tiff|svg)$/i.test(f.name);
+    const fileArray = Array.from(files).filter(isImage);
     if (fileArray.length === 0) {
       toast.error('Please select valid image files (JPG, PNG, WEBP, etc.)');
       return;
@@ -92,10 +93,8 @@ export default function TripAdvisorReviewModal({
     }
 
     setUploadingPhotos(true);
-    let successCount = 0;
 
-    for (let i = 0; i < fileArray.length; i++) {
-      const file = fileArray[i];
+    const uploadPromises = fileArray.map(async (file) => {
       const previewUrl = URL.createObjectURL(file);
       setUploadedPhotos((prev) => [...prev, previewUrl]);
 
@@ -113,18 +112,24 @@ export default function TripAdvisorReviewModal({
         setUploadedPhotos((prev) =>
           prev.map((img) => (img === previewUrl ? resData.url : img))
         );
-        successCount++;
+        URL.revokeObjectURL(previewUrl);
+        return { success: true };
       } catch (err: unknown) {
         setUploadedPhotos((prev) => prev.filter((img) => img !== previewUrl));
+        URL.revokeObjectURL(previewUrl);
         const msg = err instanceof Error ? err.message : 'Upload failed';
         toast.error(`Failed to upload ${file.name}: ${msg}`);
+        return { success: false };
       }
-    }
+    });
+
+    const results = await Promise.all(uploadPromises);
+    const successCount = results.filter((r) => r.success).length;
 
     setUploadingPhotos(false);
     if (successCount > 0) {
       toast.success(
-        successCount === 1 ? 'Photo attached! 📸' : `${successCount} photos attached! 📸`
+        successCount === 1 ? 'Photo optimized & attached! 📸' : `${successCount} photos optimized & attached! 📸`
       );
     }
   };
@@ -544,12 +549,13 @@ export default function TripAdvisorReviewModal({
                 >
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.heif,.jfif"
                     multiple
                     disabled={uploadingPhotos}
                     onChange={(e) => {
                       if (e.target.files && e.target.files.length > 0) {
                         handlePhotosUpload(e.target.files);
+                        e.target.value = '';
                       }
                     }}
                     className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"

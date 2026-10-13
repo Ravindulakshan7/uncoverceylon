@@ -193,6 +193,12 @@ export default function AdminPage() {
 
   // Upload photo directly from PC (for Hero Slides)
   const handleFileUpload = async (file: File) => {
+    const isImage = file.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|avif|heic|heif|jfif|bmp|tiff|svg)$/i.test(file.name);
+    if (!isImage) {
+      toast.error('Please choose a valid image file (JPG, PNG, WEBP, etc.)');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
     setUploadingSlideImage(true);
@@ -206,7 +212,7 @@ export default function AdminPage() {
       if (!res.ok) throw new Error(data.error || 'Upload failed');
 
       setSlideForm((prev) => ({ ...prev, image_url: data.url }));
-      toast.success('Photo uploaded from PC! 📸');
+      toast.success('Photo optimized & uploaded! 📸');
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Upload failed');
     } finally {
@@ -237,6 +243,12 @@ export default function AdminPage() {
 
   // Upload photo directly from PC (for Region Slides)
   const handleRegionFileUpload = async (file: File) => {
+    const isImage = file.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|avif|heic|heif|jfif|bmp|tiff|svg)$/i.test(file.name);
+    if (!isImage) {
+      toast.error('Please choose a valid image file (JPG, PNG, WEBP, etc.)');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
     setUploadingRegionImage(true);
@@ -250,7 +262,7 @@ export default function AdminPage() {
       if (!res.ok) throw new Error(data.error || 'Upload failed');
 
       setRegionSlideForm((prev) => ({ ...prev, image_url: data.url }));
-      toast.success('Region photo uploaded from PC! 📸');
+      toast.success('Region photo optimized & uploaded! 📸');
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Upload failed');
     } finally {
@@ -2077,11 +2089,12 @@ export default function AdminPage() {
                       <div className="border-2 border-dashed border-slate-200 hover:border-sky-500 rounded-2xl p-5 flex flex-col items-center justify-center text-center bg-white hover:bg-sky-50/50 transition-all cursor-pointer relative group shadow-xs">
                         <input
                           type="file"
-                          accept="image/*"
+                          accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.heif,.jfif"
                           disabled={uploadingSlideImage}
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) handleFileUpload(file);
+                            e.target.value = '';
                           }}
                           className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
                         />
@@ -2497,12 +2510,13 @@ export default function AdminPage() {
                         <span>{uploadingRegionImage ? 'Uploading Image...' : 'Upload Photo from PC'}</span>
                         <input
                           type="file"
-                          accept="image/*"
+                          accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.heif,.jfif"
                           className="hidden"
                           disabled={uploadingRegionImage}
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) handleRegionFileUpload(file);
+                            e.target.value = '';
                           }}
                         />
                       </label>

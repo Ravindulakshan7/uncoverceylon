@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import fs from 'fs';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 // Dynamic route handler to serve runtime-uploaded media files from public/uploads.
 // Guarantees 100% reliable image delivery in both dev and production.
 export async function GET(
@@ -16,10 +19,18 @@ export async function GET(
 
     // Sanitize filename to prevent directory traversal
     const safePath = segments.map((s) => path.basename(s)).join(path.sep);
-    const filePath = path.join(process.cwd(), 'public', 'uploads', safePath);
 
+    // Primary path: public/uploads/<safePath>
+    let filePath = path.join(process.cwd(), 'public', 'uploads', safePath);
+
+    // Fallback path: check .next/standalone/public/uploads if primary doesn't exist
     if (!fs.existsSync(filePath)) {
-      return new NextResponse('File not found', { status: 404 });
+      const fallbackPath = path.join(process.cwd(), '.next', 'standalone', 'public', 'uploads', safePath);
+      if (fs.existsSync(fallbackPath)) {
+        filePath = fallbackPath;
+      } else {
+        return new NextResponse('File not found', { status: 404 });
+      }
     }
 
     const fileBuffer = fs.readFileSync(filePath);
@@ -31,12 +42,14 @@ export async function GET(
     else if (ext === '.gif') contentType = 'image/gif';
     else if (ext === '.svg') contentType = 'image/svg+xml';
     else if (ext === '.avif') contentType = 'image/avif';
-    else if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
+    else if (ext === '.ico') contentType = 'image/x-icon';
+    else if (ext === '.jpg' || ext === '.jpeg' || ext === '.jfif') contentType = 'image/jpeg';
 
     return new NextResponse(fileBuffer, {
       status: 200,
       headers: {
         'Content-Type': contentType,
+        'Content-Length': String(fileBuffer.length),
         'Cache-Control': 'public, max-age=31536000, immutable',
       },
     });

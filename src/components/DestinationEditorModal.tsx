@@ -238,17 +238,21 @@ export default function DestinationEditorModal({
 
   // Multiple PC File Upload Handler
   const handleFilesUpload = async (files: FileList | File[]) => {
-    const fileArray = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    const isImageFile = (f: File) => {
+      if (f.type && f.type.startsWith('image/')) return true;
+      const ext = f.name.toLowerCase().split('.').pop() || '';
+      return ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'heic', 'heif', 'jfif', 'bmp', 'tiff', 'svg'].includes(ext);
+    };
+
+    const fileArray = Array.from(files).filter(isImageFile);
     if (fileArray.length === 0) {
       toast.error('Please select valid image files (JPG, PNG, WEBP, etc.)');
       return;
     }
 
     setUploadingImage(true);
-    let successCount = 0;
 
-    for (let i = 0; i < fileArray.length; i++) {
-      const file = fileArray[i];
+    const uploadPromises = fileArray.map(async (file) => {
       const previewUrl = URL.createObjectURL(file);
       setImageList((prev) => [...prev, previewUrl]);
 
@@ -266,20 +270,26 @@ export default function DestinationEditorModal({
         setImageList((prev) =>
           prev.map((img) => (img === previewUrl ? resData.url : img))
         );
-        successCount++;
+        URL.revokeObjectURL(previewUrl);
+        return { success: true, name: file.name };
       } catch (err: unknown) {
         setImageList((prev) => prev.filter((img) => img !== previewUrl));
+        URL.revokeObjectURL(previewUrl);
         const msg = err instanceof Error ? err.message : 'Upload failed';
         toast.error(`Failed to upload ${file.name}: ${msg}`);
+        return { success: false, name: file.name };
       }
-    }
+    });
+
+    const results = await Promise.all(uploadPromises);
+    const successCount = results.filter((r) => r.success).length;
 
     setUploadingImage(false);
     if (successCount > 0) {
       toast.success(
         successCount === 1
-          ? 'Photo uploaded from PC! 📸'
-          : `${successCount} photos uploaded from PC! 📸`
+          ? 'Photo optimized & uploaded! 📸'
+          : `${successCount} photos optimized & uploaded! 📸`
       );
     }
   };
@@ -704,12 +714,13 @@ export default function DestinationEditorModal({
               >
                 <input
                   type="file"
-                  accept="image/*"
+                  accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.heif,.jfif"
                   multiple
                   disabled={uploadingImage}
                   onChange={(e) => {
                     if (e.target.files && e.target.files.length > 0) {
                       handleFilesUpload(e.target.files);
+                      e.target.value = '';
                     }
                   }}
                   className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"

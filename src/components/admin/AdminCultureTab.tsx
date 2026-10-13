@@ -91,8 +91,10 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
+    const isImage = file.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|avif|heic|heif|jfif|bmp|tiff|svg)$/i.test(file.name);
+    if (!isImage) {
+      toast.error('Please choose a valid image file (JPG, PNG, WEBP, etc.)');
+      e.target.value = '';
       return;
     }
 
@@ -111,11 +113,12 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
       if (!res.ok) throw new Error(data.error || 'Failed to upload photo');
 
       setForm((prev) => ({ ...prev, image: data.url }));
-      toast.success('Culture photo uploaded! 📸');
+      toast.success('Culture photo optimized & uploaded! 📸');
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Photo upload failed');
     } finally {
       setUploadingImage(false);
+      e.target.value = '';
     }
   };
 
@@ -418,7 +421,7 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
                   <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-[#162338] hover:bg-[#1e304a] border border-[#1e324d] text-slate-300 hover:text-white flex items-center gap-1.5 text-xs font-bold transition-colors">
                     {uploadingImage ? <Loader2 className="w-4 h-4 animate-spin text-[#00aa6c]" /> : <Upload className="w-4 h-4" />}
                     <span>Upload</span>
-                    <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} disabled={uploadingImage} />
+                    <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.heif,.jfif" className="hidden" onChange={handleFileUpload} disabled={uploadingImage} />
                   </label>
                 </div>
                 {form.image && (
