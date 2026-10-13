@@ -6,7 +6,7 @@ import { Place } from '@/types';
 import {
   X, Save, Upload, Loader2, MapPin, Image as ImageIcon, ImageOff,
   FileText, Globe, Star, CheckCircle2, AlertCircle, ArrowLeft, ArrowRight,
-  MoveUp, MoveDown, Trash2, Eye, ExternalLink, HelpCircle, Sparkles
+  MoveUp, MoveDown, Trash2, Eye, ExternalLink, HelpCircle, Sparkles, Plus
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -31,12 +31,13 @@ const PROVINCES = [
   'Sabaragamuwa Province'
 ];
 
-type TabType = 'basic' | 'images' | 'location' | 'seo' | 'reviews' | 'publishing';
+type TabType = 'basic' | 'images' | 'location' | 'faq' | 'seo' | 'reviews' | 'publishing';
 
 const TABS: { id: TabType; label: string; icon: React.ElementType }[] = [
   { id: 'basic', label: 'Basic Info', icon: FileText },
   { id: 'images', label: 'Images & Media', icon: ImageIcon },
   { id: 'location', label: 'Location & Map', icon: MapPin },
+  { id: 'faq', label: 'Highlights & Q&A', icon: HelpCircle },
   { id: 'seo', label: 'SEO & Preview', icon: Globe },
   { id: 'reviews', label: 'Ratings & Reviews', icon: Star },
   { id: 'publishing', label: 'Publishing', icon: CheckCircle2 },
@@ -84,6 +85,16 @@ export default function DestinationEditorModal({
     meta_description: '',
   });
 
+  // Highlights, Why Travelers Love It, and Q&A state
+  const [highlightsList, setHighlightsList] = useState<string[]>([]);
+  const [newHighlight, setNewHighlight] = useState('');
+  const [whyLoveList, setWhyLoveList] = useState<{ title: string; desc: string }[]>([
+    { title: '', desc: '' },
+    { title: '', desc: '' },
+    { title: '', desc: '' },
+  ]);
+  const [qaList, setQaList] = useState<{ q: string; a: string }[]>([]);
+
   // Multiple Images list
   const [imageList, setImageList] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
@@ -95,6 +106,19 @@ export default function DestinationEditorModal({
   // Initialize form data when place changes
   useEffect(() => {
     if (place) {
+      let parsedTipsObj: any = null;
+      if (place.tips && place.tips.trim().startsWith('{')) {
+        try {
+          parsedTipsObj = JSON.parse(place.tips.trim());
+        } catch {
+          parsedTipsObj = null;
+        }
+      }
+
+      const initialTipsText = parsedTipsObj
+        ? (parsedTipsObj.tips || parsedTipsObj.advisory || '')
+        : (place.tips || '');
+
       setFormData({
         name: place.name || '',
         short_description: place.short_description || '',
@@ -107,7 +131,7 @@ export default function DestinationEditorModal({
         entry_fee: place.entry_fee || 'Free',
         best_time: place.best_time || 'November to April',
         distance_km: Number(place.distance_km) || 0,
-        tips: place.tips || '',
+        tips: initialTipsText,
         featured: place.featured === 1,
         status: 'published',
         rating: place.rating || 4.8,
@@ -115,6 +139,24 @@ export default function DestinationEditorModal({
         meta_title: `${place.name} Travel Guide | UncoverCeylon`,
         meta_description: place.short_description || `Discover ${place.name} in ${place.location}, Sri Lanka.`,
       });
+
+      if (parsedTipsObj && typeof parsedTipsObj === 'object') {
+        setHighlightsList(Array.isArray(parsedTipsObj.highlights) ? parsedTipsObj.highlights : []);
+        setWhyLoveList(
+          Array.isArray(parsedTipsObj.why_love) && parsedTipsObj.why_love.length > 0
+            ? [
+                { title: parsedTipsObj.why_love[0]?.title || '', desc: parsedTipsObj.why_love[0]?.desc || '' },
+                { title: parsedTipsObj.why_love[1]?.title || '', desc: parsedTipsObj.why_love[1]?.desc || '' },
+                { title: parsedTipsObj.why_love[2]?.title || '', desc: parsedTipsObj.why_love[2]?.desc || '' },
+              ]
+            : [{ title: '', desc: '' }, { title: '', desc: '' }, { title: '', desc: '' }]
+        );
+        setQaList(Array.isArray(parsedTipsObj.qa) ? parsedTipsObj.qa : []);
+      } else {
+        setHighlightsList([]);
+        setWhyLoveList([{ title: '', desc: '' }, { title: '', desc: '' }, { title: '', desc: '' }]);
+        setQaList([]);
+      }
 
       let parsedGallery: string[] = [];
       try {
@@ -148,6 +190,9 @@ export default function DestinationEditorModal({
         meta_title: '',
         meta_description: '',
       });
+      setHighlightsList([]);
+      setWhyLoveList([{ title: '', desc: '' }, { title: '', desc: '' }, { title: '', desc: '' }]);
+      setQaList([]);
       setImageList([]);
     }
     setActiveTab('basic');
@@ -212,6 +257,32 @@ export default function DestinationEditorModal({
         meta_title: target.meta_title || `${target.name || prev.name} Travel Guide | UncoverCeylon`,
         meta_description: target.meta_description || target.short_description || prev.meta_description,
       }));
+
+      // Parse Highlights
+      if (Array.isArray(target.highlights)) {
+        setHighlightsList(target.highlights.filter((h: any) => typeof h === 'string' && h.trim()));
+      }
+
+      // Parse Why Travelers Love It (3 cards)
+      if (Array.isArray(target.why_love) && target.why_love.length > 0) {
+        setWhyLoveList([
+          { title: target.why_love[0]?.title || '', desc: target.why_love[0]?.desc || '' },
+          { title: target.why_love[1]?.title || '', desc: target.why_love[1]?.desc || '' },
+          { title: target.why_love[2]?.title || '', desc: target.why_love[2]?.desc || '' },
+        ]);
+      }
+
+      // Parse Q&A items
+      if (Array.isArray(target.qa)) {
+        setQaList(
+          target.qa
+            .map((item: any) => ({
+              q: item.q || item.question || '',
+              a: item.a || item.answer || '',
+            }))
+            .filter((item: any) => item.q.trim() && item.a.trim())
+        );
+      }
 
       const newImages: string[] = [];
       if (target.image_url && typeof target.image_url === 'string') {
@@ -416,8 +487,24 @@ export default function DestinationEditorModal({
     const primaryImage = imageList[0] || '';
 
     try {
+      let tipsToSave = formData.tips;
+      const hasCustomExtras =
+        highlightsList.length > 0 ||
+        whyLoveList.some((w) => w.title.trim() || w.desc.trim()) ||
+        qaList.length > 0;
+
+      if (hasCustomExtras) {
+        tipsToSave = JSON.stringify({
+          tips: formData.tips,
+          highlights: highlightsList,
+          why_love: whyLoveList.filter((w) => w.title.trim() || w.desc.trim()),
+          qa: qaList.filter((item) => item.q.trim() && item.a.trim()),
+        });
+      }
+
       const payload = {
         ...formData,
+        tips: tipsToSave,
         image_url: primaryImage,
         gallery: imageList,
         lat: Number(formData.lat),
@@ -981,6 +1068,258 @@ export default function DestinationEditorModal({
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-mono text-slate-900 outline-none"
                   />
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              TAB: HIGHLIGHTS, WHY LOVE IT & Q&A (CUSTOMIZER)
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+          {activeTab === 'faq' && (
+            <div className="space-y-6 animate-fade-in">
+              {/* Info banner */}
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-start gap-3">
+                <HelpCircle className="w-5 h-5 text-[#00aa6c] shrink-0 mt-0.5" />
+                <div className="text-xs text-emerald-950 leading-relaxed">
+                  <span className="font-bold text-emerald-900 block mb-0.5">
+                    Highlights, &ldquo;Why travelers love it&rdquo; &amp; Q&amp;A Customizer
+                  </span>
+                  Customize the exact bullet points, value cards, and Q&amp;A items shown on the live destination page. When using AI Auto-Fill, all of these are filled in automatically!
+                </div>
+              </div>
+
+              {/* 1. Highlights Bullet Points */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#00aa6c]" />
+                      <span>Key Highlights (Green Bullet Points)</span>
+                    </label>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Standout bullet points displayed in the Highlights section on the destination page.
+                    </p>
+                  </div>
+                  <span className="text-xs bg-emerald-50 text-emerald-700 font-bold px-2.5 py-1 rounded-full border border-emerald-200">
+                    {highlightsList.length} items
+                  </span>
+                </div>
+
+                {highlightsList.length > 0 && (
+                  <div className="space-y-2">
+                    {highlightsList.map((hl, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-start gap-2.5 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-[#00aa6c] mt-1 shrink-0" />
+                        <span className="flex-1 leading-relaxed">{hl}</span>
+                        <button
+                          type="button"
+                          onClick={() => setHighlightsList((prev) => prev.filter((_, i) => i !== idx))}
+                          className="text-slate-400 hover:text-rose-500 p-1 transition-colors shrink-0 cursor-pointer"
+                          title="Remove highlight"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="flex gap-2">
+                  <input
+                    value={newHighlight}
+                    onChange={(e) => setNewHighlight(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (newHighlight.trim()) {
+                          setHighlightsList((prev) => [...prev, newHighlight.trim()]);
+                          setNewHighlight('');
+                        }
+                      }
+                    }}
+                    placeholder="e.g. Marvel at the floating Seema Malaka water pavilion designed by Geoffrey Bawa on Beira Lake..."
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:border-sky-500 focus:bg-white outline-none transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newHighlight.trim()) {
+                        setHighlightsList((prev) => [...prev, newHighlight.trim()]);
+                        setNewHighlight('');
+                      }
+                    }}
+                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Point</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 2. Why travelers love it (3 cards) */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
+                    Why Travelers Love It (3 Feature Cards)
+                  </label>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Three standout feature cards displayed prominently in the Overview tab.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {[0, 1, 2].map((idx) => (
+                    <div key={idx} className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+                          Feature Card #{idx + 1}
+                        </span>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-600 mb-1">
+                          Bold Title
+                        </label>
+                        <input
+                          value={whyLoveList[idx]?.title || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setWhyLoveList((prev) => {
+                              const updated = [...prev];
+                              updated[idx] = { ...updated[idx], title: val };
+                              return updated;
+                            });
+                          }}
+                          placeholder="e.g. Floating Temple Pavilion"
+                          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900 outline-none focus:border-sky-500 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-600 mb-1">
+                          Description
+                        </label>
+                        <textarea
+                          value={whyLoveList[idx]?.desc || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setWhyLoveList((prev) => {
+                              const updated = [...prev];
+                              updated[idx] = { ...updated[idx], desc: val };
+                              return updated;
+                            });
+                          }}
+                          rows={3}
+                          placeholder="Short description explaining why visitors love this..."
+                          className="w-full bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 outline-none focus:border-sky-500 resize-none transition-all"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. Questions & Answers (Q&A) */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="text-xs font-bold text-slate-900 uppercase tracking-wider block">
+                      Questions &amp; Answers (Q&amp;A)
+                    </label>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Visitor FAQs displayed in the Questions &amp; Answers section.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setQaList((prev) => [...prev, { q: '', a: '' }])}
+                    className="px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border border-sky-200"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Question</span>
+                  </button>
+                </div>
+
+                {qaList.length === 0 ? (
+                  <div className="bg-slate-50 rounded-xl border border-dashed border-slate-200 p-4 text-center text-xs text-slate-500">
+                    No custom Q&amp;As entered. System will use automatic smart Q&amp;As (timing, entry fees, kid-friendliness, best hours).
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {qaList.map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 relative"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-extrabold text-[#00aa6c] flex items-center gap-1.5">
+                            <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-[10px] font-black">
+                              Q{idx + 1}
+                            </span>
+                            <span>Question &amp; Answer #{idx + 1}</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setQaList((prev) => prev.filter((_, i) => i !== idx))}
+                            className="text-slate-400 hover:text-rose-500 p-1 transition-colors cursor-pointer"
+                            title="Remove Question"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        <div>
+                          <input
+                            value={item.q}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setQaList((prev) => {
+                                const updated = [...prev];
+                                updated[idx] = { ...updated[idx], q: val };
+                                return updated;
+                              });
+                            }}
+                            placeholder="e.g. What is the dress code for visitors?"
+                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-900 outline-none focus:border-sky-500 transition-all"
+                          />
+                        </div>
+                        <div>
+                          <textarea
+                            value={item.a}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setQaList((prev) => {
+                                const updated = [...prev];
+                                updated[idx] = { ...updated[idx], a: val };
+                                return updated;
+                              });
+                            }}
+                            rows={2}
+                            placeholder="e.g. Modest clothing covering shoulders and knees is strictly required. Shoes must be removed at the entrance."
+                            className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-700 outline-none focus:border-sky-500 resize-none transition-all"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 4. Insider Visitor Tips & Advisory */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-2">
+                <label className="block text-slate-900 text-xs font-bold uppercase tracking-wider">
+                  Insider Visitor Advisory &amp; Tips
+                </label>
+                <p className="text-[11px] text-slate-500">
+                  Practical guidelines, dress code advisories, hydration tips, and photography permissions.
+                </p>
+                <textarea
+                  value={formData.tips}
+                  onChange={(e) => setFormData({ ...formData, tips: e.target.value })}
+                  rows={3}
+                  placeholder="e.g. Dress modestly with covered shoulders and knees. Footwear must be removed before entering shrines. Morning visits are recommended to avoid midday heat."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-900 focus:border-sky-500 focus:bg-white resize-none outline-none transition-all"
+                />
               </div>
             </div>
           )}

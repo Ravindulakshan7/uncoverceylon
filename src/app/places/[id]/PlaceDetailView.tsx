@@ -44,6 +44,135 @@ interface PlaceDetailViewProps {
 // Clean Real Traveler Photos (NO fake stock images)
 type TabId = 'overview' | 'reviews' | 'photos' | 'qa' | 'nearby';
 
+interface ParsedTipsData {
+  advisory?: string;
+  highlights?: string[];
+  why_love?: { title: string; desc: string }[];
+  qa?: { q: string; a: string }[];
+}
+
+function parsePlaceTips(tipsRaw?: string): ParsedTipsData {
+  if (!tipsRaw || !tipsRaw.trim()) return {};
+  const trimmed = tipsRaw.trim();
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      return {
+        advisory: parsed.tips || parsed.advisory || '',
+        highlights: Array.isArray(parsed.highlights) ? parsed.highlights : undefined,
+        why_love: Array.isArray(parsed.why_love) ? parsed.why_love : undefined,
+        qa: Array.isArray(parsed.qa) ? parsed.qa : undefined,
+      };
+    } catch {
+      // ignore
+    }
+  }
+  const lines = trimmed
+    .split('\n')
+    .map((l) => l.replace(/^[•\-\*\d\.\s]+/, '').trim())
+    .filter(Boolean);
+  return {
+    advisory: trimmed,
+    highlights: lines.length > 1 ? lines : undefined,
+  };
+}
+
+function getDefaultWhyLove(category: string, name: string, location: string) {
+  switch (category) {
+    case 'Religious Places':
+      return [
+        {
+          title: 'Sacred Tranquility & Heritage',
+          desc: `Immerse yourself in authentic Buddhist spirituality, sacred shrines, and serene atmosphere at ${name}.`,
+        },
+        {
+          title: 'Intricate Architecture & Art',
+          desc: 'Marvel at timeless statues, ornate cultural carvings, and architectural craftsmanship inspired by ancient traditions.',
+        },
+        {
+          title: 'Peaceful Urban Sanctuary',
+          desc: 'A calm haven away from bustle, offering visitors peaceful courtyards, lotus offerings, and rhythmic temple chants.',
+        },
+      ];
+    case 'Beaches':
+      return [
+        {
+          title: 'Sun-Soaked Tropical Coastline',
+          desc: `Golden sandy shores, swaying coconut palms, and crystal turquoise waters perfect for unwinding along ${location}.`,
+        },
+        {
+          title: 'Water Sports & Ocean Adventures',
+          desc: 'Enjoy world-class surfing, snorkeling reefs, turtle watching, and scenic boat tours along the Indian Ocean.',
+        },
+        {
+          title: 'Vibrant Coastal Dining & Sunsets',
+          desc: 'Savor fresh Ceylon seafood and breathtaking golden sunsets right on the ocean shoreline.',
+        },
+      ];
+    case 'Waterfalls':
+      return [
+        {
+          title: 'Roaring Cascades & Natural Pools',
+          desc: 'Dramatic crystal waters plunging into scenic rock pools surrounded by lush tropical vegetation.',
+        },
+        {
+          title: 'Refreshing Swimming & Photography',
+          desc: 'Cool highland waters, mist-filled breezes, and breathtaking angles for photography lovers.',
+        },
+        {
+          title: 'Scenic Jungle Trails & Trekking',
+          desc: 'Exhilarating nature trails through tea estates and hillside foliage leading to panoramic lookout spots.',
+        },
+      ];
+    case 'Ancient Sites':
+    case 'Historical':
+      return [
+        {
+          title: 'UNESCO World Heritage & Royal History',
+          desc: 'Walk amidst centuries-old royal citadels, sacred stupas, and ancient stone engineering marvels.',
+        },
+        {
+          title: 'Remarkable Ancient Engineering',
+          desc: 'Explore ancient irrigation systems, rock fortress defenses, and monumental stone sculpture.',
+        },
+        {
+          title: 'Timeless Cultural Grandeur',
+          desc: 'Discover fascinating legends of ancient Ceylon kings, Buddhist monks, and colonial chronicles.',
+        },
+      ];
+    case 'Wildlife':
+      return [
+        {
+          title: 'Thrilling Safari Encounters',
+          desc: 'Spot wild elephants, elusive Sri Lankan leopards, sloth bears, and crocodiles in their natural habitat.',
+        },
+        {
+          title: 'Diverse Endemic Birdlife',
+          desc: 'A paradise for birdwatchers featuring colorful migratory and native species across pristine wetlands.',
+        },
+        {
+          title: 'Protected Natural Wilderness',
+          desc: 'Unspoiled eco-reserves and national parks preserving the rich biodiversity of the island.',
+        },
+      ];
+    default:
+      return [
+        {
+          title: 'Prime panoramic views & vistas',
+          desc: `Watch breathtaking sunrises and rolling Ceylon highlands from unparalleled vantage points around ${name}.`,
+        },
+        {
+          title: 'Authentic & peaceful atmosphere',
+          desc: 'Enjoy an unhurried, natural setting away from overwhelming tourist crowds.',
+        },
+        {
+          title: 'Unbeatable photo opportunities',
+          desc: 'Iconic landscape views and vibrant cultural memories make this a must-visit destination.',
+        },
+      ];
+  }
+}
+
 export default function PlaceDetailView({
   place,
   reviews: initialReviews,
@@ -153,29 +282,53 @@ export default function PlaceDetailView({
     }
   };
 
-  // Q&A list matching deepseek HTML format
-  const qaItems = [
-    {
-      q: 'How long does the visit or hike take?',
-      a: `Most travelers spend around ${seasonality.recommendedDuration || '1 to 2.5 hours'} at ${place.name}, allowing plenty of time to explore scenic vantage points and take photos.`,
-    },
-    {
-      q: 'What is the entry fee for foreigners and locals?',
-      a: feeData.isFree
-        ? 'Admission is completely free for both local and foreign travelers. No tickets required.'
-        : `Standard admission is ${place.entry_fee || 'approx. 1,000 LKR'}. Cash is recommended for local ticket counters.`,
-    },
-    {
-      q: 'Is it suitable for children or elderly visitors?',
-      a: 'The lower trails and main viewing areas are accessible. For uneven or steeper terrain, comfortable walking shoes and hydration are strongly recommended.',
-    },
-    {
-      q: 'Best time of day to visit?',
-      a: place.best_time
-        ? `${place.best_time}. Early mornings and late afternoons offer the best light and cooler temperatures.`
-        : 'Early morning (6:00–8:30 AM) for sunrise, or late afternoon (4:00–6:00 PM) for golden sunset views.',
-    },
-  ];
+  const parsedTips = parsePlaceTips(place.tips);
+
+  const whyLoveList =
+    parsedTips.why_love && parsedTips.why_love.length > 0
+      ? parsedTips.why_love
+      : getDefaultWhyLove(place.category, place.name, place.location);
+
+  const highlightsList =
+    parsedTips.highlights && parsedTips.highlights.length > 0
+      ? parsedTips.highlights
+      : [
+          `Explore the scenic vantage points overlooking ${place.location} and surrounding valleys`,
+          `Ideal for sunrise and sunset excursions — approximately ${seasonality.recommendedDuration || '1–2 hours'} recommended`,
+          `Standard admission: ${place.entry_fee || 'Free admission'} — budget-friendly for all travelers`,
+          `Located in ${place.province}, approximately ${place.distance_km} km from Colombo`,
+          `Rich local heritage, pristine flora, and authentic Sri Lankan hospitality`,
+        ];
+
+  // Q&A list: custom or auto-generated
+  const qaItems =
+    parsedTips.qa && parsedTips.qa.length > 0
+      ? parsedTips.qa
+      : [
+          {
+            q: 'How long does the visit or hike take?',
+            a: `Most travelers spend around ${seasonality.recommendedDuration || '1 to 2.5 hours'} at ${place.name}, allowing plenty of time to explore scenic vantage points and take photos.`,
+          },
+          {
+            q: 'What is the entry fee for foreigners and locals?',
+            a: feeData.isFree
+              ? 'Admission is completely free for both local and foreign travelers. No tickets required.'
+              : `Standard admission is ${place.entry_fee || 'approx. 1,000 LKR'}. Cash is recommended for local ticket counters.`,
+          },
+          {
+            q: 'Is it suitable for children or elderly visitors?',
+            a:
+              place.category === 'Mountains' || place.category === 'Waterfalls'
+                ? 'The lower trails and main viewing areas are accessible. For uneven or steeper terrain, comfortable walking shoes and hydration are strongly recommended.'
+                : 'Yes, the main premises and pathways are generally flat and accessible for all ages including families with children and elderly travelers.',
+          },
+          {
+            q: 'Best time of day to visit?',
+            a: place.best_time
+              ? `${place.best_time}. Early mornings and late afternoons offer the best light and cooler temperatures.`
+              : 'Early morning (6:00–8:30 AM) for sunrise, or late afternoon (4:00–6:00 PM) for golden sunset views.',
+          },
+        ];
 
   // Real places to show under "Things to do nearby" (Screenshot 4)
   const experiencePlaces = nearbyAttractions.length > 0 ? nearbyAttractions.slice(0, 4) : [];
@@ -349,38 +502,25 @@ export default function PlaceDetailView({
                 )}
               </div>
 
-              {/* Why travelers love it (deepseek HTML signature box) */}
+              {/* Why travelers love it (dynamic from tips JSON or category-smart defaults) */}
               <div className="bg-[#fafafa] border border-[#f0f0f0] rounded-xl p-5 sm:p-6 my-6 space-y-3.5">
                 <h3 className="text-base sm:text-lg font-extrabold text-[#000a12] tracking-tight">
                   Why travelers love it
                 </h3>
                 <div className="grid gap-3 pt-1">
-                  <div className="flex gap-3.5 items-start">
-                    <span className="w-9 h-9 rounded-full bg-white border border-[#e0e0e0] flex items-center justify-center text-[#00aa6c] shrink-0">
-                      <Star className="w-4 h-4 fill-current" />
-                    </span>
-                    <span className="text-sm text-[#1a1a1a] leading-relaxed">
-                      <b className="text-[#000a12] font-bold">Prime panoramic views &amp; vistas.</b> Watch breathtaking sunrises and rolling Ceylon highlands from unparalleled vantage points.
-                    </span>
-                  </div>
-
-                  <div className="flex gap-3.5 items-start">
-                    <span className="w-9 h-9 rounded-full bg-white border border-[#e0e0e0] flex items-center justify-center text-[#00aa6c] shrink-0">
-                      <Compass className="w-4 h-4" />
-                    </span>
-                    <span className="text-sm text-[#1a1a1a] leading-relaxed">
-                      <b className="text-[#000a12] font-bold">Authentic &amp; peaceful atmosphere.</b> Enjoy an unhurried, natural setting away from overwhelming tourist crowds.
-                    </span>
-                  </div>
-
-                  <div className="flex gap-3.5 items-start">
-                    <span className="w-9 h-9 rounded-full bg-white border border-[#e0e0e0] flex items-center justify-center text-[#00aa6c] shrink-0">
-                      <Camera className="w-4 h-4" />
-                    </span>
-                    <span className="text-sm text-[#1a1a1a] leading-relaxed">
-                      <b className="text-[#000a12] font-bold">Unbeatable photo opportunities.</b> Iconic landscape views and vibrant cultural memories make this a must-visit destination.
-                    </span>
-                  </div>
+                  {whyLoveList.map((item, idx) => {
+                    const IconComponent = idx === 0 ? Star : idx === 1 ? Compass : Camera;
+                    return (
+                      <div key={idx} className="flex gap-3.5 items-start">
+                        <span className="w-9 h-9 rounded-full bg-white border border-[#e0e0e0] flex items-center justify-center text-[#00aa6c] shrink-0">
+                          <IconComponent className={`w-4 h-4 ${idx === 0 ? 'fill-current' : ''}`} />
+                        </span>
+                        <span className="text-sm text-[#1a1a1a] leading-relaxed">
+                          <b className="text-[#000a12] font-bold">{item.title}.</b> {item.desc}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -390,19 +530,26 @@ export default function PlaceDetailView({
                   Highlights
                 </h3>
                 <ul className="space-y-2.5">
-                  {[
-                    `Explore the scenic vantage points overlooking ${place.location} and surrounding valleys`,
-                    `Ideal for sunrise and sunset excursions — approximately ${seasonality.recommendedDuration || '1–2 hours'} recommended`,
-                    `Standard admission: ${place.entry_fee || 'Free admission'} — budget-friendly for all travelers`,
-                    `Located in ${place.province}, approximately ${place.distance_km} km from Colombo`,
-                    `Rich local heritage, pristine flora, and authentic Sri Lankan hospitality`,
-                  ].map((hl, idx) => (
+                  {highlightsList.map((hl, idx) => (
                     <li key={idx} className="flex items-start gap-2.5 text-sm text-[#1a1a1a] leading-relaxed">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#00aa6c] mt-2 shrink-0" />
                       <span>{hl}</span>
                     </li>
                   ))}
                 </ul>
+
+                {/* Insider Traveler Advisory & Tips */}
+                {parsedTips.advisory && (
+                  <div className="bg-[#f0fbf7] border border-[#b2ecd6] rounded-xl p-4 sm:p-5 mt-5 flex items-start gap-3">
+                    <Sparkles className="w-5 h-5 text-[#00aa6c] shrink-0 mt-0.5" />
+                    <div className="text-xs sm:text-sm text-[#0c4a34] leading-relaxed">
+                      <span className="font-extrabold text-[#00aa6c] block mb-1 uppercase tracking-wider text-[11px]">
+                        Insider Traveler Advisory:
+                      </span>
+                      {parsedTips.advisory}
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
 
