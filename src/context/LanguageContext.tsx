@@ -493,6 +493,31 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     };
   }, [lang]);
 
+  // Clean up and prevent Google Translate from pushing down the page or showing banners
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const sanitizeTranslateUI = () => {
+      if (document.body.style.top && document.body.style.top !== '0px') {
+        document.body.style.top = '0px';
+      }
+      if (document.documentElement.style.top && document.documentElement.style.top !== '0px') {
+        document.documentElement.style.top = '0px';
+      }
+      const banners = document.querySelectorAll('.goog-te-banner-frame, iframe.goog-te-banner-frame, #goog-gt-tt, .VIpgJd-ZVi9od-aZ2wEe-wOHMyf, .VIpgJd-ZVi9od-ORHb-OEVmcd');
+      banners.forEach((el) => {
+        (el as HTMLElement).style.setProperty('display', 'none', 'important');
+        (el as HTMLElement).style.setProperty('visibility', 'hidden', 'important');
+      });
+    };
+
+    sanitizeTranslateUI();
+    const observer = new MutationObserver(sanitizeTranslateUI);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'], childList: true });
+
+    return () => observer.disconnect();
+  }, [lang]);
+
   const t = (key: string): string => {
     const langDict = translations[lang] || translations.en;
     if (langDict[key]) return langDict[key];
