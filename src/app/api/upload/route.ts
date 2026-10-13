@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import fs from 'fs';
 import sharp from 'sharp';
+import { getSupabaseClient, isSupabaseStorageConfigured, SUPABASE_STORAGE_BUCKET } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -20,9 +21,22 @@ const ALLOWED_EXTENSIONS = new Set([
   '.tiff', '.tif', '.svg', '.ico'
 ]);
 
+function getMimeType(ext: string, isSvg: boolean): string {
+  if (isSvg || ext === '.svg') return 'image/svg+xml';
+  switch (ext) {
+    case '.webp': return 'image/webp';
+    case '.png': return 'image/png';
+    case '.gif': return 'image/gif';
+    case '.avif': return 'image/avif';
+    case '.jpg':
+    case '.jpeg':
+    case '.jfif': return 'image/jpeg';
+    default: return 'application/octet-stream';
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
-    ensureUploadDir();
     const data = await request.formData();
     const file = data.get('file') as unknown as File | null;
 
@@ -32,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     const fileName = file.name || 'uploaded_image.jpg';
     const fileExt = path.extname(fileName).toLowerCase();
-    const mimeType = (file.type || '').toLowerCase();
+    const rawMimeType = (file.type || '').toLowerCase();
 
     // 25MB max size limit (permits high-res phone camera uploads)
     const MAX_FILE_SIZE = 25 * 1024 * 1024;
@@ -56,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     // Check SVG
     if (
-      mimeType.includes('svg') ||
+      rawMimeType.includes('svg') ||
       fileExt === '.svg' ||
       buffer.toString('utf-8', 0, 100).toLowerCase().includes('<svg')
     ) {
@@ -69,8 +83,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Validate that it is genuinely an image (either metadata parsed, isSvg, or valid image extension)
-    const isValidFormat = Boolean(metadata?.format) || isSvg || ALLOWED_EXTENSIONS.has(fileExt) || mimeType.startsWith('image/');
+    // Validate that it is genuinely an image
+    const isValidFormat = Boolean(metadata?.format) || isSvg || ALLOWED_EXTENSIONS.has(fileExt) || rawMimeType.startsWith('image/');
     if (!isValidFormat) {
       return NextResponse.json(
         { error: 'Invalid file format. Please upload an image file (JPG, PNG, WebP, GIF, etc.).' },
@@ -124,27 +138,67 @@ export async function POST(request: NextRequest) {
     }
 
     const uniqueName = `ceylon_${Date.now()}_${Math.random().toString(36).substring(2, 8)}${finalExt}`;
-    const filePath = path.join(UPLOAD_DIR, uniqueName);
+    const contentType = getMimeType(finalExt, isSvg);
 
-    fs.writeFileSync(filePath, outputBuffer);
+    let finalPublicUrl = '';
+    let storageProvider = 'local';
 
-    // If standalone build output directory exists, mirror the file there for instant production availability
+    // 1. Try Supabase Storage upload if configured
+    if (isSupabaseStorageConfigured()) {
+      try {
+        const supabase = getSupabaseClient()!;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from(SUPABASE_STORAGE_BUCKET)
+          .upload(uniqueName, outputBuffer, {
+            contentType,
+            upsert: true,
+            cacheControl: '31536000',
+          });
+
+        if (uploadError) {
+          console.error('Supabase storage upload error:', uploadError.message);
+        } else if (uploadData) {
+          const { data: publicData } = supabase.storage
+            .from(SUPABASE_STORAGE_BUCKET)
+            .getPublicUrl(uniqueName);
+
+          if (publicData?.publicUrl) {
+            finalPublicUrl = publicData.publicUrl;
+            storageProvider = 'supabase';
+          }
+        }
+      } catch (sbErr: any) {
+        console.error('Supabase upload exception:', sbErr?.message || sbErr);
+      }
+    }
+
+    // 2. Also save to local server disk (acts as fallback and local backup)
     try {
+      ensureUploadDir();
+      const localFilePath = path.join(UPLOAD_DIR, uniqueName);
+      fs.writeFileSync(localFilePath, outputBuffer);
+
+      // Mirror to standalone directory if running production standalone
       const standaloneDir = path.join(process.cwd(), '.next', 'standalone', 'public', 'uploads');
       if (fs.existsSync(path.dirname(standaloneDir))) {
         if (!fs.existsSync(standaloneDir)) fs.mkdirSync(standaloneDir, { recursive: true });
         fs.writeFileSync(path.join(standaloneDir, uniqueName), outputBuffer);
       }
-    } catch (mirrorErr) {
-      // Non-critical mirror
+    } catch (localWriteErr) {
+      console.warn('Local file write warning:', localWriteErr);
     }
 
-    const publicUrl = `/uploads/${uniqueName}`;
+    // If Supabase wasn't configured or failed, use local URL
+    if (!finalPublicUrl) {
+      finalPublicUrl = `/uploads/${uniqueName}`;
+      storageProvider = 'local';
+    }
 
     return NextResponse.json({
       success: true,
-      url: publicUrl,
+      url: finalPublicUrl,
       filename: uniqueName,
+      storage: storageProvider,
       width: outputWidth,
       height: outputHeight,
       originalSize: file.size,
