@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Star, MessageSquareQuote, CheckCircle2, X, PlusCircle, Sparkles } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Star, MessageSquareQuote, CheckCircle2, X, PlusCircle, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -20,6 +20,32 @@ interface ReviewItem {
 
 const DEFAULT_REVIEWS: ReviewItem[] = [
   {
+    id: 'rev-1791723306807',
+    name: 'Gayan Rathnaweera',
+    user_image: 'https://lh3.googleusercontent.com/a/ACg8ocK9HAdVGFW3M2PhqmBtF1c03f9Tk28sWiMYXzigvefoWY5I6Ys=s96-c',
+    country: 'Sri Lanka',
+    flag: '🇱🇰',
+    role: 'Couple Getaway',
+    visited: 'Highlands & South',
+    comment:
+      'Uncover Ceylon is hands down the cleanest and most accurate guide for Sri Lanka travel. Real GPS pins, accurate ticket prices, and beautiful photos!',
+    rating: 5,
+    date: 'October 2026',
+  },
+  {
+    id: 'rev-1791723177753',
+    name: 'Ravindu Lakshan',
+    user_image: 'https://lh3.googleusercontent.com/a/ACg8ocKr58jOugBD6nM57Bz_KIqNVq7mapID5pJwcfPrQtR9E6j4WA=s96-c',
+    country: 'Germany',
+    flag: '🇩🇪',
+    role: 'Adventure Explorer',
+    visited: 'Central & Southern Coast',
+    comment:
+      'Super easy to find hidden waterfalls and offbeat beaches. The AI travel guide and curated maps made exploring the island unforgettable.',
+    rating: 5,
+    date: 'October 2026',
+  },
+  {
     id: 'rev-1',
     name: 'Sarah Jenkins',
     country: 'United Kingdom',
@@ -27,9 +53,9 @@ const DEFAULT_REVIEWS: ReviewItem[] = [
     role: 'Solo Backpacker',
     visited: 'Ella & South Coast',
     comment:
-      'Uncover Ceylon helped us discover hidden waterfalls in Ella and secluded lagoons in Mirissa that weren’t listed on standard tourist maps. The route planner saved us days of research!',
+      'Uncover Ceylon helped us discover hidden waterfalls in Ella and secluded lagoons in Mirissa that weren’t listed on standard tourist maps. Saved us days of research!',
     rating: 5,
-    date: 'February 2026',
+    date: 'September 2026',
   },
   {
     id: 'rev-2',
@@ -37,11 +63,11 @@ const DEFAULT_REVIEWS: ReviewItem[] = [
     country: 'Germany',
     flag: '🇩🇪',
     role: 'Couple Getaway',
-    visited: 'Cultural Triangle & Highlands',
+    visited: 'Cultural Triangle',
     comment:
       'The scenic blue train ride from Kandy to Ella and climbing Sigiriya at 6 AM sunrise was the highlight of our entire Asia trip. The local timing tips were 100% accurate.',
     rating: 5,
-    date: 'January 2026',
+    date: 'August 2026',
   },
   {
     id: 'rev-3',
@@ -51,9 +77,9 @@ const DEFAULT_REVIEWS: ReviewItem[] = [
     role: 'Adventure Travelers',
     visited: 'Yala Safari & Weligama',
     comment:
-      'We followed the 5-day surf and safari route. Seeing wild leopards in Yala in the morning and catching sunset waves in Weligama was an absolute dream. Clean, modern platform!',
+      'We followed the 5-day surf and safari route. Seeing wild leopards in Yala in the morning and catching sunset waves in Weligama was an absolute dream.',
     rating: 5,
-    date: 'March 2026',
+    date: 'July 2026',
   },
   {
     id: 'rev-4',
@@ -63,9 +89,9 @@ const DEFAULT_REVIEWS: ReviewItem[] = [
     role: 'Food & Culture Explorer',
     visited: 'Galle Fort & Colombo',
     comment:
-      'The culinary recommendations are incredible! Best crispy egg hoppers in Galle and authentic street kottu in Colombo. Sri Lanka will always hold a very special place in our hearts.',
+      'The culinary recommendations are incredible! Best crispy egg hoppers in Galle and authentic street kottu in Colombo. Truly authentic travel guide.',
     rating: 5,
-    date: 'December 2025',
+    date: 'June 2026',
   },
 ];
 
@@ -79,6 +105,14 @@ export default function TravelerReviewsSection() {
   const [country, setCountry] = useState('');
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const offset = direction === 'left' ? -350 : 350;
+      scrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     fetch('/api/site-reviews')
@@ -173,65 +207,95 @@ export default function TravelerReviewsSection() {
           </div>
         </div>
 
-        {/* Reviews Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
-          {reviews.slice(0, 6).map((rev, idx) => (
-            <div
-              key={rev.id || idx}
-              className="rounded-3xl bg-white p-6 sm:p-7 border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-4"
-            >
-              <div className="space-y-3">
-                {/* Top: Stars & Date */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center text-amber-400 text-xs">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <span key={i} className={i < rev.rating ? 'text-amber-400' : 'text-slate-200'}>
-                        ★
-                      </span>
-                    ))}
+        {/* Reviews Grid - 2 Rows flowing horizontally ("harahta peli 2k") */}
+        <div className="relative">
+          <div
+            ref={scrollRef}
+            className="grid grid-rows-2 grid-flow-col auto-cols-[86vw] sm:auto-cols-[380px] lg:auto-cols-[410px] gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 px-0.5"
+          >
+            {reviews.slice(0, 10).map((rev, idx) => (
+              <div
+                key={rev.id || idx}
+                className="snap-start rounded-2xl sm:rounded-3xl bg-white p-4 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between space-y-2.5 h-full"
+              >
+                <div className="space-y-2">
+                  {/* Top: Stars & Date */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center text-amber-400 text-xs tracking-tight">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <span key={i} className={i < rev.rating ? 'text-amber-400' : 'text-slate-200'}>
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400">
+                      {rev.date}
+                    </span>
                   </div>
-                  <span className="text-[11px] font-medium text-slate-400">
-                    {rev.date}
+
+                  {/* Comment */}
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed line-clamp-3 font-normal">
+                    “{rev.comment}”
+                  </p>
+                </div>
+
+                {/* Author Info */}
+                <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    {rev.user_image ? (
+                      <img
+                        src={rev.user_image}
+                        alt={rev.name}
+                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover ring-1 ring-emerald-500/40 shrink-0"
+                      />
+                    ) : (
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-100 text-[#00aa6c] flex items-center justify-center text-xs font-bold shrink-0">
+                        {rev.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs sm:text-sm font-black text-slate-900 truncate">{rev.name}</span>
+                        <span className="text-xs shrink-0">{rev.flag || '🇱🇰'}</span>
+                      </div>
+                      <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
+                        {rev.country} · {rev.role}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="text-[9px] sm:text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-emerald-100 shrink-0">
+                    {rev.visited}
                   </span>
                 </div>
-
-                {/* Comment */}
-                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
-                  “{rev.comment}”
-                </p>
               </div>
+            ))}
+          </div>
 
-              {/* Author Info */}
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  {rev.user_image ? (
-                    <img
-                      src={rev.user_image}
-                      alt={rev.name}
-                      className="w-8 h-8 rounded-full object-cover ring-1 ring-emerald-500/40"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-[#00aa6c] flex items-center justify-center text-xs font-bold">
-                      {rev.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-black text-slate-900">{rev.name}</span>
-                      <span className="text-xs">{rev.flag || '🇱🇰'}</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 font-medium">
-                      {rev.country} · {rev.role}
-                    </p>
-                  </div>
-                </div>
-
-                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">
-                  {rev.visited}
-                </span>
-              </div>
+          {/* Swipe indicator hint for mobile & Arrow controls */}
+          <div className="mt-3 flex items-center justify-between text-xs text-slate-400 px-1">
+            <span className="text-[11px] font-semibold flex items-center gap-1 text-slate-500">
+              <span>← Swipe horizontally to see more stories →</span>
+            </span>
+            <div className="hidden sm:flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => scroll('left')}
+                className="w-7 h-7 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+                title="Scroll Left"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => scroll('right')}
+                className="w-7 h-7 rounded-full border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+                title="Scroll Right"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
-          ))}
+          </div>
         </div>
 
       </div>

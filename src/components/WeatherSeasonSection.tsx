@@ -1,16 +1,29 @@
 'use client';
 
+import { useState, useRef } from 'react';
 import { Sun, CloudRain, Wind, Waves, Compass, CheckCircle2 } from 'lucide-react';
 
 export default function WeatherSeasonSection() {
   const currentMonthName = new Date().toLocaleString('default', { month: 'long' });
+  const [activeCoast, setActiveCoast] = useState<'south' | 'east'>('south');
+  const southRef = useRef<HTMLDivElement>(null);
+  const eastRef = useRef<HTMLDivElement>(null);
+
+  const scrollToCoast = (coast: 'south' | 'east') => {
+    setActiveCoast(coast);
+    if (coast === 'south' && southRef.current) {
+      southRef.current.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    } else if (coast === 'east' && eastRef.current) {
+      eastRef.current.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  };
 
   return (
     <section className="py-12 sm:py-20 bg-[#f8fafc] border-t border-slate-200/80">
       <div className="w-[min(1240px,92%)] mx-auto">
         
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-14">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold mb-2">
             <Sun className="w-3.5 h-3.5 text-amber-600" />
             <span>Dual-Monsoon Climate Guide</span>
@@ -23,32 +36,63 @@ export default function WeatherSeasonSection() {
           </p>
         </div>
 
-        {/* 2 Big Coast Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+        {/* Mobile Coast Selector Pills */}
+        <div className="flex md:hidden items-center justify-center gap-2 mb-4">
+          <button
+            type="button"
+            onClick={() => scrollToCoast('south')}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              activeCoast === 'south'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'bg-white border border-slate-200 text-slate-600'
+            }`}
+          >
+            ☀️ South & West (Nov–Apr)
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollToCoast('east')}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              activeCoast === 'east'
+                ? 'bg-sky-600 text-white shadow-sm'
+                : 'bg-white border border-slate-200 text-slate-600'
+            }`}
+          >
+            🌊 East & North (May–Sep)
+          </button>
+        </div>
+
+        {/* 2 Big Coast Cards - Horizontal Swipe on Mobile, 2-Col Grid on Desktop */}
+        <div className="flex md:grid md:grid-cols-2 gap-4 sm:gap-8 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 px-0.5">
           
           {/* Card 1: South & West Coast */}
-          <div className="rounded-3xl bg-white p-6 sm:p-8 border border-slate-200 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="px-3 py-1 rounded-full bg-emerald-50 text-[#00aa6c] text-xs font-bold border border-emerald-100">
-                Peak: Nov – April
-              </span>
-              <span className="text-xs font-semibold text-slate-400">28°C – 32°C</span>
-            </div>
+          <div
+            ref={southRef}
+            className="w-[86vw] sm:w-[420px] md:w-auto shrink-0 snap-center rounded-2xl sm:rounded-3xl bg-white p-5 sm:p-8 border border-slate-200 shadow-xs space-y-4 flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="px-3 py-1 rounded-full bg-emerald-50 text-[#00aa6c] text-xs font-bold border border-emerald-100">
+                  Peak: Nov – April
+                </span>
+                <span className="text-xs font-semibold text-slate-400">28°C – 32°C</span>
+              </div>
 
-            <div className="space-y-1">
-              <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                South & West Coasts
-              </h3>
-              <p className="text-xs font-semibold text-slate-500">
-                Mirissa, Galle, Weligama, Bentota, Colombo
+              <div className="space-y-1">
+                <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                  South & West Coasts
+                </h3>
+                <p className="text-xs font-semibold text-slate-500">
+                  Mirissa, Galle, Weligama, Bentota, Colombo
+                </p>
+              </div>
+
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Glass-flat water, premier blue whale watching, spectacular coastal sunsets, and buzzing beach cafes. Ideal for winter escapes.
               </p>
             </div>
 
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Glass-flat water, premier blue whale watching, spectacular coastal sunsets, and buzzing beach cafes. Ideal for winter escapes.
-            </p>
-
-            <div className="pt-2 border-t border-slate-100 space-y-2 text-xs font-semibold text-slate-700">
+            <div className="pt-3 border-t border-slate-100 space-y-2 text-xs font-semibold text-slate-700">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-[#00aa6c] shrink-0" />
                 <span>Prime whale migration season in Mirissa</span>
@@ -61,28 +105,33 @@ export default function WeatherSeasonSection() {
           </div>
 
           {/* Card 2: East Coast */}
-          <div className="rounded-3xl bg-white p-6 sm:p-8 border border-slate-200 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-bold border border-sky-100">
-                Peak: May – Sept
-              </span>
-              <span className="text-xs font-semibold text-slate-400">29°C – 34°C</span>
-            </div>
+          <div
+            ref={eastRef}
+            className="w-[86vw] sm:w-[420px] md:w-auto shrink-0 snap-center rounded-2xl sm:rounded-3xl bg-white p-5 sm:p-8 border border-slate-200 shadow-xs space-y-4 flex flex-col justify-between"
+          >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-bold border border-sky-100">
+                  Peak: May – Sept
+                </span>
+                <span className="text-xs font-semibold text-slate-400">29°C – 34°C</span>
+              </div>
 
-            <div className="space-y-1">
-              <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                East Coast & North
-              </h3>
-              <p className="text-xs font-semibold text-slate-500">
-                Arugam Bay, Trincomalee, Nilaveli, Pasikudah
+              <div className="space-y-1">
+                <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                  East Coast & North
+                </h3>
+                <p className="text-xs font-semibold text-slate-500">
+                  Arugam Bay, Trincomalee, Nilaveli, Pasikudah
+                </p>
+              </div>
+
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                World-class point break surfing, Pigeon Island coral reef snorkeling, and tranquil uncrowded powdery white sand beaches.
               </p>
             </div>
 
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              World-class point break surfing, Pigeon Island coral reef snorkeling, and tranquil uncrowded powdery white sand beaches.
-            </p>
-
-            <div className="pt-2 border-t border-slate-100 space-y-2 text-xs font-semibold text-slate-700">
+            <div className="pt-3 border-t border-slate-100 space-y-2 text-xs font-semibold text-slate-700">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-[#00aa6c] shrink-0" />
                 <span>Global surf season at Arugam Bay Main Point</span>
@@ -94,6 +143,11 @@ export default function WeatherSeasonSection() {
             </div>
           </div>
 
+        </div>
+
+        {/* Mobile Swipe Hint */}
+        <div className="flex md:hidden items-center justify-center text-[11px] text-slate-400 mt-2">
+          <span>← Swipe horizontally to compare both coasts →</span>
         </div>
 
         {/* Bottom Insight Bar */}

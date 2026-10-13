@@ -99,40 +99,40 @@ export default function ProvincesSection() {
           </Link>
         </div>
 
-        {/* 9 Provinces Responsive Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+        {/* 9 Provinces Responsive Grid - Compact 2-Cols on Mobile to eliminate endless scrolling */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-5">
           {PROVINCES.map((prov) => (
             <Link
               key={prov.name}
               href={`/destinations?province=${encodeURIComponent(prov.slug)}`}
-              className="group relative h-44 sm:h-48 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1 block bg-[#0f1b2d]"
+              className="group relative h-36 sm:h-48 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1 block bg-[#0f1b2d] last:col-span-2 sm:last:col-span-1"
             >
               {/* Photo Background */}
               <Image
                 src={prov.image}
                 alt={prov.name}
                 fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
                 className="object-cover group-hover:scale-108 transition-transform duration-700 ease-out opacity-85"
                 unoptimized
               />
 
               {/* Multi-Stop Dark Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0f1b2d]/95 via-[#0f1b2d]/40 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0f1b2d]/95 via-[#0f1b2d]/45 to-transparent pointer-events-none" />
 
               {/* Top Count Badge */}
-              <div className="absolute top-3.5 right-3.5 z-10 pointer-events-none">
-                <span className="px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md text-white text-[10px] font-bold border border-white/20">
+              <div className="absolute top-2.5 right-2.5 sm:top-3.5 sm:right-3.5 z-10 pointer-events-none">
+                <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-black/50 backdrop-blur-md text-white text-[9px] sm:text-[10px] font-bold border border-white/20">
                   {prov.count}
                 </span>
               </div>
 
               {/* Bottom Content */}
-              <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5 z-10 text-white">
-                <h3 className="text-base sm:text-lg font-black tracking-tight text-white group-hover:text-emerald-300 transition-colors">
+              <div className="absolute inset-x-0 bottom-0 p-3 sm:p-5 z-10 text-white">
+                <h3 className="text-xs sm:text-base lg:text-lg font-black tracking-tight text-white group-hover:text-emerald-300 transition-colors leading-tight">
                   {prov.name}
                 </h3>
-                <p className="text-white/80 text-xs font-medium mt-0.5 truncate">
+                <p className="text-white/80 text-[10px] sm:text-xs font-medium mt-0.5 line-clamp-1">
                   {prov.tagline}
                 </p>
               </div>

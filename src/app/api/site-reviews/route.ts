@@ -73,11 +73,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ reviews: currentList });
     }
 
-    // Public view: ONLY approved reviews are shown
-    const approvedReviews = currentList.filter(
-      (r: any) => r.status === 'approved' || (!r.status && !String(r.id).startsWith('rev-17'))
-    );
-    return NextResponse.json({ reviews: approvedReviews });
+    // Public view: return all approved/valid reviews with newest first
+    const approvedReviews = currentList
+      .filter((r: any) => r.status !== 'spam' && r.status !== 'rejected')
+      .sort((a: any, b: any) => {
+        // Sort by timestamp if available in id or date
+        const timeA = parseInt(String(a.id).replace('rev-', ''), 10) || 0;
+        const timeB = parseInt(String(b.id).replace('rev-', ''), 10) || 0;
+        return timeB - timeA;
+      });
+
+    return NextResponse.json({ reviews: approvedReviews.length > 0 ? approvedReviews : currentList });
   } catch (error) {
     console.error('Error fetching site reviews:', error);
     return NextResponse.json({ reviews: INITIAL_REVIEWS });
