@@ -294,7 +294,7 @@ export default function DestinationEditorModal({
     }
   };
 
-  const addImageUrl = () => {
+  const addImageUrl = async () => {
     let url = newImageUrl.trim();
     if (!url) return;
 
@@ -310,11 +310,35 @@ export default function DestinationEditorModal({
       }
     }
 
-    // 2. Google share / Google Photos album link warning
-    if (url.includes('share.google') || url.includes('photos.app.goo.gl') || url.includes('photos.google.com')) {
+    // 2. Google share / Google Photos / Google Images search link auto-resolution
+    if (
+      url.includes('share.google') ||
+      url.includes('photos.app.goo.gl') ||
+      url.includes('google.com/imgres') ||
+      url.includes('photos.google.com')
+    ) {
+      const resolvingToast = toast.loading('Extracting photo from Google link...');
+      try {
+        const res = await fetch('/api/admin/resolve-image-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
+        const data = await res.json();
+        toast.dismiss(resolvingToast);
+
+        if (data.directUrl) {
+          setImageList((prev) => [...prev, data.directUrl]);
+          setNewImageUrl('');
+          toast.success('Google image link resolved & added! ⚡');
+          return;
+        }
+      } catch {
+        toast.dismiss(resolvingToast);
+      }
       toast.error(
-        'Google Share links are web pages, not direct image files. Please save the photo to your device first, then upload it using the Drag & Drop box above!',
-        { duration: 7000 }
+        'Could not automatically extract image. Please right-click the image and select "Copy Image Address", or save and Drag & Drop it above!',
+        { duration: 6000 }
       );
       return;
     }
