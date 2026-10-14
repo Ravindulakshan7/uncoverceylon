@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Search, SlidersHorizontal, X, Compass, MapPin, RotateCcw, Map } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Compass, MapPin, RotateCcw, Map, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Place, CategoryType } from '@/types';
 import PlaceCard from './PlaceCard';
@@ -146,37 +146,11 @@ export default function PlacesGrid({ initialPlaces }: PlacesGridProps) {
   };
 
   return (
-    <section id="destinations" className="w-full bg-[#f8fafc] py-12 sm:py-20 scroll-mt-16">
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        
-        {/* ━━━ SECTION HEADER ━━━ */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-10 gap-4">
-          <div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-[#00aa6c] text-[11px] font-black uppercase tracking-wider border border-emerald-200">
-              <Compass className="w-3.5 h-3.5" />
-              Verified Destinations
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-black text-[#002b11] tracking-tight mt-2.5">
-              Popular destinations across Sri Lanka
-            </h2>
-            <p className="text-slate-500 text-xs sm:text-base font-medium mt-1 max-w-2xl">
-              Browse top-rated beaches, tea trails, ancient citadels, and wildlife reserves across all 9 provinces.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <Link
-              href="/map"
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#00aa6c] hover:text-[#008f5a] hover:underline"
-            >
-              <Map className="w-4 h-4" />
-              <span>View interactive map</span>
-            </Link>
-          </div>
-        </div>
+    <section id="destinations" className="w-full py-2 sm:py-6 scroll-mt-16">
+      <div className="mx-auto w-full max-w-7xl">
 
         {/* ━━━ CATEGORY FILTER PILLS ━━━ */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <CategoryFilter
             selected={selectedCategory}
             onChange={setSelectedCategory}
@@ -184,59 +158,75 @@ export default function PlacesGrid({ initialPlaces }: PlacesGridProps) {
           />
         </div>
 
-        {/* ━━━ SEARCH & CONTROLS TOOLBAR ━━━ */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-3 sm:p-4 mb-6 shadow-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+        {/* ━━━ UNIFIED MODERN SEARCH & CONTROLS TOOLBAR ━━━ */}
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] p-2.5 sm:p-3 mb-6 transition-all">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             
-            {/* Search Input (Takes 6 cols) */}
-            <div className="sm:col-span-6 relative">
+            {/* Search Input */}
+            <div className="relative flex-1 min-w-0">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by name, town, or landmark..."
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-white py-2.5 pl-10 pr-10 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:bg-white focus:border-[#00aa6c] focus:ring-2 focus:ring-emerald-500/15 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200/80 bg-slate-50/70 hover:bg-white py-2.5 pl-10 pr-9 text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 transition-all focus:bg-white focus:border-[#00aa6c] focus:ring-2 focus:ring-emerald-500/15 focus:outline-none"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 p-1 cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-800 p-0.5 cursor-pointer"
                   aria-label="Clear search"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
 
-            {/* Province Dropdown (Takes 3 cols) */}
-            <div className="sm:col-span-3 relative">
-              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              <select
-                value={selectedProvince}
-                onChange={(e) => setSelectedProvince(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-white py-2.5 pl-9 pr-8 text-xs sm:text-sm font-semibold text-slate-800 transition-all focus:bg-white focus:border-[#00aa6c] focus:ring-2 focus:ring-emerald-500/15 focus:outline-none cursor-pointer"
-              >
-                {PROVINCES.map((prov) => (
-                  <option key={prov} value={prov}>
-                    {prov}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Controls: On Mobile 2-cols side by side; On Desktop inline */}
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
+              
+              {/* Province Dropdown */}
+              <div className="relative sm:w-44">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#00aa6c] pointer-events-none" />
+                <select
+                  value={selectedProvince}
+                  onChange={(e) => setSelectedProvince(e.target.value)}
+                  className="w-full appearance-none rounded-xl border border-slate-200/80 bg-slate-50/70 hover:bg-white py-2.5 pl-8 pr-7 text-xs sm:text-sm font-semibold text-slate-800 transition-all focus:bg-white focus:border-[#00aa6c] focus:ring-2 focus:ring-emerald-500/15 focus:outline-none cursor-pointer truncate"
+                >
+                  {PROVINCES.map((prov) => (
+                    <option key={prov} value={prov}>
+                      {prov}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+              </div>
 
-            {/* Sort Dropdown (Takes 3 cols) */}
-            <div className="sm:col-span-3 relative">
-              <SlidersHorizontal className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-white py-2.5 pl-9 pr-8 text-xs sm:text-sm font-semibold text-slate-800 transition-all focus:bg-white focus:border-[#00aa6c] focus:ring-2 focus:ring-emerald-500/15 focus:outline-none cursor-pointer"
+              {/* Sort Dropdown */}
+              <div className="relative sm:w-40">
+                <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  className="w-full appearance-none rounded-xl border border-slate-200/80 bg-slate-50/70 hover:bg-white py-2.5 pl-8 pr-7 text-xs sm:text-sm font-semibold text-slate-800 transition-all focus:bg-white focus:border-[#00aa6c] focus:ring-2 focus:ring-emerald-500/15 focus:outline-none cursor-pointer truncate"
+                >
+                  <option value="rating">Top Rated</option>
+                  <option value="reviews">Most Reviewed</option>
+                  <option value="distance">{userCoords ? 'Live GPS' : 'Nearest First'}</option>
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+              </div>
+
+              {/* View Interactive Map Button */}
+              <Link
+                href="/map"
+                className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#00aa6c] border border-emerald-200/70 text-xs sm:text-sm font-bold transition-all shadow-2xs whitespace-nowrap"
               >
-                <option value="rating">Top Rated</option>
-                <option value="reviews">Most Reviewed</option>
-                <option value="distance">{userCoords ? 'Nearest (Live GPS)' : 'Nearest First'}</option>
-              </select>
+                <Map className="w-3.5 h-3.5" />
+                <span>Live Map</span>
+              </Link>
+
             </div>
 
           </div>

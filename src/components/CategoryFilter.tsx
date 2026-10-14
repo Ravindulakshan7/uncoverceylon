@@ -88,16 +88,16 @@ export default function CategoryFilter({ selected, onChange, counts }: CategoryF
             <button
               key={cat.label}
               onClick={() => onChange(cat.label)}
-              className={`flex-shrink-0 flex items-center gap-2 px-4 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold border transition-all duration-200 active:scale-95 cursor-pointer ${
+              className={`flex-shrink-0 flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all duration-200 active:scale-95 cursor-pointer ${
                 isActive
-                  ? 'bg-[#002b11] border-[#002b11] text-white shadow-md shadow-emerald-950/20'
-                  : 'bg-white border-slate-300 text-slate-700 hover:text-[#002b11] hover:border-slate-400 hover:bg-slate-50'
+                  ? 'bg-slate-900 border-slate-900 text-white shadow-sm'
+                  : 'bg-white border-slate-200/90 text-slate-700 hover:text-slate-900 hover:border-slate-300 hover:bg-slate-50 shadow-2xs'
               }`}
             >
               <Icon className={`w-3.5 sm:w-4 h-3.5 sm:h-4 ${isActive ? 'text-[#00aa6c]' : 'text-slate-500'}`} />
               <span>{getCategoryLabel(cat.label)}</span>
               {count !== undefined && (
-                <span className={`text-[10px] sm:text-[11px] ml-0.5 font-extrabold px-1.5 py-0.2 rounded-full ${
+                <span className={`text-[10px] sm:text-[11px] font-extrabold px-1.5 py-0.5 rounded-md ${
                   isActive ? 'bg-[#00aa6c] text-white' : 'bg-slate-100 text-slate-600'
                 }`}>
                   {count}
