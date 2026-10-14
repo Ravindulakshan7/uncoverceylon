@@ -502,6 +502,142 @@ export default function PlaceDetailView({
                 )}
               </div>
 
+              {/* ━━━ MOBILE QUICK ACTION & TRIP ESSENTIALS CARD (Visible only on mobile) ━━━ */}
+              <div className="block lg:hidden my-6 bg-white border border-[#e0e0e0] rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+                {/* 1. Admission Header with Currency Switcher */}
+                <div className="pb-3 border-b border-[#f0f0f0]">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#545454] flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#00aa6c] inline-block" />
+                      Standard admission
+                    </span>
+                    <div className="scale-90 origin-right">
+                      <CurrencySelector scrolled={true} />
+                    </div>
+                  </div>
+                  <div className="text-2xl font-extrabold text-[#000a12] tracking-tight">
+                    {feeData.primary}
+                  </div>
+                  <div className="text-xs text-[#545454] mt-0.5 font-medium">
+                    {feeData.secondary}
+                  </div>
+                </div>
+
+                {/* 2. Action Buttons: Google Maps (Full Width) + 3-column quick action row */}
+                <div className="space-y-2">
+                  <a
+                    href={`https://www.google.com/maps?q=${place.lat},${place.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center gap-2 bg-[#00aa6c] active:bg-[#008a58] hover:bg-[#008a58] text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-[0_4px_12px_rgba(0,170,108,0.25)] cursor-pointer"
+                  >
+                    <MapPin className="w-4 h-4 shrink-0" />
+                    <span>Open in Google Maps</span>
+                  </a>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <WishlistButton
+                      placeId={place.id}
+                      placeName={place.name}
+                      variant="outline"
+                      label="Save"
+                      className="w-full !justify-center !py-2.5 !px-2 !rounded-xl !text-xs !font-bold"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setIsReviewModalOpen(true)}
+                      className="w-full flex items-center justify-center gap-1.5 bg-white hover:bg-[#f0f0f0] border border-[#e0e0e0] text-[#000a12] font-bold py-2.5 px-2 rounded-xl text-xs transition-all cursor-pointer"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-[#000a12] shrink-0" />
+                      <span>Review</span>
+                    </button>
+
+                    <Link
+                      href="/map"
+                      className="w-full flex items-center justify-center gap-1.5 bg-white hover:bg-[#f0f0f0] border border-[#e0e0e0] text-[#000a12] font-bold py-2.5 px-2 rounded-xl text-xs transition-all"
+                    >
+                      <Map className="w-3.5 h-3.5 text-[#00aa6c] shrink-0" />
+                      <span>Live Map</span>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* 3. Quick Facts Info Grid (2x2 Clean Micro-Grid) */}
+                <div className="pt-3 border-t border-[#f0f0f0] grid grid-cols-2 gap-2.5 text-left">
+                  {/* Location & Province */}
+                  <div className="bg-[#fafafa] border border-[#f0f0f0] rounded-xl p-3 flex items-start gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-white border border-[#e5e7eb] flex items-center justify-center text-[#00aa6c] shrink-0 mt-0.5">
+                      <MapPin className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#767676]">Location</div>
+                      <div className="text-xs font-bold text-[#000a12] leading-snug truncate" title={place.location}>{place.location}</div>
+                      <div className="text-[11px] text-[#545454] truncate" title={place.province}>{place.province}</div>
+                    </div>
+                  </div>
+
+                  {/* Distance / GPS */}
+                  <div className="bg-[#fafafa] border border-[#f0f0f0] rounded-xl p-3 flex items-start gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-white border border-[#e5e7eb] flex items-center justify-center text-[#00aa6c] shrink-0 mt-0.5">
+                      <Navigation className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#767676] truncate">
+                        {distanceInfo.isLive ? 'From Your GPS' : 'From Colombo'}
+                      </div>
+                      <div className="text-xs font-bold text-[#000a12] leading-snug truncate" suppressHydrationWarning={true}>
+                        {distanceInfo.text}
+                      </div>
+                      <div className="text-[10px] mt-0.5">
+                        {distanceInfo.isLive ? (
+                          <span className="text-[#00aa6c] font-bold bg-[#e6f7f0] px-1.5 py-0.2 rounded inline-block">
+                            Live GPS
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => requestLocation()}
+                            disabled={locationStatus === 'requesting'}
+                            className="text-[#00aa6c] font-bold hover:underline cursor-pointer"
+                          >
+                            {locationStatus === 'requesting' ? 'Locating...' : 'Use my GPS'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Best Season */}
+                  <div className="bg-[#fafafa] border border-[#f0f0f0] rounded-xl p-3 flex items-start gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-white border border-[#e5e7eb] flex items-center justify-center text-[#00aa6c] shrink-0 mt-0.5">
+                      <Calendar className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#767676]">Best Season</div>
+                      <div className="text-xs font-bold text-[#000a12] leading-snug line-clamp-1" title={place.best_time || 'Year-round'}>
+                        {place.best_time || 'Year-round'}
+                      </div>
+                      <div className="text-[10px] text-[#545454] truncate">Ideal visiting hours</div>
+                    </div>
+                  </div>
+
+                  {/* Category / Type */}
+                  <div className="bg-[#fafafa] border border-[#f0f0f0] rounded-xl p-3 flex items-start gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-white border border-[#e5e7eb] flex items-center justify-center text-[#00aa6c] shrink-0 mt-0.5">
+                      <Tag className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#767676]">Category</div>
+                      <div className="text-xs font-bold text-[#000a12] leading-snug truncate" title={place.category}>
+                        {place.category}
+                      </div>
+                      <div className="text-[10px] text-[#545454] truncate">Curated Spot</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Why travelers love it (dynamic from tips JSON or category-smart defaults) */}
               <div className="bg-[#fafafa] border border-[#f0f0f0] rounded-xl p-5 sm:p-6 my-6 space-y-3.5">
                 <h3 className="text-base sm:text-lg font-extrabold text-[#000a12] tracking-tight">
@@ -673,7 +809,7 @@ export default function PlaceDetailView({
           </main>
 
           {/* ━━━━ STICKY SIDEBAR (RIGHT COLUMN: NEVER DISAPPEARS ON SCROLL & NEVER CUT OFF) ━━━━ */}
-          <aside className="sticky top-[105px] sm:top-[115px] z-20 space-y-3.5 max-h-[calc(100vh-125px)] overflow-y-auto scrollbar-none pr-0.5 pb-2">
+          <aside className="hidden lg:block sticky top-[105px] sm:top-[115px] z-20 space-y-3.5 max-h-[calc(100vh-125px)] overflow-y-auto scrollbar-none pr-0.5 pb-2">
 
             {/* Admission & Quick Actions Card */}
             <div className="border border-[#e0e0e0] rounded-2xl p-4 sm:p-5 bg-white space-y-3.5 shadow-xs">
