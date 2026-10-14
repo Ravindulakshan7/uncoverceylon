@@ -74,6 +74,8 @@ export async function PUT(
         entry_fee: data.entry_fee,
         distance_km: Number(data.distance_km || 0),
         featured: data.featured ? 1 : 0,
+        rating: data.rating !== undefined ? Number(data.rating) : undefined,
+        review_count: data.review_count !== undefined ? Number(data.review_count) : undefined,
       },
     });
 

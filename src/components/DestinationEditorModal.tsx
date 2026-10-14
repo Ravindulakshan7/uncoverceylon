@@ -79,8 +79,8 @@ export default function DestinationEditorModal({
     tips: '',
     featured: false,
     status: 'published' as 'published' | 'draft' | 'archived',
-    rating: 4.8,
-    review_count: 120,
+    rating: 0,
+    review_count: 0,
     meta_title: '',
     meta_description: '',
   });
@@ -134,8 +134,8 @@ export default function DestinationEditorModal({
         tips: initialTipsText,
         featured: place.featured === 1,
         status: 'published',
-        rating: place.rating || 4.8,
-        review_count: place.review_count || 120,
+        rating: place.rating !== undefined && place.rating !== null ? Number(place.rating) : 0,
+        review_count: place.review_count !== undefined && place.review_count !== null ? Number(place.review_count) : 0,
         meta_title: `${place.name} Travel Guide | UncoverCeylon`,
         meta_description: place.short_description || `Discover ${place.name} in ${place.location}, Sri Lanka.`,
       });
@@ -185,8 +185,8 @@ export default function DestinationEditorModal({
         tips: '',
         featured: false,
         status: 'published',
-        rating: 4.8,
-        review_count: 50,
+        rating: 0,
+        review_count: 0,
         meta_title: '',
         meta_description: '',
       });
@@ -252,8 +252,8 @@ export default function DestinationEditorModal({
         distance_km: target.distance_km !== undefined ? Number(target.distance_km) : prev.distance_km,
         tips: target.tips || prev.tips,
         featured: target.featured !== undefined ? Boolean(target.featured) : prev.featured,
-        rating: target.rating !== undefined ? Number(target.rating) : prev.rating,
-        review_count: target.review_count !== undefined ? Number(target.review_count) : prev.review_count,
+        rating: target.rating !== undefined ? Number(target.rating) : 0,
+        review_count: target.review_count !== undefined ? Number(target.review_count) : 0,
         meta_title: target.meta_title || `${target.name || prev.name} Travel Guide | UncoverCeylon`,
         meta_description: target.meta_description || target.short_description || prev.meta_description,
       }));
@@ -511,6 +511,8 @@ export default function DestinationEditorModal({
         lng: Number(formData.lng),
         distance_km: Number(formData.distance_km) || 0,
         featured: formData.featured ? 1 : 0,
+        rating: Number(formData.rating) || 0,
+        review_count: Number(formData.review_count) || 0,
         password: adminPassword,
       };
 
@@ -1397,10 +1399,10 @@ export default function DestinationEditorModal({
                   <input
                     type="number"
                     step="0.1"
-                    min="1.0"
+                    min="0"
                     max="5.0"
                     value={formData.rating}
-                    onChange={(e) => setFormData({ ...formData, rating: parseFloat(e.target.value) || 4.8 })}
+                    onChange={(e) => setFormData({ ...formData, rating: parseFloat(e.target.value) || 0 })}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:border-sky-500 focus:ring-1 focus:ring-sky-500/20 focus:bg-white outline-none transition-all"
                   />
                 </div>
@@ -1411,6 +1413,7 @@ export default function DestinationEditorModal({
                   </label>
                   <input
                     type="number"
+                    min="0"
                     value={formData.review_count}
                     onChange={(e) => setFormData({ ...formData, review_count: parseInt(e.target.value) || 0 })}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 focus:border-sky-500 focus:ring-1 focus:ring-sky-500/20 focus:bg-white outline-none transition-all"
@@ -1430,13 +1433,17 @@ export default function DestinationEditorModal({
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-lg font-black text-slate-900">{formData.rating.toFixed(1)}</span>
+                      <span className="text-lg font-black text-slate-900">
+                        {formData.rating > 0 ? formData.rating.toFixed(1) : 'New'}
+                      </span>
                       <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                        · {formData.rating >= 4.8 ? 'Exceptional' : 'Recommended'}
+                        · {formData.review_count === 0 ? 'No reviews yet' : formData.rating >= 4.8 ? 'Exceptional' : 'Recommended'}
                       </span>
                     </div>
                     <span className="text-xs text-slate-500">
-                      Based on {formData.review_count.toLocaleString()} traveler reviews
+                      {formData.review_count === 0
+                        ? '0 traveler reviews'
+                        : `Based on ${formData.review_count.toLocaleString()} traveler reviews`}
                     </span>
                   </div>
                 </div>

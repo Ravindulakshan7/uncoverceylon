@@ -79,6 +79,8 @@ export async function POST(request: NextRequest) {
         entry_fee: entry_fee || 'Free',
         distance_km: Number(distance_km || 0),
         featured: featured ? 1 : 0,
+        rating: body.rating !== undefined ? Number(body.rating) : 0,
+        review_count: body.review_count !== undefined ? Number(body.review_count) : 0,
       },
     });
 
