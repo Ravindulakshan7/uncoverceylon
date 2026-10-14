@@ -130,7 +130,7 @@ export default function PlaceCard({ place, index = 0, variant = 'grid' }: PlaceC
               </div>
 
               {place.entry_fee && (
-                <span className="text-[9.5px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                <span className="text-[9.5px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 whitespace-nowrap shrink-0 max-w-[100px] truncate">
                   {convertFee(place.entry_fee)}
                 </span>
               )}

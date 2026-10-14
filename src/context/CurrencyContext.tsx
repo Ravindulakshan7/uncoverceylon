@@ -145,36 +145,33 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     if (trimmed.toLowerCase().includes('free')) return 'Free';
 
     // 1. Detect USD-based fee: "USD 30 ...", "$30 ..."
-    const usdMatch = trimmed.match(/(?:USD|\$)\s*(\d+(?:\.\d+)?)(.*)/i);
+    const usdMatch = trimmed.match(/(?:USD|\$)\s*(\d+(?:\.\d+)?)/i);
     if (usdMatch) {
       const amountUSD = parseFloat(usdMatch[1]);
-      const suffix = (usdMatch[2] || '').trim();
-
       const rate = rates[currency] || 1.0;
       const converted = amountUSD * rate;
       let formatted = '';
 
       if (currency === 'USD') {
-        formatted = `$${amountUSD % 1 === 0 ? amountUSD : amountUSD.toFixed(2)}`;
+        formatted = `$${amountUSD < 10 && amountUSD % 1 !== 0 ? amountUSD.toFixed(2) : Math.round(amountUSD)}`;
       } else if (currency === 'EUR') {
-        formatted = `€${Math.round(converted)}`;
+        formatted = `€${converted < 5 ? converted.toFixed(2) : Math.round(converted)}`;
       } else if (currency === 'GBP') {
-        formatted = `£${Math.round(converted)}`;
+        formatted = `£${converted < 5 ? converted.toFixed(2) : Math.round(converted)}`;
       } else if (currency === 'AUD') {
-        formatted = `A$${Math.round(converted)}`;
+        formatted = `A$${converted < 5 ? converted.toFixed(2) : Math.round(converted)}`;
       } else if (currency === 'LKR') {
-        formatted = `Rs. ${Math.round(converted).toLocaleString('en-US')}`;
+        const lkrPerUsd = rates.LKR || DEFAULT_RATES.LKR;
+        formatted = `Rs. ${Math.round(amountUSD * lkrPerUsd).toLocaleString('en-US')}`;
       }
 
-      return suffix ? `${formatted} ${suffix}` : formatted;
+      return formatted;
     }
 
     // 2. Detect LKR-based fee: "LKR 1200 ...", "Rs. 500 ..."
-    const lkrMatch = trimmed.match(/(?:LKR|Rs\.?)\s*(\d+(?:,\d+)?)(.*)/i);
+    const lkrMatch = trimmed.match(/(?:LKR|Rs\.?)\s*(\d+(?:,\d+)?)/i);
     if (lkrMatch) {
       const amountLKR = parseFloat(lkrMatch[1].replace(/,/g, ''));
-      const suffix = (lkrMatch[2] || '').trim();
-
       const lkrPerUsd = rates.LKR || DEFAULT_RATES.LKR;
       const amountUSD = amountLKR / lkrPerUsd;
       const rate = rates[currency] || 1.0;
@@ -193,10 +190,32 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
         formatted = `Rs. ${Math.round(amountLKR).toLocaleString('en-US')}`;
       }
 
-      return suffix ? `${formatted} ${suffix}` : formatted;
+      return formatted;
     }
 
-    return trimmed;
+    // 3. Fallback: match any number
+    const anyNumMatch = trimmed.match(/(\d+(?:\.\d+)?)/);
+    if (anyNumMatch) {
+      const num = parseFloat(anyNumMatch[1]);
+      if (num === 0) return 'Free';
+      if (num > 100) {
+        const lkrPerUsd = rates.LKR || DEFAULT_RATES.LKR;
+        const amountUSD = num / lkrPerUsd;
+        const rate = rates[currency] || 1.0;
+        const converted = amountUSD * rate;
+        if (currency === 'LKR') return `Rs. ${Math.round(num).toLocaleString('en-US')}`;
+        const symbol = CURRENCIES[currency]?.symbol || '$';
+        return `${symbol}${converted < 5 ? converted.toFixed(2) : Math.round(converted)}`;
+      } else {
+        const rate = rates[currency] || 1.0;
+        const converted = num * rate;
+        const symbol = CURRENCIES[currency]?.symbol || '$';
+        return `${symbol}${converted < 5 ? converted.toFixed(2) : Math.round(converted)}`;
+      }
+    }
+
+    if (trimmed.toLowerCase().includes('donation')) return 'Donation';
+    return trimmed.length > 12 ? 'Free' : trimmed;
   };
 
   /**

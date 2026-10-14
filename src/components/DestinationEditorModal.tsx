@@ -51,6 +51,22 @@ interface DestinationEditorModalProps {
   onSuccess: () => void;
 }
 
+function cleanEntryFee(raw?: string): string {
+  if (!raw || typeof raw !== 'string') return 'Free';
+  const trimmed = raw.trim();
+  if (trimmed.toLowerCase().includes('free')) return 'Free';
+  const usdMatch = trimmed.match(/(?:USD|\$)\s*(\d+(?:\.\d+)?)/i);
+  if (usdMatch) return `USD ${usdMatch[1]}`;
+  const lkrMatch = trimmed.match(/(?:LKR|Rs\.?)\s*(\d+(?:,\d+)?)/i);
+  if (lkrMatch) return `LKR ${lkrMatch[1]}`;
+  if (trimmed.length > 25) {
+    const anyNum = trimmed.match(/(\d+(?:\.\d+)?)/);
+    if (anyNum) return `LKR ${anyNum[1]}`;
+    return 'Free';
+  }
+  return trimmed;
+}
+
 export default function DestinationEditorModal({
   isOpen,
   onClose,
@@ -247,7 +263,7 @@ export default function DestinationEditorModal({
         province: target.province || prev.province,
         lat: target.lat !== undefined ? Number(target.lat) : prev.lat,
         lng: target.lng !== undefined ? Number(target.lng) : prev.lng,
-        entry_fee: target.entry_fee || prev.entry_fee,
+        entry_fee: target.entry_fee !== undefined ? cleanEntryFee(target.entry_fee) : prev.entry_fee,
         best_time: target.best_time || prev.best_time,
         distance_km: target.distance_km !== undefined ? Number(target.distance_km) : prev.distance_km,
         tips: target.tips || prev.tips,
