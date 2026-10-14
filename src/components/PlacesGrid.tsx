@@ -158,41 +158,52 @@ export default function PlacesGrid({ initialPlaces }: PlacesGridProps) {
           />
         </div>
 
-        {/* ━━━ UNIFIED MODERN SEARCH & CONTROLS TOOLBAR ━━━ */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] p-2.5 sm:p-3 mb-6 transition-all">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+        {/* ━━━ UNIFIED MINIMAL SEARCH & CONTROLS TOOLBAR ━━━ */}
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-2 sm:p-2.5 mb-5 shadow-2xs transition-all">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2">
             
-            {/* Search Input */}
-            <div className="relative flex-1 min-w-0">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by name, town, or landmark..."
-                className="w-full rounded-xl border border-slate-200/80 bg-slate-50/70 hover:bg-white py-2.5 pl-10 pr-9 text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 transition-all focus:bg-white focus:border-[#00aa6c] focus:ring-2 focus:ring-emerald-500/15 focus:outline-none"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-800 p-0.5 cursor-pointer"
-                  aria-label="Clear search"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
+            {/* Search Input + Map Icon Button on Mobile */}
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              <div className="relative flex-1 min-w-0">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search destinations..."
+                  className="w-full rounded-xl border border-slate-200/80 bg-slate-50/80 hover:bg-white py-2 pl-9 pr-8 text-xs sm:text-sm font-medium text-slate-900 placeholder:text-slate-400 transition-all focus:bg-white focus:border-[#00aa6c] focus:ring-1 focus:ring-emerald-500/20 focus:outline-none"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-800 p-0.5 cursor-pointer"
+                    aria-label="Clear search"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+
+              {/* Compact Map Button */}
+              <Link
+                href="/map"
+                className="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#00aa6c] border border-emerald-200/80 text-xs font-bold transition-all shadow-2xs whitespace-nowrap shrink-0"
+                title="View interactive map"
+              >
+                <Map className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Map</span>
+              </Link>
             </div>
 
-            {/* Controls: On Mobile 2-cols side by side; On Desktop inline */}
-            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
-              
+            {/* Dropdowns Row: 2-cols side by side on mobile */}
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-1.5 sm:gap-2">
               {/* Province Dropdown */}
-              <div className="relative sm:w-44">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#00aa6c] pointer-events-none" />
+              <div className="relative sm:w-40">
+                <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-[#00aa6c] pointer-events-none" />
                 <select
                   value={selectedProvince}
                   onChange={(e) => setSelectedProvince(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-200/80 bg-slate-50/70 hover:bg-white py-2.5 pl-8 pr-7 text-xs sm:text-sm font-semibold text-slate-800 transition-all focus:bg-white focus:border-[#00aa6c] focus:ring-2 focus:ring-emerald-500/15 focus:outline-none cursor-pointer truncate"
+                  className="w-full appearance-none rounded-xl border border-slate-200/80 bg-slate-50/80 hover:bg-white py-2 pl-7 pr-6 text-[11px] sm:text-xs font-semibold text-slate-800 transition-all focus:bg-white focus:border-[#00aa6c] focus:outline-none cursor-pointer truncate"
                 >
                   {PROVINCES.map((prov) => (
                     <option key={prov} value={prov}>
@@ -200,113 +211,84 @@ export default function PlacesGrid({ initialPlaces }: PlacesGridProps) {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
               </div>
 
               {/* Sort Dropdown */}
-              <div className="relative sm:w-40">
-                <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
+              <div className="relative sm:w-36">
+                <SlidersHorizontal className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-500 pointer-events-none" />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                  className="w-full appearance-none rounded-xl border border-slate-200/80 bg-slate-50/70 hover:bg-white py-2.5 pl-8 pr-7 text-xs sm:text-sm font-semibold text-slate-800 transition-all focus:bg-white focus:border-[#00aa6c] focus:ring-2 focus:ring-emerald-500/15 focus:outline-none cursor-pointer truncate"
+                  className="w-full appearance-none rounded-xl border border-slate-200/80 bg-slate-50/80 hover:bg-white py-2 pl-7 pr-6 text-[11px] sm:text-xs font-semibold text-slate-800 transition-all focus:bg-white focus:border-[#00aa6c] focus:outline-none cursor-pointer truncate"
                 >
                   <option value="rating">Top Rated</option>
                   <option value="reviews">Most Reviewed</option>
-                  <option value="distance">{userCoords ? 'Live GPS' : 'Nearest First'}</option>
+                  <option value="distance">{userCoords ? 'Live GPS' : 'Nearest'}</option>
                 </select>
-                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
               </div>
-
-              {/* View Interactive Map Button */}
-              <Link
-                href="/map"
-                className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#00aa6c] border border-emerald-200/70 text-xs sm:text-sm font-bold transition-all shadow-2xs whitespace-nowrap"
-              >
-                <Map className="w-3.5 h-3.5" />
-                <span>Live Map</span>
-              </Link>
-
             </div>
 
           </div>
 
-          {/* ━━━ ACTIVE FILTERS ROW & LIVE GPS STATUS ━━━ */}
-          <div className="flex flex-wrap items-center justify-between gap-2.5 pt-3 mt-3 border-t border-slate-100 text-xs font-semibold text-slate-600">
-            
-            {/* Left: Active Filter Chips */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-slate-400 text-[11px] font-bold uppercase tracking-wider">
-                Showing {filteredPlaces.length} of {initialPlaces.length}
-              </span>
+          {/* ━━━ ACTIVE FILTERS ROW (Only rendered if filters active to keep it minimal) ━━━ */}
+          {hasActiveFilters && (
+            <div className="flex flex-wrap items-center justify-between gap-1.5 pt-2 mt-2 border-t border-slate-100 text-[11px] font-semibold text-slate-600">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-slate-400 text-[10px] uppercase font-bold tracking-wider mr-1">
+                  {filteredPlaces.length} {filteredPlaces.length === 1 ? 'place' : 'places'}
+                </span>
 
-              {selectedCategory !== 'All' && (
-                <button
-                  onClick={() => setSelectedCategory('All')}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-[#00aa6c] border border-emerald-200 text-xs font-bold hover:bg-emerald-100 cursor-pointer"
-                >
-                  <span>Category: {selectedCategory}</span>
-                  <X className="w-3 h-3" />
-                </button>
-              )}
+                {selectedCategory !== 'All' && (
+                  <button
+                    onClick={() => setSelectedCategory('All')}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-[#00aa6c] border border-emerald-200 text-[10px] font-bold hover:bg-emerald-100 cursor-pointer"
+                  >
+                    <span>{selectedCategory}</span>
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                )}
 
-              {selectedProvince !== 'All Provinces' && (
-                <button
-                  onClick={() => setSelectedProvince('All Provinces')}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-[#00aa6c] border border-emerald-200 text-xs font-bold hover:bg-emerald-100 cursor-pointer"
-                >
-                  <span>{selectedProvince}</span>
-                  <X className="w-3 h-3" />
-                </button>
-              )}
+                {selectedProvince !== 'All Provinces' && (
+                  <button
+                    onClick={() => setSelectedProvince('All Provinces')}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-[#00aa6c] border border-emerald-200 text-[10px] font-bold hover:bg-emerald-100 cursor-pointer"
+                  >
+                    <span>{selectedProvince}</span>
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                )}
 
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-[#00aa6c] border border-emerald-200 text-xs font-bold hover:bg-emerald-100 cursor-pointer"
-                >
-                  <span>&ldquo;{searchQuery}&rdquo;</span>
-                  <X className="w-3 h-3" />
-                </button>
-              )}
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-[#00aa6c] border border-emerald-200 text-[10px] font-bold hover:bg-emerald-100 cursor-pointer"
+                  >
+                    <span>&ldquo;{searchQuery}&rdquo;</span>
+                    <X className="w-2.5 h-2.5" />
+                  </button>
+                )}
 
-              {hasActiveFilters && (
                 <button
                   onClick={clearAllFilters}
-                  className="inline-flex items-center gap-1 text-slate-400 hover:text-slate-700 underline text-xs font-medium cursor-pointer ml-1"
+                  className="text-[10px] font-bold text-slate-400 hover:text-rose-500 transition-colors ml-1 cursor-pointer"
                 >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>Reset all</span>
+                  Clear all
                 </button>
-              )}
-            </div>
+              </div>
 
-            {/* Right: GPS Location Action */}
-            <div>
-              {userCoords ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                  <span className="w-2 h-2 rounded-full bg-[#00aa6c] animate-pulse" />
-                  <span>Live GPS Active</span>
+              {userCoords && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-[#00aa6c] text-[10px] font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00aa6c] animate-pulse" />
+                  <span>GPS Active</span>
                 </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const coords = await requestLocation();
-                    if (coords) setSortBy('distance');
-                  }}
-                  disabled={locationStatus === 'requesting'}
-                  className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-slate-600 hover:text-[#00aa6c] cursor-pointer"
-                >
-                  <span>📍 Enable Live GPS Distances</span>
-                </button>
               )}
             </div>
-
-          </div>
+          )}
         </div>
 
-        {/* ━━━ PLACES GRID CARDS ━━━ */}
+        {/* ━━━ PLACES GRID CARDS (2 COLUMNS ON MOBILE!) ━━━ */}
         <AnimatePresence mode="wait">
           {filteredPlaces.length > 0 ? (
             <motion.div
@@ -315,7 +297,7 @@ export default function PlacesGrid({ initialPlaces }: PlacesGridProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 w-full"
+              className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6 lg:gap-8 w-full"
             >
               {filteredPlaces.map((place, i) => (
                 <PlaceCard key={place.id} place={place} index={i} />
