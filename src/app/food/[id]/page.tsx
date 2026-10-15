@@ -30,42 +30,78 @@ interface PageProps {
 const FALLBACK_FOODS = [
   {
     id: 1,
-    title: 'Village Rice & Curry',
+    title: 'Rice & Curry',
     tagline: '7-Curry Clay Pot Feast',
     desc: 'Slow-cooked in clay pots over cinnamon wood. Fragrant red rice served with jackfruit polos curry, tempered dhal, coconut pol sambol, and crispy papadum.',
     image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=1200&q=80',
-    badge: 'Must Try',
+    badge: 'Local classic',
     regions: 'Island-wide • Matale • Ella',
   },
   {
     id: 2,
-    title: 'Midnight Kottu Roti',
+    title: 'Kottu Roti',
     tagline: 'The Sound of Sri Lankan Nights',
     desc: 'The rhythmic clatter of metal blades slicing godamba roti, fresh vegetables, eggs, and rich spicy chicken or cheese curry on a sizzling hot plate.',
-    image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=1200&q=80',
-    badge: 'Street Icon',
+    image: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=1200&q=80',
+    badge: 'Street-food icon',
     regions: 'Colombo • Galle Face • Kandy',
   },
   {
     id: 3,
-    title: 'Jaffna & Coastal Seafood',
+    title: 'Jaffna Seafood Curry',
     tagline: 'Fiery Crab & Ocean Grills',
     desc: 'World-renowned Jaffna crab curry infused with roasted curry powder, moringa leaves, and coconut milk, alongside fresh catch grilled right on the beach.',
-    image: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=1200&q=80',
-    badge: 'Seafood',
+    image: 'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=1200&q=80',
+    badge: 'Coastal flavour',
     regions: 'Jaffna • Negombo • Mirissa',
   },
   {
     id: 4,
-    title: 'Crispy Hoppers (Appa)',
+    title: 'Hoppers (Appa)',
     tagline: 'Bowl-Shaped Coconut Pancakes',
     desc: 'Crisp lacy golden edges with a soft, pillowy coconut center. Enjoyed plain, with a runny steamed egg, and fiery lunu miris onion relish.',
-    image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=1200&q=80',
-    badge: 'Breakfast & Dinner',
+    image: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=1200&q=80',
+    badge: 'Breakfast pick',
     regions: 'All Provinces',
   },
   {
     id: 5,
+    title: 'Pol Roti & Lunu Miris',
+    tagline: 'Rustic Hearth Flatbread',
+    desc: 'Coconut flatbread paired with a fiery onion-and-chilli sambol for a simple, memorable bite.',
+    image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=1200&q=80',
+    badge: 'Homestyle',
+    regions: 'Island-wide • Hill Country',
+  },
+  {
+    id: 6,
+    title: 'Traditional Sweets',
+    tagline: 'Festive Confections & Delicacies',
+    desc: 'Discover festive favourites such as kavum, kokis and aluwa, often shared during celebrations.',
+    image: 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?auto=format&fit=crop&w=1200&q=80',
+    badge: 'Sweet tradition',
+    regions: 'All Provinces',
+  },
+  {
+    id: 7,
+    title: 'Ambul Thiyal',
+    tagline: 'Clay Pot Black Sour Fish',
+    desc: 'A distinctive sour fish preparation associated with the south, traditionally seasoned with goraka and spices.',
+    image: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=1200&q=80',
+    badge: 'Southern speciality',
+    regions: 'Southern Province • Galle • Matara',
+  },
+  {
+    id: 8,
+    title: 'Isso Wade',
+    tagline: 'Crispy Sunset Prawn Fritters',
+    desc: 'A crunchy lentil fritter topped with prawns, best enjoyed fresh from a busy seaside snack stall.',
+    image: 'https://images.unsplash.com/photo-1601050690117-94f5f6fa8bd7?auto=format&fit=crop&w=1200&q=80',
+    badge: 'Street-side bite',
+    regions: 'Colombo • Galle Face Green • Negombo',
+  },
+  {
+    id: 9,
     title: 'Highland Ceylon Tea',
     tagline: 'The World’s Finest Brew',
     desc: 'Handpicked two leaves and a bud from misty mountains above 1,800m. Golden liquor with subtle floral notes, served with traditional English cake.',
@@ -74,7 +110,7 @@ const FALLBACK_FOODS = [
     regions: 'Nuwara Eliya • Kandy • Ella',
   },
   {
-    id: 6,
+    id: 10,
     title: 'Curd & Kithul Treacle',
     tagline: 'Ancient Natural Sweetness',
     desc: 'Rich, thick water buffalo curd poured with smoky, amber-gold sweet nectar tapped from wild highland Kithul palm trees. A centuries-old dessert.',
@@ -284,7 +320,121 @@ const CULINARY_DOSSIERS: Record<string, {
     pairing: 'Fresh sweet tropical fruits like golden Cavendish bananas, papaya, or warm spiced tea.',
     priceExpectation: 'LKR 350 – LKR 850 ($1.20 – $2.80) for a full clay pot serving for two.',
   },
+  'pol roti & lunu miris': {
+    sinhalaName: 'පොල් රොටි සහ ලුණු මිරිස් (Pol Rotti & Lunu Miris)',
+    spiceLevel: 'Spicy & Savory',
+    spiceRating: 4,
+    mealTime: 'Breakfast & Evening Snack',
+    servingStyle: 'Warm Clay Plate with Fresh Ground Sambol',
+    culturalStory:
+      'A timeless staple of rural Sri Lankan kitchens. Grated fresh coconut kneaded with wheat flour and water, pressed flat by hand and toasted on a dry earthen griddle until golden specks appear, accompanied by stone-ground red chili sambol.',
+    historicalRoots:
+      'Born from ancient village thrift and the island’s abundant coconut groves, providing hearty energy for farmers before a long day in the rice fields.',
+    ingredients: [
+      { name: 'Fresh Scraped Coconut', detail: 'Freshly scraped coconut meat that adds rich texture and natural oils to the dough.' },
+      { name: 'Stone-Ground Lunu Miris', detail: 'Purple shallots, dry red chilies, black pepper, and fresh lime juice ground on a stone Miris Gala.' },
+      { name: 'Katta Sambol & Seeni Sambol', detail: 'Alternative spicy or sweet caramelized onion relishes served alongside.' },
+    ],
+    elements: [
+      { title: 'Crisp Hearth Pol Roti', desc: 'Thick, rustic flatbread with toasted coconut specks and lightly charred crust.', tag: 'Classic' },
+      { title: 'Stone-Pounded Lunu Miris', desc: 'Hand-ground red chili relish with crunchy shallots and sour lime.', tag: 'Fiery' },
+      { title: 'Seeni Sambol Pairing', desc: 'Caramelized sweet onion relish with cinnamon and cardamom.', tag: 'Sweet & Savory' },
+    ],
+    eatingTips: [
+      { heading: 'Eat Straight from the Pan', advice: 'Pol roti is unbeatable when piping hot with a pat of butter melting into the warm crust.' },
+      { heading: 'Tear and Scoop', advice: 'Tear off a bite-sized piece and scoop up a generous mound of spicy lunu miris.' },
+    ],
+    pairing: 'Hot Ceylon ginger tea or strong black tea sweetened with jaggery.',
+    priceExpectation: 'LKR 80 – LKR 250 ($0.30 – $0.90) per roti in local roadside boutiques.',
+  },
+  'traditional sweets': {
+    sinhalaName: 'කැවුම්, කොකිස් සහ අළුවා (Traditional Avurudu Sweets)',
+    spiceLevel: 'Mild & Sweet',
+    spiceRating: 1,
+    mealTime: 'Festival, Tea Time & Celebrations',
+    servingStyle: 'Festive Brass Platter or Woven Palm Leaf Basket',
+    culturalStory:
+      'Symbolizing prosperity, warmth, and hospitality, traditional sweets are the heart of the Sinhala and Tamil New Year (Avurudu). Families gather around bubbling coconut oil woks to fry golden, domed Konda Kavum and intricate crispy Kokis, while boiling thick Kithul treacle with roasted rice flour to cut diamond-shaped Aluwa.',
+    historicalRoots:
+      'Dating back centuries to Sri Lanka’s ancient agrarian new year harvest festivals celebrating the solar transit and bountiful paddy crops.',
+    ingredients: [
+      { name: 'Roasted Heirloom Rice Flour', detail: 'Stone-ground raw rice flour roasted to impart nutty, toasted aromas.' },
+      { name: 'Pure Kithul Treacle', detail: 'Smoky palm treacle providing rich amber coloring and deep natural sweetness.' },
+      { name: 'Cardamom & Cashew Nuts', detail: 'Freshly crushed green cardamom seeds and local whole cashews pressed into Aluwa.' },
+    ],
+    elements: [
+      { title: 'Konda Kavum', desc: 'Golden oil cake crowned with a delicate hand-drawn knot, rich in treacle and cinnamon.', tag: 'Signature' },
+      { title: 'Crispy Kokis', desc: 'Lacy, crispy rosette fritters fried using decorative cast-iron moulds.', tag: 'Crunch' },
+      { title: 'Diamond Aluwa', desc: 'Melt-in-your-mouth soft treacle and rice flour fudge studded with cashews.', tag: 'Fudge' },
+      { title: 'Asmi', desc: 'Crispy lacy nests made from cinnamon leaf extract drizzled with ruby-red sugar syrup.', tag: 'Festive' },
+    ],
+    eatingTips: [
+      { heading: 'Pair with Hot Tea', advice: 'The rich sweetness of traditional kavum and aluwa pairs perfectly with strong, unsweetened Ceylon black tea.' },
+      { heading: 'Best Eaten Fresh', advice: 'Kokis is best enjoyed within a few days when crisp, while Kavum stays tender for weeks.' },
+    ],
+    pairing: 'Freshly brewed unflavored Ceylon OP or BOP black tea.',
+    priceExpectation: 'LKR 50 – LKR 150 ($0.20 – $0.50) per piece at local village sweet boutiques.',
+  },
+  'ambul thiyal': {
+    sinhalaName: 'මාළු ඇඹුල් තියල් (Malu Ambul Thiyal)',
+    spiceLevel: 'Tangy, Peppery & Deeply Spiced',
+    spiceRating: 4,
+    mealTime: 'Lunch (12:00 PM – 3:00 PM)',
+    servingStyle: 'Traditional Mati Walanda (Terracotta Clay Pot)',
+    culturalStory:
+      'Originating along the southern coastline from Galle to Matara, Malu Ambul Thiyal is Sri Lanka’s ultimate sour and dry fish preservation curry. Firm, meaty yellowfin tuna or skipjack is tossed in a thick black paste made of boiled dried Goraka (Garcinia cambogia), freshly cracked black pepper, cinnamon, and garlic, then cooked on gentle heat until the gravy reduces to a fragrant, glossy black glaze clinging to every cube of fish.',
+    historicalRoots:
+      'Created by southern coastal fishermen centuries before refrigeration as an ingenious method to preserve large ocean catches for weeks using antimicrobial Goraka and pepper.',
+    ingredients: [
+      { name: 'Yellowfin Tuna / Kelawalla', detail: 'Firm, dense sea fish cubes that absorb intense spices without falling apart.' },
+      { name: 'Smoky Goraka (Garcinia Cambogia)', detail: 'Sun-dried souring fruit boiled and ground into a dark, tangy, acidic paste.' },
+      { name: 'Cracked Black Pepper', detail: 'Generous tablespoons of native Ceylon black pepper providing deep aromatic heat.' },
+    ],
+    elements: [
+      { title: 'Goraka Glaze', desc: 'Jet-black, intensely savory reduction clinging to tender fish meat.', tag: 'Signature' },
+      { title: 'Clay Pot Infusion', desc: 'Slow-simmered over low embers until all excess liquid evaporates.', tag: 'Technique' },
+    ],
+    eatingTips: [
+      { heading: 'Improves with Age', advice: 'Ambul Thiyal actually tastes even richer the day after it is cooked, as spices penetrate deeper into the fish.' },
+      { heading: 'Pairs with Kiribath or Rice', advice: 'A traditional southern breakfast pairing is Ambul Thiyal alongside creamy coconut milk rice (Kiribath).' },
+    ],
+    pairing: 'Hot steamed white or red rice, coconut dhal curry, or festive coconut milk rice (Kiribath).',
+    priceExpectation: 'LKR 650 – LKR 1,400 ($2.20 – $4.80) per portion in southern dining boutiques.',
+  },
+  'isso wade': {
+    sinhalaName: 'ඉස්සෝ වඩේ (Galle Face Isso Wade)',
+    spiceLevel: 'Crunchy, Fiery & Savory',
+    spiceRating: 4,
+    mealTime: 'Sunset & Evening (4:30 PM – 9:00 PM)',
+    servingStyle: 'Fresh from Hot Wok with Sliced Onions & Lime Wedges',
+    culturalStory:
+      'The definitive street food of Colombo’s Galle Face promenade. As tropical dusk paints the Indian Ocean in fiery hues of orange and violet, seaside cart fryers heat giant woks of bubbling oil. Crispy spiced red lentil patties crowned with three or four whole shell-on prawns are flash-fried to golden perfection, served hot with raw red onions, fresh green chilies, and tangy chili vinegar sauce.',
+    historicalRoots:
+      'A beloved colonial-era to modern Colombo seaside culinary ritual enjoyed by generations of families, couples, and evening strollers along the seaside greens.',
+    ingredients: [
+      { name: 'Whole Wild Lagoon Prawns', detail: 'Fresh shell-on prawns pressed firmly into the top of the lentil patty.' },
+      { name: 'Coarsely Ground Red Lentils (Dhal)', detail: 'Soaked yellow and red split lentils ground with fennel seeds, turmeric, and dried chili flakes.' },
+      { name: 'Fresh Green Chilies & Shallots', detail: 'Finely minced herbs and raw shallots for biting freshness and aroma.' },
+    ],
+    elements: [
+      { title: 'Crispy Shell Prawns', desc: 'Crunchy, shell-on ocean prawns flash-fried until shatteringly crisp.', tag: 'Crunch' },
+      { title: 'Spiced Lentil Patty', desc: 'Fragrant with toasted cumin and curry leaves, crisp on the edges and chewy within.', tag: 'Savory' },
+    ],
+    eatingTips: [
+      { heading: 'Eat Whole, Shell and All', advice: 'The small prawns are flash-fried so crisply that locals eat them whole, including head and tail, for maximum crunch.' },
+      { heading: 'Squeeze Fresh Lime', advice: 'Generously squeeze the provided lime wedge over the wade to cut through the oil with bright acidity.' },
+    ],
+    pairing: 'Chilled King Coconut water (Thambili) or iced ginger beer while watching the sunset.',
+    priceExpectation: 'LKR 100 – LKR 250 ($0.35 – $0.85) per prawn wade at beachside carts.',
+  },
 };
+
+// Aliases for unified URL and key lookups
+CULINARY_DOSSIERS['rice & curry'] = CULINARY_DOSSIERS['village rice & curry'];
+CULINARY_DOSSIERS['kottu roti'] = CULINARY_DOSSIERS['midnight kottu roti'];
+CULINARY_DOSSIERS['jaffna seafood curry'] = CULINARY_DOSSIERS['jaffna & coastal seafood'];
+CULINARY_DOSSIERS['hoppers (appa)'] = CULINARY_DOSSIERS['crispy hoppers (appa)'];
+
 
 async function getFoodItem(idStr: string) {
   const numId = parseInt(idStr, 10);
