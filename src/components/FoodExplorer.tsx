@@ -168,7 +168,7 @@ export default function FoodExplorer() {
              MASONRY GRID (Pinterest-style: 2 columns on Mobile)
              ============================================ */}
         {displayedList.length > 0 ? (
-          <div className="food-masonry">
+          <div className="food-masonry columns-2 sm:columns-3 md:columns-3 lg:columns-4 xl:columns-5 gap-2 sm:gap-3.5 lg:gap-4">
             {displayedList.map((dish, i) => {
               const isSaved = isFoodSaved(dish.id);
               const [loc, type] = dish.sub ? dish.sub.split(' · ') : [dish.locations.split(' · ')[0], dish.cuisine];
@@ -176,12 +176,12 @@ export default function FoodExplorer() {
               return (
                 <article
                   key={dish.id}
-                  className="card group cursor-pointer mb-2.5 sm:mb-4 break-inside-avoid block"
+                  className="food-card card group cursor-pointer break-inside-avoid inline-block w-full mb-2 sm:mb-3.5"
                   style={{ animationDelay: `${i * 30}ms` }}
                 >
                   <Link href={`/food/${dish.id}`} className="block">
                     {/* Image Wrapper */}
-                    <div className="card-img relative rounded-[14px] sm:rounded-[18px] overflow-hidden bg-[#eaeaea]">
+                    <div className="card-img relative rounded-xl sm:rounded-2xl overflow-hidden bg-[#eaeaea] shadow-xs">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={dish.img}
@@ -202,10 +202,10 @@ export default function FoodExplorer() {
                       <button
                         type="button"
                         onClick={(e) => handleToggleSave(e, dish)}
-                        className={`save-btn absolute top-2 right-2 sm:top-3 sm:right-3 z-10 px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-extrabold tracking-wide transition-all duration-200 cursor-pointer ${
+                        className={`save-btn absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-10 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-black tracking-wide transition-all duration-200 cursor-pointer active:scale-95 ${
                           isSaved
                             ? '!bg-[#111111] text-white shadow-md !opacity-100 !translate-y-0'
-                            : 'bg-[#ff3347] text-white shadow-[0_3px_10px_rgba(255,51,71,0.35)] hover:bg-[#e11d33] active:scale-95 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 translate-y-0 sm:-translate-y-1 sm:group-hover:translate-y-0'
+                            : 'bg-[#ff3347] text-white shadow-[0_3px_10px_rgba(255,51,71,0.35)] hover:bg-[#e11d33] opacity-95 sm:opacity-0 sm:group-hover:opacity-100 translate-y-0 sm:-translate-y-1 sm:group-hover:translate-y-0'
                         }`}
                       >
                         {isSaved ? 'Saved' : 'Save'}
@@ -232,8 +232,8 @@ export default function FoodExplorer() {
                     </div>
 
                     {/* Card Meta */}
-                    <div className="card-meta pt-1.5 sm:pt-2.5 px-0.5">
-                      <h3 className="card-title text-[13px] sm:text-[15px] font-bold text-[#111111] leading-tight sm:leading-snug mb-0.5 sm:mb-1 line-clamp-2">
+                    <div className="card-meta pt-1.5 sm:pt-2 px-0.5">
+                      <h3 className="card-title text-xs sm:text-[14px] font-extrabold text-[#111111] leading-tight sm:leading-snug mb-0.5 line-clamp-2">
                         {dish.title}
                       </h3>
                       <div className="card-sub text-[10px] sm:text-xs text-[#767676] font-medium flex items-center gap-1 sm:gap-1.5 flex-wrap">
@@ -259,14 +259,14 @@ export default function FoodExplorer() {
              LOAD MORE (Pinterest pagination)
              ============================================ */}
         {filteredList.length > shownCount && (
-          <div className="text-center pt-8">
+          <div className="text-center pt-6 sm:pt-8">
             <button
               type="button"
               onClick={() => setShownCount((prev) => prev + PER_PAGE)}
-              className="load-btn inline-flex items-center gap-2 px-7 py-3 rounded-full text-sm font-bold text-[#111111] bg-white border border-[#e9e9e9] hover:bg-[#111111] hover:text-white hover:border-[#111111] transition-all cursor-pointer shadow-xs"
+              className="load-btn inline-flex items-center gap-2 px-6 py-2.5 sm:px-7 sm:py-3 rounded-full text-xs sm:text-sm font-bold text-[#111111] bg-white border border-[#e9e9e9] hover:bg-[#111111] hover:text-white hover:border-[#111111] transition-all cursor-pointer shadow-xs active:scale-95"
             >
               <span>Load more flavors</span>
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
         )}
@@ -277,46 +277,13 @@ export default function FoodExplorer() {
            TOAST NOTIFICATION (From deepseek HTML)
            ============================================ */}
       <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#111111] text-white px-5 py-3 rounded-full text-sm font-bold shadow-[0_12px_30px_rgba(0,0,0,0.25)] z-[200] transition-all duration-300 pointer-events-none flex items-center gap-2 ${
+        className={`fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#111111] text-white px-5 py-3 rounded-full text-xs sm:text-sm font-bold shadow-[0_12px_30px_rgba(0,0,0,0.25)] z-[200] transition-all duration-300 pointer-events-none flex items-center gap-2 ${
           showToast ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
         }`}
       >
         <Check className="w-4 h-4 text-[#4ade80] stroke-[3]" />
         <span>{toastMessage}</span>
       </div>
-
-      {/* CSS Styles for Pinterest-style Masonry Columns */}
-      <style jsx>{`
-        .food-masonry {
-          column-count: 5;
-          column-gap: 1rem;
-        }
-        @media (max-width: 1300px) {
-          .food-masonry {
-            column-count: 4;
-            column-gap: 0.9rem;
-          }
-        }
-        @media (max-width: 1000px) {
-          .food-masonry {
-            column-count: 3;
-            column-gap: 0.8rem;
-          }
-        }
-        @media (max-width: 768px) {
-          .food-masonry {
-            column-count: 2;
-            column-gap: 0.55rem;
-          }
-        }
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 }
