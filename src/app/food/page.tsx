@@ -93,14 +93,14 @@ export default async function FoodPage() {
 
       {/* ━━━ Foodie Hotspots & Towns (Optional Contextual Destinations) ━━━ */}
       {foodPlaces.length > 0 && (
-        <section className="bg-[#fafafa] py-14 border-t border-[#e9e9e9] mt-8">
-          <div className="w-[min(1400px,94%)] mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+        <section className="bg-[#fafafa] py-8 sm:py-14 border-t border-[#e9e9e9] mt-6 sm:mt-8">
+          <div className="w-full max-w-[1400px] mx-auto px-3.5 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 sm:mb-8 gap-3 sm:gap-4">
               <div>
-                <span className="text-[#00aa6c] text-xs font-black uppercase tracking-wider">
+                <span className="text-[#00aa6c] text-[11px] sm:text-xs font-black uppercase tracking-wider">
                   Culinary Destinations
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#111111] tracking-tight mt-1">
+                <h2 className="text-xl sm:text-3xl font-extrabold text-[#111111] tracking-tight mt-1">
                   Destinations with Legendary Dining
                 </h2>
               </div>
@@ -109,11 +109,11 @@ export default async function FoodPage() {
                 className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[#00aa6c] hover:underline"
               >
                 <span>View all destinations</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-6">
               {foodPlaces.slice(0, 3).map((place, index) => (
                 <PlaceCard key={place.id} place={place} index={index} />
               ))}

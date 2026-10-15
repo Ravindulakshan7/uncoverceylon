@@ -85,12 +85,12 @@ export default function FoodDetailClient({ dish, relatedDishes }: FoodDetailClie
         <span>{toastMsg}</span>
       </div>
 
-      <div className="w-[min(1240px,94%)] mx-auto pt-6 pb-20">
+      <div className="w-full max-w-[1240px] mx-auto px-3.5 sm:px-6 pt-3 sm:pt-6 pb-16 sm:pb-20">
         
         {/* ============================================
              BREADCRUMB
              ============================================ */}
-        <nav aria-label="Breadcrumb" className="py-3 text-xs sm:text-sm text-[#767676] flex items-center gap-2 flex-wrap">
+        <nav aria-label="Breadcrumb" className="py-2.5 sm:py-3 text-[11px] sm:text-sm text-[#767676] flex items-center gap-1.5 sm:gap-2 flex-wrap">
           <Link href="/" className="hover:text-[#00aa6c] transition-colors font-medium">
             Home
           </Link>
@@ -99,7 +99,7 @@ export default function FoodDetailClient({ dish, relatedDishes }: FoodDetailClie
             Food &amp; Flavors
           </Link>
           <span className="text-[#c0c0c0]">/</span>
-          <span className="text-[#000a12] font-bold truncate max-w-[240px] sm:max-w-none">
+          <span className="text-[#000a12] font-bold truncate max-w-[200px] sm:max-w-none">
             {dish.title}
           </span>
         </nav>
@@ -107,32 +107,32 @@ export default function FoodDetailClient({ dish, relatedDishes }: FoodDetailClie
         {/* ============================================
              HERO SECTION (Matching reference HTML)
              ============================================ */}
-        <section className="grid grid-cols-1 lg:grid-cols-[1fr_440px] gap-8 lg:gap-12 py-6 sm:py-8 items-center border-b border-[#f2f2f2] pb-10">
+        <section className="grid grid-cols-1 lg:grid-cols-[1fr_440px] gap-6 sm:gap-8 lg:gap-12 py-4 sm:py-8 items-center border-b border-[#f2f2f2] pb-6 sm:pb-10">
           {/* Left Column */}
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="bg-[#00aa6c] text-white text-[11px] font-extrabold uppercase tracking-wider px-3.5 py-1 rounded-full shadow-xs">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <span className="bg-[#00aa6c] text-white text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider px-3 py-0.5 sm:px-3.5 sm:py-1 rounded-full shadow-xs">
                 Must Try
               </span>
-              <span className="bg-[#fff5d6] text-[#78350f] border border-[#fde68a] text-xs font-bold px-3 py-1 rounded-full">
+              <span className="bg-[#fff5d6] text-[#78350f] border border-[#fde68a] text-[11px] sm:text-xs font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full">
                 {dish.cuisine} · {dish.meal}
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold tracking-[-0.035em] text-[#000a12] leading-[1.12]">
+            <h1 className="text-2xl sm:text-4xl lg:text-[44px] font-extrabold tracking-[-0.035em] text-[#000a12] leading-[1.15]">
               {dish.title}
             </h1>
 
-            <div className="text-[#008a58] font-bold text-base sm:text-lg">
+            <div className="text-[#008a58] font-bold text-sm sm:text-lg">
               {dish.tagline}
             </div>
 
-            <p className="text-[#545454] text-sm sm:text-[15px] leading-relaxed max-w-xl">
+            <p className="text-[#545454] text-xs sm:text-[15px] leading-relaxed max-w-xl">
               {dish.desc}
             </p>
 
-            <div className="pt-4 border-t border-[#e9e9e9] flex items-center gap-2.5 text-xs sm:text-sm text-[#545454]">
-              <MapPin className="w-4 h-4 text-[#00aa6c] flex-shrink-0" />
+            <div className="pt-3 sm:pt-4 border-t border-[#e9e9e9] flex items-center gap-2 text-xs sm:text-sm text-[#545454]">
+              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00aa6c] flex-shrink-0" />
               <span>
                 Popular Locations: <b className="text-[#000a12] font-bold">{dish.locations}</b>
               </span>
@@ -140,7 +140,7 @@ export default function FoodDetailClient({ dish, relatedDishes }: FoodDetailClie
           </div>
 
           {/* Right Column: Hero Image */}
-          <div className="relative rounded-[20px] overflow-hidden aspect-[5/4] bg-[#eaeaea] shadow-[0_20px_44px_-22px_rgba(0,0,0,0.25)] group">
+          <div className="relative rounded-[16px] sm:rounded-[20px] overflow-hidden aspect-[5/4] bg-[#eaeaea] shadow-[0_12px_30px_-15px_rgba(0,0,0,0.2)] sm:shadow-[0_20px_44px_-22px_rgba(0,0,0,0.25)] group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={dish.img}
@@ -157,90 +157,90 @@ export default function FoodDetailClient({ dish, relatedDishes }: FoodDetailClie
             <button
               type="button"
               onClick={handleToggleSave}
-              className={`absolute top-3.5 right-3.5 z-10 px-4 py-2 rounded-full text-xs font-black tracking-wide transition-all shadow-md flex items-center gap-1.5 cursor-pointer ${
+              className={`absolute top-2.5 right-2.5 sm:top-3.5 sm:right-3.5 z-10 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-[11px] sm:text-xs font-black tracking-wide transition-all shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95 ${
                 isSaved
                   ? 'bg-[#000a12] text-white hover:bg-black'
-                  : 'bg-[#ff3347] text-white hover:bg-[#e11d33] hover:scale-105 shadow-[0_4px_14px_rgba(255,51,71,0.35)]'
+                  : 'bg-[#ff3347] text-white hover:bg-[#e11d33] shadow-[0_4px_14px_rgba(255,51,71,0.35)]'
               }`}
             >
-              <Heart className={`w-3.5 h-3.5 ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-white'}`} />
+              <Heart className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${isSaved ? 'fill-rose-500 text-rose-500' : 'text-white'}`} />
               <span>{isSaved ? 'Saved' : 'Save'}</span>
             </button>
 
             {/* Bottom Left Badge */}
-            <span className="absolute bottom-3.5 left-3.5 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-bold text-[#000a12] shadow-sm flex items-center gap-1.5">
+            <span className="absolute bottom-2.5 left-2.5 sm:bottom-3.5 sm:left-3.5 bg-white/95 backdrop-blur-md px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold text-[#000a12] shadow-sm flex items-center gap-1 sm:gap-1.5">
               <span className="text-[#00aa6c] font-black">✦</span>
               <span>Authentic Ceylon Recipe</span>
             </span>
 
             {/* Bottom Right Meal Badge */}
-            <span className="absolute bottom-3.5 right-3.5 bg-[#000a12] text-white px-3.5 py-1.5 rounded-full text-xs font-bold">
+            <span className="absolute bottom-2.5 right-2.5 sm:bottom-3.5 sm:right-3.5 bg-[#000a12] text-white px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold">
               {dish.meal}
             </span>
           </div>
         </section>
 
         {/* ============================================
-             QUICK FACTS BAR (Flame, Clock, Utensils, Dollar)
+             QUICK FACTS BAR (Flame, Clock, Utensils, Dollar: 2x2 on Mobile)
              ============================================ */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-white border border-[#e9e9e9] rounded-[14px] p-4 my-8 shadow-[0_4px_14px_-8px_rgba(0,0,0,0.06)]">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 bg-white border border-[#e9e9e9] rounded-[14px] p-2.5 sm:p-4 my-5 sm:my-8 shadow-[0_4px_14px_-8px_rgba(0,0,0,0.06)]">
           {/* Fact 1: Spice */}
-          <div className="flex items-center gap-3 p-1.5">
-            <div className="w-10 h-10 rounded-full bg-[#f7f7f7] text-[#00aa6c] flex items-center justify-center flex-shrink-0">
-              <Flame className="w-5 h-5" />
+          <div className="flex items-center gap-2 sm:gap-3 p-1 sm:p-1.5">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#f7f7f7] text-[#00aa6c] flex items-center justify-center flex-shrink-0">
+              <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#767676]">
+              <div className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-[#767676]">
                 Spice Intensity
               </div>
-              <div className="text-sm font-bold text-[#000a12] leading-tight">
+              <div className="text-xs sm:text-sm font-bold text-[#000a12] leading-tight truncate max-w-[120px] sm:max-w-none">
                 {dish.spice}
               </div>
             </div>
           </div>
 
           {/* Fact 2: Meal Time */}
-          <div className="flex items-center gap-3 p-1.5">
-            <div className="w-10 h-10 rounded-full bg-[#f7f7f7] text-[#00aa6c] flex items-center justify-center flex-shrink-0">
-              <Clock className="w-5 h-5" />
+          <div className="flex items-center gap-2 sm:gap-3 p-1 sm:p-1.5">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#f7f7f7] text-[#00aa6c] flex items-center justify-center flex-shrink-0">
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#767676]">
+              <div className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-[#767676]">
                 Best Meal Time
               </div>
-              <div className="text-sm font-bold text-[#000a12] leading-tight">
+              <div className="text-xs sm:text-sm font-bold text-[#000a12] leading-tight">
                 {dish.meal}
               </div>
             </div>
           </div>
 
           {/* Fact 3: Serving */}
-          <div className="flex items-center gap-3 p-1.5">
-            <div className="w-10 h-10 rounded-full bg-[#f7f7f7] text-[#00aa6c] flex items-center justify-center flex-shrink-0">
-              <Utensils className="w-5 h-5" />
+          <div className="flex items-center gap-2 sm:gap-3 p-1 sm:p-1.5">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#f7f7f7] text-[#00aa6c] flex items-center justify-center flex-shrink-0">
+              <Utensils className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#767676]">
+              <div className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-[#767676]">
                 Traditional Serving
               </div>
-              <div className="text-sm font-bold text-[#000a12] leading-tight">
+              <div className="text-xs sm:text-sm font-bold text-[#000a12] leading-tight truncate max-w-[120px] sm:max-w-none">
                 {dish.serving}
               </div>
             </div>
           </div>
 
           {/* Fact 4: Price */}
-          <div className="flex items-center gap-3 p-1.5">
-            <div className="w-10 h-10 rounded-full bg-[#f7f7f7] text-[#00aa6c] flex items-center justify-center flex-shrink-0">
-              <DollarSign className="w-5 h-5" />
+          <div className="flex items-center gap-2 sm:gap-3 p-1 sm:p-1.5">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#f7f7f7] text-[#00aa6c] flex items-center justify-center flex-shrink-0">
+              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#767676]">
+              <div className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-[#767676]">
                 Price Expectation
               </div>
-              <div className="text-sm font-bold text-[#000a12] leading-tight">
+              <div className="text-xs sm:text-sm font-bold text-[#000a12] leading-tight">
                 {dish.price}
-                <span className="block text-[11px] font-normal text-[#767676]">Approx. local rates</span>
+                <span className="block text-[10px] sm:text-[11px] font-normal text-[#767676]">Approx. local</span>
               </div>
             </div>
           </div>
@@ -510,11 +510,13 @@ export default function FoodDetailClient({ dish, relatedDishes }: FoodDetailClie
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {relatedDishes.map((rel) => (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-5">
+              {relatedDishes.map((rel, idx) => (
                 <article
                   key={rel.id}
-                  className="group border border-[#e9e9e9] rounded-[14px] overflow-hidden bg-white hover:-translate-y-1 hover:shadow-[0_16px_36px_-18px_rgba(0,0,0,0.18)] transition-all duration-300 flex flex-col"
+                  className={`group border border-[#e9e9e9] rounded-[12px] sm:rounded-[14px] overflow-hidden bg-white hover:-translate-y-1 hover:shadow-[0_16px_36px_-18px_rgba(0,0,0,0.18)] transition-all duration-300 flex flex-col ${
+                    idx === 2 ? 'col-span-2 md:col-span-1' : ''
+                  }`}
                 >
                   <Link href={`/food/${rel.id}`} className="block flex-1 flex flex-col">
                     <div className="relative aspect-[4/3] bg-[#eaeaea] overflow-hidden">
@@ -529,26 +531,26 @@ export default function FoodDetailClient({ dish, relatedDishes }: FoodDetailClie
                           target.src = `https://picsum.photos/seed/${rel.seed}/600/450`;
                         }}
                       />
-                      <span className="absolute top-3 left-3 text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-white text-[#000a12] shadow-sm">
+                      <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-white text-[#000a12] shadow-sm">
                         {rel.cuisine}
                       </span>
                     </div>
 
-                    <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div className="p-2.5 sm:p-4 flex-1 flex flex-col justify-between">
                       <div>
-                        <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#767676] mb-1">
+                        <div className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-[#767676] mb-0.5 sm:mb-1 truncate">
                           {rel.tagline}
                         </div>
-                        <h4 className="text-base font-extrabold text-[#000a12] leading-snug mb-2 group-hover:text-[#00aa6c] transition-colors">
+                        <h4 className="text-xs sm:text-base font-extrabold text-[#000a12] leading-tight sm:leading-snug mb-1 sm:mb-2 group-hover:text-[#00aa6c] transition-colors line-clamp-1 sm:line-clamp-none">
                           {rel.title}
                         </h4>
-                        <p className="text-xs text-[#545454] line-clamp-2 leading-relaxed mb-4">
+                        <p className="text-[11px] sm:text-xs text-[#545454] line-clamp-2 leading-relaxed mb-2 sm:mb-4">
                           {rel.desc}
                         </p>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs pt-3 border-t border-[#f2f2f2]">
-                        <span className="text-[#767676] truncate max-w-[150px]">
+                      <div className="flex items-center justify-between text-[11px] sm:text-xs pt-2 sm:pt-3 border-t border-[#f2f2f2]">
+                        <span className="text-[#767676] truncate max-w-[100px] sm:max-w-[150px]">
                           {rel.locations.split(' · ')[0]}
                         </span>
                         <span className="font-bold text-[#00aa6c] flex items-center gap-0.5">

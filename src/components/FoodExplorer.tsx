@@ -84,17 +84,17 @@ export default function FoodExplorer() {
   };
 
   return (
-    <div className="font-['Plus_Jakarta_Sans',system-ui,-apple-system,sans-serif] text-[#111111] bg-white pb-20">
-      <div className="w-[min(1400px,94%)] mx-auto">
+    <div className="font-['Plus_Jakarta_Sans',system-ui,-apple-system,sans-serif] text-[#111111] bg-white pb-14 sm:pb-20">
+      <div className="w-full max-w-[1400px] mx-auto px-3.5 sm:px-6">
         
         {/* ============================================
              SECTION HEAD (From deepseek_html_20261015_381141.html)
              ============================================ */}
-        <div className="pt-10 sm:pt-12 pb-5">
-          <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold tracking-[-0.035em] leading-[1.15] mb-2 text-[#111111]">
+        <div className="pt-4 sm:pt-10 pb-3 sm:pb-5">
+          <h1 className="text-2xl sm:text-4xl lg:text-[42px] font-extrabold tracking-[-0.035em] leading-[1.15] mb-1.5 sm:mb-2 text-[#111111]">
             Food &amp; Flavors
           </h1>
-          <p className="text-[#767676] text-sm sm:text-base font-medium max-w-xl">
+          <p className="text-[#767676] text-xs sm:text-base font-medium max-w-xl leading-relaxed">
             From sizzling street kottu to sweet coconut treacle — taste the island, one bite at a time.
           </p>
         </div>
@@ -102,15 +102,15 @@ export default function FoodExplorer() {
         {/* ============================================
              FILTER CHIPS BAR (Scrollable Pinterest-style)
              ============================================ */}
-        <div className="flex items-center gap-2 pb-7 overflow-x-auto no-scrollbar scroll-smooth">
+        <div className="-mx-3.5 px-3.5 sm:mx-0 sm:px-0 flex items-center gap-1.5 sm:gap-2 pb-4 sm:pb-7 overflow-x-auto no-scrollbar scroll-smooth">
           {/* Circular Filters Icon */}
           <button
             type="button"
-            className="w-10 h-10 rounded-full border border-[#e9e9e9] flex items-center justify-center text-[#111111] flex-shrink-0 bg-white hover:bg-[#f7f7f7] hover:border-[#cfcfcf] transition-all cursor-pointer"
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-[#e9e9e9] flex items-center justify-center text-[#111111] flex-shrink-0 bg-white hover:bg-[#f7f7f7] hover:border-[#cfcfcf] transition-all cursor-pointer"
             aria-label="Filters"
           >
             <svg
-              className="w-4 h-4"
+              className="w-3.5 h-3.5 sm:w-4 sm:h-4"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -149,14 +149,14 @@ export default function FoodExplorer() {
                   setActiveFilter(cat.filter);
                   setShownCount(PER_PAGE);
                 }}
-                className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] sm:text-sm font-bold border transition-all whitespace-nowrap flex-shrink-0 cursor-pointer ${
+                className={`inline-flex items-center gap-1 sm:gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-bold border transition-all whitespace-nowrap flex-shrink-0 cursor-pointer active:scale-95 ${
                   isActive
                     ? '!bg-[#111111] !text-white !border-[#111111] shadow-xs'
                     : tintStyles
                 }`}
               >
                 <span>{cat.label}</span>
-                <span className={`text-xs font-bold ${isActive ? 'opacity-75' : 'opacity-55'}`}>
+                <span className={`text-[11px] sm:text-xs font-bold ${isActive ? 'opacity-75' : 'opacity-55'}`}>
                   {count}
                 </span>
               </button>
@@ -165,7 +165,7 @@ export default function FoodExplorer() {
         </div>
 
         {/* ============================================
-             MASONRY GRID (Pinterest-style)
+             MASONRY GRID (Pinterest-style: 2 columns on Mobile)
              ============================================ */}
         {displayedList.length > 0 ? (
           <div className="food-masonry">
@@ -176,12 +176,12 @@ export default function FoodExplorer() {
               return (
                 <article
                   key={dish.id}
-                  className="card group cursor-pointer mb-4 sm:mb-4 break-inside-avoid block"
+                  className="card group cursor-pointer mb-2.5 sm:mb-4 break-inside-avoid block"
                   style={{ animationDelay: `${i * 30}ms` }}
                 >
                   <Link href={`/food/${dish.id}`} className="block">
                     {/* Image Wrapper */}
-                    <div className="card-img relative rounded-[18px] overflow-hidden bg-[#eaeaea]">
+                    <div className="card-img relative rounded-[14px] sm:rounded-[18px] overflow-hidden bg-[#eaeaea]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={dish.img}
@@ -198,21 +198,21 @@ export default function FoodExplorer() {
                       {/* Top subtle hover gradient */}
                       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-                      {/* Red Pinterest Save button on top right */}
+                      {/* Red Pinterest Save button on top right (Always visible on touch/mobile) */}
                       <button
                         type="button"
                         onClick={(e) => handleToggleSave(e, dish)}
-                        className={`save-btn absolute top-3 right-3 z-10 px-3.5 py-1.5 rounded-full text-xs font-extrabold tracking-wide transition-all duration-200 cursor-pointer ${
+                        className={`save-btn absolute top-2 right-2 sm:top-3 sm:right-3 z-10 px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-extrabold tracking-wide transition-all duration-200 cursor-pointer ${
                           isSaved
                             ? '!bg-[#111111] text-white shadow-md !opacity-100 !translate-y-0'
-                            : 'bg-[#ff3347] text-white shadow-[0_4px_14px_rgba(255,51,71,0.35)] hover:bg-[#e11d33] hover:scale-105 opacity-0 group-hover:opacity-100 -translate-y-1 group-hover:translate-y-0'
+                            : 'bg-[#ff3347] text-white shadow-[0_3px_10px_rgba(255,51,71,0.35)] hover:bg-[#e11d33] active:scale-95 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 translate-y-0 sm:-translate-y-1 sm:group-hover:translate-y-0'
                         }`}
                       >
                         {isSaved ? 'Saved' : 'Save'}
                       </button>
 
-                      {/* Bottom hover action buttons */}
-                      <div className="card-actions absolute bottom-3 left-3 right-3 flex items-center justify-between z-10 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto">
+                      {/* Bottom hover action buttons (Desktop only) */}
+                      <div className="card-actions hidden sm:flex absolute bottom-3 left-3 right-3 items-center justify-between z-10 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto">
                         <span
                           className="action-pill inline-flex items-center gap-1.5 bg-white text-[#111111] px-3 py-1.5 rounded-full text-xs font-bold shadow-[0_2px_8px_rgba(0,0,0,0.15)] hover:bg-[#111111] hover:text-white transition-colors"
                         >
@@ -232,11 +232,11 @@ export default function FoodExplorer() {
                     </div>
 
                     {/* Card Meta */}
-                    <div className="card-meta pt-2.5 px-0.5">
-                      <h3 className="card-title text-sm sm:text-[15px] font-bold text-[#111111] leading-snug mb-1 line-clamp-2">
+                    <div className="card-meta pt-1.5 sm:pt-2.5 px-0.5">
+                      <h3 className="card-title text-[13px] sm:text-[15px] font-bold text-[#111111] leading-tight sm:leading-snug mb-0.5 sm:mb-1 line-clamp-2">
                         {dish.title}
                       </h3>
-                      <div className="card-sub text-xs text-[#767676] font-medium flex items-center gap-1.5 flex-wrap">
+                      <div className="card-sub text-[10px] sm:text-xs text-[#767676] font-medium flex items-center gap-1 sm:gap-1.5 flex-wrap">
                         <span>{loc}</span>
                         <span className="w-1 h-1 rounded-full bg-[#c8c8c8]" />
                         <span>{type}</span>
@@ -294,22 +294,19 @@ export default function FoodExplorer() {
         @media (max-width: 1300px) {
           .food-masonry {
             column-count: 4;
+            column-gap: 0.9rem;
           }
         }
         @media (max-width: 1000px) {
           .food-masonry {
             column-count: 3;
+            column-gap: 0.8rem;
           }
         }
-        @media (max-width: 680px) {
+        @media (max-width: 768px) {
           .food-masonry {
             column-count: 2;
-            column-gap: 0.7rem;
-          }
-        }
-        @media (max-width: 400px) {
-          .food-masonry {
-            column-count: 1;
+            column-gap: 0.55rem;
           }
         }
         .no-scrollbar::-webkit-scrollbar {
