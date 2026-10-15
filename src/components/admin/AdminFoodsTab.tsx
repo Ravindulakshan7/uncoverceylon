@@ -1,9 +1,21 @@
-'use client';
-
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Utensils, Plus, Edit2, Trash2, Loader2, Image as ImageIcon, RefreshCw, X, Upload } from 'lucide-react';
+import {
+  Utensils,
+  Plus,
+  Edit2,
+  Trash2,
+  Loader2,
+  Image as ImageIcon,
+  RefreshCw,
+  X,
+  Upload,
+  Download,
+  FileCode,
+  CheckCircle2
+} from 'lucide-react';
 import toast from 'react-hot-toast';
+import { FOODS_DATA } from '@/data/foodsData';
 
 interface FoodItem {
   id: number;
@@ -28,6 +40,11 @@ export default function AdminFoodsTab({ adminPassword }: AdminFoodsTabProps) {
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  // JSON Import & Export State
+  const [showJsonModal, setShowJsonModal] = useState(false);
+  const [jsonText, setJsonText] = useState('');
+  const [importingJson, setImportingJson] = useState(false);
 
   // Form State
   const [form, setForm] = useState({
@@ -178,6 +195,101 @@ export default function AdminFoodsTab({ adminPassword }: AdminFoodsTabProps) {
     }
   };
 
+  // Export JSON
+  const handleExportJson = () => {
+    const dataToExport = foods.length > 0 ? foods : FOODS_DATA;
+    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
+      JSON.stringify(dataToExport, null, 2)
+    )}`;
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', jsonString);
+    downloadAnchor.setAttribute('download', `uncover_ceylon_foods_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    toast.success(`Exported ${dataToExport.length} food items to JSON!`);
+  };
+
+  // Preload curated 20 dishes into JSON text
+  const handlePreloadCurated = () => {
+    setJsonText(JSON.stringify(FOODS_DATA, null, 2));
+    toast.success('Loaded 20 curated dishes into JSON viewer.');
+  };
+
+  // Handle JSON file upload
+  const handleJsonFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.json') && file.type !== 'application/json') {
+      toast.error('Please upload a valid .json file.');
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        const parsed = JSON.parse(content);
+        const count = Array.isArray(parsed) ? parsed.length : 1;
+        setJsonText(JSON.stringify(parsed, null, 2));
+        toast.success(`Loaded "${file.name}" with ${count} food item(s).`);
+      } catch {
+        toast.error('Invalid JSON file format. Please check syntax.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  // Submit bulk JSON to API
+  const handleImportJsonSubmit = async () => {
+    if (!jsonText.trim()) {
+      toast.error('Please upload a file or paste JSON code.');
+      return;
+    }
+
+    let parsedData: any;
+    try {
+      parsedData = JSON.parse(jsonText);
+    } catch {
+      toast.error('Invalid JSON syntax. Please check for missing quotes or commas.');
+      return;
+    }
+
+    const itemsToImport = Array.isArray(parsedData) ? parsedData : [parsedData];
+    if (itemsToImport.length === 0) {
+      toast.error('JSON array is empty.');
+      return;
+    }
+
+    setImportingJson(true);
+    try {
+      const res = await fetch('/api/foods/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          foods: itemsToImport,
+          admin_password: adminPassword,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to import JSON foods');
+
+      toast.success(data.message || `Successfully imported ${data.createdCount} foods!`);
+      setShowJsonModal(false);
+      setJsonText('');
+      fetchFoods();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error importing foods.';
+      toast.error(msg);
+    } finally {
+      setImportingJson(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       
@@ -193,7 +305,7 @@ export default function AdminFoodsTab({ adminPassword }: AdminFoodsTabProps) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
             type="button"
             onClick={fetchFoods}
@@ -203,6 +315,27 @@ export default function AdminFoodsTab({ adminPassword }: AdminFoodsTabProps) {
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
+
+          <button
+            type="button"
+            onClick={handleExportJson}
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-[#1e324d] bg-[#162338] hover:bg-[#1e304a] text-slate-200 hover:text-white font-bold text-xs sm:text-sm transition-all cursor-pointer"
+            title="Export foods to JSON file"
+          >
+            <Download className="w-4 h-4 text-sky-400" />
+            <span>Export JSON</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowJsonModal(true)}
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-[#1e324d] bg-[#162338] hover:bg-[#1e304a] text-slate-200 hover:text-white font-bold text-xs sm:text-sm transition-all cursor-pointer"
+            title="Import foods from JSON file or text"
+          >
+            <FileCode className="w-4 h-4 text-amber-400" />
+            <span>Import JSON</span>
+          </button>
+
           <button
             type="button"
             onClick={openAddModal}
@@ -449,6 +582,123 @@ export default function AdminFoodsTab({ adminPassword }: AdminFoodsTabProps) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ━━━ JSON Import Modal ━━━ */}
+      {showJsonModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[#111c2e] border border-[#1e324d] rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-[#1e324d] flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                  <FileCode className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-white">Import Foods from JSON</h3>
+                  <p className="text-xs text-slate-400">Upload a .json file or paste food items in JSON format.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowJsonModal(false);
+                  setJsonText('');
+                }}
+                className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-[#162338] transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4 overflow-y-auto flex-1">
+              {/* Quick Action Buttons */}
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#0a111a] border border-[#1e324d]">
+                <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#162338] hover:bg-[#1e304a] text-slate-200 hover:text-white text-xs font-bold transition-all border border-[#1e324d]">
+                  <Upload className="w-4 h-4 text-[#00aa6c]" />
+                  <span>Choose JSON File</span>
+                  <input
+                    type="file"
+                    accept=".json,application/json"
+                    onChange={handleJsonFileUpload}
+                    className="hidden"
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  onClick={handlePreloadCurated}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 text-xs font-bold transition-all border border-amber-500/30 cursor-pointer"
+                >
+                  <Utensils className="w-4 h-4" />
+                  <span>Load 20 Curated Ceylon Dishes</span>
+                </button>
+              </div>
+
+              {/* JSON Textarea */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    JSON Data (Array of food items)
+                  </label>
+                  {jsonText.trim() && (
+                    <span className="text-[11px] text-slate-400 font-mono">
+                      {(() => {
+                        try {
+                          const parsed = JSON.parse(jsonText);
+                          const count = Array.isArray(parsed) ? parsed.length : 1;
+                          return `✓ ${count} item(s) detected`;
+                        } catch {
+                          return '⚠ Invalid JSON format';
+                        }
+                      })()}
+                    </span>
+                  )}
+                </div>
+                <textarea
+                  rows={12}
+                  value={jsonText}
+                  onChange={(e) => setJsonText(e.target.value)}
+                  placeholder={`[\n  {\n    "title": "Midnight Kottu Roti",\n    "tagline": "The Sound of Sri Lankan Nights",\n    "desc": "Chopped godamba roti tossed on hot iron...",\n    "image": "https://images.unsplash.com/...",\n    "badge": "Street Food",\n    "regions": "Colombo • Galle Face"\n  }\n]`}
+                  className="w-full px-4 py-3 rounded-2xl bg-[#0a111a] border border-[#1e324d] text-emerald-400 font-mono text-xs placeholder-slate-600 focus:border-[#00aa6c] outline-none leading-relaxed resize-y"
+                />
+              </div>
+
+              <div className="text-xs text-slate-400 bg-[#162338]/50 p-3 rounded-xl border border-[#1e324d] flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#00aa6c] flex-shrink-0 mt-0.5" />
+                <span>
+                  Accepts fields like <code className="text-amber-300 font-mono">title</code>, <code className="text-amber-300 font-mono">desc</code>, <code className="text-amber-300 font-mono">tagline</code>, <code className="text-amber-300 font-mono">image</code>, <code className="text-amber-300 font-mono">badge</code>, and <code className="text-amber-300 font-mono">regions</code>.
+                </span>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-[#1e324d] flex items-center justify-end gap-3 bg-[#0d1624]">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowJsonModal(false);
+                  setJsonText('');
+                }}
+                disabled={importingJson}
+                className="px-4 py-2.5 rounded-xl border border-[#1e324d] text-slate-300 font-bold text-xs hover:bg-[#162338] transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleImportJsonSubmit}
+                disabled={importingJson || !jsonText.trim()}
+                className="px-6 py-2.5 rounded-xl bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-emerald-950/40 transition-all cursor-pointer disabled:opacity-50"
+              >
+                {importingJson && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>{importingJson ? 'Importing Dishes...' : 'Import Dishes Now'}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

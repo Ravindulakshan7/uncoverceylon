@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowUpRight, Share2, ChevronDown, Check } from 'lucide-react';
 
 import { FOODS_DATA, FoodDishItem } from '@/data/foodsData';
+import { useWishlist } from '@/context/WishlistContext';
 
 
 const CHIP_CATEGORIES = [
@@ -19,9 +20,9 @@ const CHIP_CATEGORIES = [
 const PER_PAGE = 12;
 
 export default function FoodExplorer() {
+  const { isFoodSaved, toggleFoodWishlist } = useWishlist();
   const [activeFilter, setActiveFilter] = useState('all');
   const [shownCount, setShownCount] = useState(PER_PAGE);
-  const [savedTitles, setSavedTitles] = useState<string[]>([]);
   const [toastMessage, setToastMessage] = useState<string>('');
   const [showToast, setShowToast] = useState(false);
 
@@ -55,16 +56,10 @@ export default function FoodExplorer() {
   };
 
   // Toggle Save button
-  const handleToggleSave = (e: React.MouseEvent, title: string) => {
+  const handleToggleSave = (e: React.MouseEvent, dish: FoodDishItem) => {
     e.preventDefault();
     e.stopPropagation();
-    if (savedTitles.includes(title)) {
-      setSavedTitles((prev) => prev.filter((t) => t !== title));
-      triggerToast(`Removed "${title}"`);
-    } else {
-      setSavedTitles((prev) => [...prev, title]);
-      triggerToast(`Saved "${title}"`);
-    }
+    toggleFoodWishlist(dish.id, dish.title);
   };
 
   // Share dish link
@@ -175,8 +170,8 @@ export default function FoodExplorer() {
         {displayedList.length > 0 ? (
           <div className="food-masonry">
             {displayedList.map((dish, i) => {
-              const isSaved = savedTitles.includes(dish.title);
-              const [loc, type] = dish.sub.split(' · ');
+              const isSaved = isFoodSaved(dish.id);
+              const [loc, type] = dish.sub ? dish.sub.split(' · ') : [dish.locations.split(' · ')[0], dish.cuisine];
 
               return (
                 <article
@@ -206,7 +201,7 @@ export default function FoodExplorer() {
                       {/* Red Pinterest Save button on top right */}
                       <button
                         type="button"
-                        onClick={(e) => handleToggleSave(e, dish.title)}
+                        onClick={(e) => handleToggleSave(e, dish)}
                         className={`save-btn absolute top-3 right-3 z-10 px-3.5 py-1.5 rounded-full text-xs font-extrabold tracking-wide transition-all duration-200 cursor-pointer ${
                           isSaved
                             ? '!bg-[#111111] text-white shadow-md !opacity-100 !translate-y-0'
