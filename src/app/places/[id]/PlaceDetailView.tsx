@@ -6,7 +6,7 @@ import Image from 'next/image';
 import {
   MapPin, Tag, Ticket, Calendar, Clock,
   ChevronRight, ArrowRight, Compass,
-  Star, Camera, Sparkles, Navigation,
+  Star, Camera, Info, Navigation,
   Edit3, Share2, Map, Check, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { Place, Review } from '@/types';
@@ -295,7 +295,7 @@ export default function PlaceDetailView({
       : [
           `Explore the scenic vantage points overlooking ${place.location} and surrounding valleys`,
           `Ideal for sunrise and sunset excursions — approximately ${seasonality.recommendedDuration || '1–2 hours'} recommended`,
-          `Standard admission: ${place.entry_fee || 'Free admission'} — budget-friendly for all travelers`,
+          `Entry fee: ${place.entry_fee || 'Free admission'} — budget-friendly for all travelers`,
           `Located in ${place.province}, approximately ${place.distance_km} km from Colombo`,
           `Rich local heritage, pristine flora, and authentic Sri Lankan hospitality`,
         ];
@@ -313,7 +313,7 @@ export default function PlaceDetailView({
             q: 'What is the entry fee for foreigners and locals?',
             a: feeData.isFree
               ? 'Admission is completely free for both local and foreign travelers. No tickets required.'
-              : `Standard admission is ${place.entry_fee || 'approx. 1,000 LKR'}. Cash is recommended for local ticket counters.`,
+              : `Entry fee is ${place.entry_fee || 'approx. 1,000 LKR'}. Cash is recommended for local ticket counters.`,
           },
           {
             q: 'Is it suitable for children or elderly visitors?',
@@ -334,11 +334,11 @@ export default function PlaceDetailView({
   const experiencePlaces = nearbyAttractions.length > 0 ? nearbyAttractions.slice(0, 4) : [];
 
   return (
-    <div className="min-h-screen bg-white text-[#000a12] pt-3 sm:pt-4 pb-20 font-['Plus_Jakarta_Sans',system-ui,-apple-system,sans-serif]">
+    <div className="min-h-screen bg-white text-[#000a12] pt-6 sm:pt-8 pb-20 ">
       
       {/* ━━━ 1. BREADCRUMBS ━━━ */}
       <div className="w-[94%] max-w-[1180px] mx-auto mb-3">
-        <nav className="flex items-center gap-1.5 text-xs font-semibold text-[#545454] overflow-x-auto whitespace-nowrap scrollbar-none py-1">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-semibold text-[#545454] overflow-x-auto whitespace-nowrap scrollbar-none py-1">
           <Link href="/" className="hover:text-[#000a12] transition-colors">Home</Link>
           <span className="text-[#b0b0b0]">/</span>
           <Link href={`/?province=${encodeURIComponent(place.province)}#explore`} className="hover:text-[#000a12] transition-colors">
@@ -352,10 +352,10 @@ export default function PlaceDetailView({
       </div>
 
       {/* ━━━ 2. PAGE HEADER (TITLE & TRIPADVISOR METRICS) ━━━ */}
-      <div className="w-[94%] max-w-[1180px] mx-auto mb-4">
+      <div className="w-[94%] max-w-[1180px] mx-auto mb-6">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div className="space-y-2 flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-4xl lg:text-[42px] font-extrabold text-[#000a12] tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-4xl lg:text-[42px] font-semibold text-[#000a12] tracking-tight leading-tight">
               {place.name}
             </h1>
 
@@ -382,7 +382,7 @@ export default function PlaceDetailView({
             <button
               type="button"
               onClick={handleOpenReviewModal}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-[#e0e0e0] hover:border-[#000a12] hover:bg-[#f2f2f2] text-[#000a12] font-bold text-xs sm:text-sm transition-all cursor-pointer bg-white"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-[#e0e0e0] hover:border-[#000a12] hover:bg-[#f2f2f2] text-[#000a12] font-bold text-xs sm:text-sm transition-all cursor-pointer bg-white"
             >
               <Edit3 className="w-3.5 h-3.5" />
               <span>Review</span>
@@ -391,7 +391,7 @@ export default function PlaceDetailView({
             <button
               type="button"
               onClick={handleShare}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#e0e0e0] hover:border-[#000a12] hover:bg-[#f2f2f2] text-[#000a12] font-bold text-xs sm:text-sm transition-all cursor-pointer bg-white"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-[#e0e0e0] hover:border-[#000a12] hover:bg-[#f2f2f2] text-[#000a12] font-bold text-xs sm:text-sm transition-all cursor-pointer bg-white"
               title="Share destination"
             >
               <Share2 className="w-3.5 h-3.5" />
@@ -414,7 +414,7 @@ export default function PlaceDetailView({
       </div>
 
       {/* ━━━ 4. STICKY TABS (Stays pinned under header on scroll) ━━━ */}
-      <nav className="sticky top-16 sm:top-[70px] z-40 bg-white border-b border-[#e0e0e0] mb-8 shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+      <nav aria-label="Destination sections" className="sticky top-16 sm:top-[70px] z-40 bg-white border-b border-[#e0e0e0] mb-8 ">
         <div className="w-[94%] max-w-[1180px] mx-auto">
           <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto scrollbar-none py-3 text-xs sm:text-sm font-bold">
             {[
@@ -423,13 +423,14 @@ export default function PlaceDetailView({
               { id: 'photos' as TabId, label: 'Photos' },
               { id: 'qa' as TabId, label: 'Q&A' },
               { id: 'nearby' as TabId, label: 'Nearby' },
-            ].map((tab) => (
+            ].filter((tab) => tab.id !== 'nearby' || nearbyAttractions.length > 0).map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => scrollToSection(tab.id)}
+                aria-current={activeTab === tab.id ? 'location' : undefined}
                 className={`pb-1 border-b-[2.5px] transition-all whitespace-nowrap cursor-pointer ${
                   activeTab === tab.id
-                    ? 'border-[#000a12] text-[#000a12] font-black'
+                    ? 'border-[#000a12] text-[#000a12] font-semibold'
                     : 'border-transparent text-[#545454] hover:text-[#000a12]'
                 }`}
               >
@@ -442,14 +443,14 @@ export default function PlaceDetailView({
 
       {/* ━━━ 5. MAIN TWO-COLUMN LAYOUT (Sticky Sidebar stays fixed on scroll) ━━━ */}
       <div className="w-[94%] max-w-[1180px] mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_300px] gap-10 xl:gap-16 items-start">
           
           {/* ━━━━ MAIN CONTENT (LEFT COLUMN) ━━━━ */}
           <main className="space-y-10 min-w-0">
 
             {/* ━━━ #OVERVIEW ━━━ */}
             <section id="overview" className="space-y-4">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-[#000a12] tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-semibold text-[#000a12] tracking-tight">
                 About {place.name}
               </h2>
 
@@ -485,6 +486,7 @@ export default function PlaceDetailView({
                   <button
                     type="button"
                     onClick={() => setIsDescExpanded(!isDescExpanded)}
+                    aria-expanded={isDescExpanded}
                     className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-[#000a12] hover:text-[#00aa6c] cursor-pointer pt-1"
                   >
                     {isDescExpanded ? (
@@ -507,15 +509,15 @@ export default function PlaceDetailView({
                 {/* 1. Admission Header with Currency Switcher */}
                 <div className="pb-3 border-b border-[#f0f0f0]">
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#545454] flex items-center gap-1.5">
+                    <span className="text-[11px] font-semibold uppercase tracking-widest text-[#545454] flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-[#00aa6c] inline-block" />
-                      Standard admission
+                      Entry fee
                     </span>
                     <div className="scale-90 origin-right">
                       <CurrencySelector scrolled={true} />
                     </div>
                   </div>
-                  <div className="text-2xl font-extrabold text-[#000a12] tracking-tight">
+                  <div className="text-2xl font-semibold text-[#000a12] tracking-tight">
                     {feeData.primary}
                   </div>
                   <div className="text-xs text-[#545454] mt-0.5 font-medium">
@@ -529,7 +531,7 @@ export default function PlaceDetailView({
                     href={`https://www.google.com/maps?q=${place.lat},${place.lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center gap-2 bg-[#00aa6c] active:bg-[#008a58] hover:bg-[#008a58] text-white font-bold py-3 px-4 rounded-xl text-sm transition-all shadow-[0_4px_12px_rgba(0,170,108,0.25)] cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 bg-[#245c43] active:bg-[#194b35] hover:bg-[#194b35] text-white font-bold py-3 px-4 rounded-xl text-sm transition-all  cursor-pointer"
                   >
                     <MapPin className="w-4 h-4 shrink-0" />
                     <span>Open in Google Maps</span>
@@ -546,7 +548,7 @@ export default function PlaceDetailView({
 
                     <button
                       type="button"
-                      onClick={() => setIsReviewModalOpen(true)}
+                      onClick={handleOpenReviewModal}
                       className="w-full flex items-center justify-center gap-1.5 bg-white hover:bg-[#f0f0f0] border border-[#e0e0e0] text-[#000a12] font-bold py-2.5 px-2 rounded-xl text-xs transition-all cursor-pointer"
                     >
                       <Edit3 className="w-3.5 h-3.5 text-[#000a12] shrink-0" />
@@ -571,9 +573,9 @@ export default function PlaceDetailView({
                       <MapPin className="w-3.5 h-3.5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#767676]">Location</div>
-                      <div className="text-xs font-bold text-[#000a12] leading-snug truncate" title={place.location}>{place.location}</div>
-                      <div className="text-[11px] text-[#545454] truncate" title={place.province}>{place.province}</div>
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-[#767676]">Location</div>
+                      <div className="text-xs font-bold text-[#000a12] leading-snug break-words" title={place.location}>{place.location}</div>
+                      <div className="text-[11px] text-[#545454] break-words" title={place.province}>{place.province}</div>
                     </div>
                   </div>
 
@@ -583,10 +585,10 @@ export default function PlaceDetailView({
                       <Navigation className="w-3.5 h-3.5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#767676] truncate">
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-[#767676] truncate">
                         {distanceInfo.isLive ? 'From Your GPS' : 'From Colombo'}
                       </div>
-                      <div className="text-xs font-bold text-[#000a12] leading-snug truncate" suppressHydrationWarning={true}>
+                      <div className="text-xs font-bold text-[#000a12] leading-snug break-words" suppressHydrationWarning={true}>
                         {distanceInfo.text}
                       </div>
                       <div className="text-[10px] mt-0.5">
@@ -614,11 +616,11 @@ export default function PlaceDetailView({
                       <Calendar className="w-3.5 h-3.5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#767676]">Best Season</div>
-                      <div className="text-xs font-bold text-[#000a12] leading-snug line-clamp-1" title={place.best_time || 'Year-round'}>
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-[#767676]">Best Season</div>
+                      <div className="text-xs font-bold text-[#000a12] leading-snug break-words" title={place.best_time || 'Year-round'}>
                         {place.best_time || 'Year-round'}
                       </div>
-                      <div className="text-[10px] text-[#545454] truncate">Ideal visiting hours</div>
+                      <div className="text-[10px] text-[#545454] break-words">Ideal visiting hours</div>
                     </div>
                   </div>
 
@@ -628,28 +630,28 @@ export default function PlaceDetailView({
                       <Tag className="w-3.5 h-3.5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#767676]">Category</div>
-                      <div className="text-xs font-bold text-[#000a12] leading-snug truncate" title={place.category}>
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-[#767676]">Category</div>
+                      <div className="text-xs font-bold text-[#000a12] leading-snug break-words" title={place.category}>
                         {place.category}
                       </div>
-                      <div className="text-[10px] text-[#545454] truncate">Curated Spot</div>
+                      <div className="text-[10px] text-[#545454] break-words">Destination type</div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Why travelers love it (dynamic from tips JSON or category-smart defaults) */}
-              <div className="bg-[#fafafa] border border-[#f0f0f0] rounded-xl p-5 sm:p-6 my-6 space-y-3.5">
-                <h3 className="text-base sm:text-lg font-extrabold text-[#000a12] tracking-tight">
-                  Why travelers love it
+              {/* What to expect (dynamic from tips JSON or category-smart defaults) */}
+              <div className="border-y border-[#e5e7eb] py-6 my-8 space-y-4">
+                <h3 className="text-base sm:text-lg font-semibold text-[#000a12] tracking-tight">
+                  What to expect
                 </h3>
-                <div className="grid gap-3 pt-1">
+                <div className="grid gap-5 pt-1">
                   {whyLoveList.map((item, idx) => {
                     const IconComponent = idx === 0 ? Star : idx === 1 ? Compass : Camera;
                     return (
                       <div key={idx} className="flex gap-3.5 items-start">
-                        <span className="w-9 h-9 rounded-full bg-white border border-[#e0e0e0] flex items-center justify-center text-[#00aa6c] shrink-0">
-                          <IconComponent className={`w-4 h-4 ${idx === 0 ? 'fill-current' : ''}`} />
+                        <span className="w-5 h-6 flex items-center justify-center text-[#64756c] shrink-0">
+                          <IconComponent className={`w-4 h-4 `} />
                         </span>
                         <span className="text-sm text-[#1a1a1a] leading-relaxed">
                           <b className="text-[#000a12] font-bold">{item.title}.</b> {item.desc}
@@ -662,7 +664,7 @@ export default function PlaceDetailView({
 
               {/* Highlights Bullet List with green dots */}
               <div className="pt-2">
-                <h3 className="text-base sm:text-lg font-extrabold text-[#000a12] mb-3">
+                <h3 className="text-base sm:text-lg font-semibold text-[#000a12] mb-3">
                   Highlights
                 </h3>
                 <ul className="space-y-2.5">
@@ -676,11 +678,11 @@ export default function PlaceDetailView({
 
                 {/* Insider Traveler Advisory & Tips */}
                 {parsedTips.advisory && (
-                  <div className="bg-[#f0fbf7] border border-[#b2ecd6] rounded-xl p-4 sm:p-5 mt-5 flex items-start gap-3">
-                    <Sparkles className="w-5 h-5 text-[#00aa6c] shrink-0 mt-0.5" />
-                    <div className="text-xs sm:text-sm text-[#0c4a34] leading-relaxed">
-                      <span className="font-extrabold text-[#00aa6c] block mb-1 uppercase tracking-wider text-[11px]">
-                        Insider Traveler Advisory:
+                  <div className="bg-[#f7f8f6] border-l-2 border-[#64756c] p-5 mt-7 flex items-start gap-3">
+                    <Info className="w-4 h-4 text-[#64756c] shrink-0 mt-0.5" />
+                    <div className="text-xs sm:text-sm text-[#3d4842] leading-relaxed">
+                      <span className="font-semibold text-[#263d31] block mb-2 text-sm">
+                        Good to know
                       </span>
                       {parsedTips.advisory}
                     </div>
@@ -702,17 +704,17 @@ export default function PlaceDetailView({
             <section id="photos" className="space-y-4 pt-6 border-t border-[#f0f0f0]">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-extrabold text-[#000a12] tracking-tight">
+                  <h2 className="text-xl sm:text-2xl font-semibold text-[#000a12] tracking-tight">
                     Traveler photos
                   </h2>
                   <p className="text-xs sm:text-sm text-[#545454]">
-                    Real photos shared by recent explorers &amp; visitors
+                    Photos of this destination
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={handleOpenReviewModal}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-[#e0e0e0] hover:border-[#000a12] hover:bg-[#f2f2f2] text-[#000a12] font-bold text-xs transition-all cursor-pointer bg-white shrink-0"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-[#e0e0e0] hover:border-[#000a12] hover:bg-[#f2f2f2] text-[#000a12] font-bold text-xs transition-all cursor-pointer bg-white shrink-0"
                 >
                   <Camera className="w-3.5 h-3.5 text-[#00aa6c]" />
                   <span>Add a photo with review</span>
@@ -755,7 +757,7 @@ export default function PlaceDetailView({
                       <span>See all {travelerPhotos.length} {travelerPhotos.length === 1 ? 'photo' : 'photos'} →</span>
                     </button>
                     <span className="text-xs text-[#767676] font-medium hidden sm:inline">
-                      Verified community uploads
+                      Destination gallery
                     </span>
                   </div>
                 </>
@@ -765,15 +767,15 @@ export default function PlaceDetailView({
                     <Camera className="w-6 h-6" />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-base font-extrabold text-[#000a12]">No traveler photos yet</h3>
+                    <h3 className="text-base font-semibold text-[#000a12]">No traveler photos yet</h3>
                     <p className="text-xs sm:text-sm text-[#545454] max-w-sm mx-auto">
-                      Be the first explorer to upload your real photos of {place.name} when sharing your review!
+                      Visited {place.name}? Share your photos with a review.
                     </p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => setIsReviewModalOpen(true)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#00aa6c] hover:bg-[#008a58] text-white font-bold text-xs sm:text-sm transition-all shadow-xs cursor-pointer active:scale-95"
+                    onClick={handleOpenReviewModal}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#245c43] hover:bg-[#194b35] text-white font-bold text-xs sm:text-sm transition-all shadow-xs cursor-pointer active:scale-95"
                   >
                     <Camera className="w-4 h-4" />
                     <span>Upload photos with your review</span>
@@ -784,24 +786,18 @@ export default function PlaceDetailView({
 
             {/* ━━━ #QA (QUESTIONS & ANSWERS) ━━━ */}
             <section id="qa" className="space-y-4 pt-6 border-t border-[#f0f0f0]">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-[#000a12] tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-semibold text-[#000a12] tracking-tight">
                 Questions &amp; answers
               </h2>
               <div className="space-y-3">
                 {qaItems.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 sm:p-5 rounded-xl border border-[#e0e0e0] bg-white hover:border-[#cfcfcf] transition-colors space-y-2"
-                  >
-                    <div className="flex items-start gap-2.5 text-sm sm:text-[15px] font-bold text-[#000a12]">
-                      <span className="text-[#00aa6c] font-black text-base shrink-0">Q</span>
-                      <span>{item.q}</span>
-                    </div>
-                    <div className="flex items-start gap-2.5 text-xs sm:text-sm text-[#545454] leading-relaxed pl-5">
-                      <span className="text-[#000a12] font-black text-sm shrink-0">A</span>
-                      <span>{item.a}</span>
-                    </div>
-                  </div>
+                  <details key={idx} className="group border-b border-[#e5e7eb] py-4">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm sm:text-base font-medium text-[#000a12] [&::-webkit-details-marker]:hidden">
+                      {item.q}
+                      <ChevronDown className="w-4 h-4 shrink-0 text-[#64756c] transition-transform group-open:rotate-180" />
+                    </summary>
+                    <p className="pt-3 pr-6 text-sm text-[#545454] leading-7">{item.a}</p>
+                  </details>
                 ))}
               </div>
             </section>
@@ -815,14 +811,14 @@ export default function PlaceDetailView({
             <div className="border border-[#e0e0e0] rounded-2xl p-4 sm:p-5 bg-white space-y-3.5 shadow-xs">
               <div className="pb-3 border-b border-[#f0f0f0]">
                 <div className="flex items-center justify-between gap-2 mb-1">
-                  <h4 className="text-[11px] font-extrabold uppercase tracking-widest text-[#545454]">
-                    Standard admission
+                  <h4 className="text-[11px] font-semibold uppercase tracking-widest text-[#545454]">
+                    Entry fee
                   </h4>
                   <div className="scale-90 origin-right">
                     <CurrencySelector scrolled={true} />
                   </div>
                 </div>
-                <div className="text-2xl sm:text-3xl font-extrabold text-[#000a12] tracking-tight">
+                <div className="text-2xl sm:text-3xl font-semibold text-[#000a12] tracking-tight">
                   {feeData.primary}
                 </div>
                 <div className="text-xs text-[#545454] mt-0.5 font-medium">
@@ -836,7 +832,7 @@ export default function PlaceDetailView({
                   href={`https://www.google.com/maps?q=${place.lat},${place.lng}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 bg-[#00aa6c] hover:bg-[#008a58] text-white font-bold py-2.5 px-4 rounded-full text-xs sm:text-sm transition-all shadow-[0_8px_20px_-8px_rgba(0,170,108,0.45)] hover:-translate-y-0.5 cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 bg-[#245c43] hover:bg-[#194b35] text-white font-bold py-2.5 px-4 rounded-lg text-xs sm:text-sm transition-all  cursor-pointer"
                 >
                   <MapPin className="w-4 h-4" />
                   <span>Open in Google Maps</span>
@@ -851,19 +847,19 @@ export default function PlaceDetailView({
 
                 <button
                   type="button"
-                  onClick={() => setIsReviewModalOpen(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-white hover:bg-[#f0f0f0] border border-[#e0e0e0] hover:border-[#000a12] text-[#000a12] font-bold py-2.5 px-4 rounded-full text-xs sm:text-sm transition-all cursor-pointer"
+                  onClick={handleOpenReviewModal}
+                  className="w-full flex items-center justify-center gap-2 bg-white hover:bg-[#f0f0f0] border border-[#e0e0e0] hover:border-[#000a12] text-[#000a12] font-bold py-2.5 px-4 rounded-lg text-xs sm:text-sm transition-all cursor-pointer"
                 >
                   <Edit3 className="w-4 h-4" />
-                  <span>Write a traveler review</span>
+                  <span>Write a review</span>
                 </button>
 
                 <Link
                   href="/map"
-                  className="w-full flex items-center justify-center gap-2 bg-white hover:bg-[#f0f0f0] border border-[#e0e0e0] hover:border-[#000a12] text-[#000a12] font-bold py-2.5 px-4 rounded-full text-xs sm:text-sm transition-all"
+                  className="w-full flex items-center justify-center gap-2 bg-white hover:bg-[#f0f0f0] border border-[#e0e0e0] hover:border-[#000a12] text-[#000a12] font-bold py-2.5 px-4 rounded-lg text-xs sm:text-sm transition-all"
                 >
                   <Map className="w-4 h-4 text-[#00aa6c]" />
-                  <span>View on Ceylon Live Map</span>
+                  <span>Explore the map</span>
                 </Link>
               </div>
             </div>
@@ -876,7 +872,7 @@ export default function PlaceDetailView({
                     <MapPin className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#545454]">Location</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-[#545454]">Location</div>
                     <div className="text-xs sm:text-sm font-bold text-[#000a12] leading-snug">{place.location}</div>
                   </div>
                 </div>
@@ -886,7 +882,7 @@ export default function PlaceDetailView({
                     <Tag className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#545454]">Province</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-[#545454]">Province</div>
                     <div className="text-xs sm:text-sm font-bold text-[#000a12] leading-snug">{place.province}</div>
                   </div>
                 </div>
@@ -896,7 +892,7 @@ export default function PlaceDetailView({
                     <Navigation className="w-3.5 h-3.5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#545454] flex items-center justify-between">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-[#545454] flex items-center justify-between">
                       <span suppressHydrationWarning={true}>{distanceInfo.isLive ? 'From Your Location' : 'From Colombo'}</span>
                       {distanceInfo.isLive && (
                         <span className="text-[10px] text-[#00aa6c] font-bold bg-[#e6f7f0] px-1.5 py-0.2 rounded">
@@ -925,7 +921,7 @@ export default function PlaceDetailView({
                     <Ticket className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#545454]">Entry Fee</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-[#545454]">Entry Fee</div>
                     <div className="text-xs sm:text-sm font-bold text-[#000a12] leading-snug">
                       {feeData.primary}
                       <small className="block text-[11px] text-[#545454] font-medium mt-0.5">{feeData.secondary}</small>
@@ -938,7 +934,7 @@ export default function PlaceDetailView({
                     <Calendar className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-[#545454]">Best Season</div>
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-[#545454]">Best Season</div>
                     <div className="text-xs sm:text-sm font-bold text-[#000a12] leading-snug">
                       {place.best_time || 'Year-round'}
                       <small className="block text-[11px] text-[#545454] font-medium mt-0.5">Early morning or late afternoon</small>
@@ -955,7 +951,7 @@ export default function PlaceDetailView({
         {nearbyAttractions.length > 0 && (
           <section id="nearby" className="pt-12 border-t border-[#f0f0f0] mt-16">
             <div className="flex items-baseline justify-between mb-6 flex-wrap gap-3">
-              <h2 className="text-xl sm:text-2xl font-extrabold text-[#000a12] tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-semibold text-[#000a12] tracking-tight">
                 Nearby attractions
               </h2>
               <Link
@@ -986,10 +982,10 @@ export default function PlaceDetailView({
                     </div>
                     <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-2">
                       <div>
-                        <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#545454] mb-1">
+                        <div className="text-[11px] font-semibold uppercase tracking-wider text-[#545454] mb-1">
                           {nearby.category}
                         </div>
-                        <h3 className="text-base font-extrabold text-[#000a12] group-hover:text-[#00aa6c] transition-colors leading-snug">
+                        <h3 className="text-base font-semibold text-[#000a12] group-hover:text-[#00aa6c] transition-colors leading-snug">
                           {nearby.name}
                         </h3>
                       </div>
@@ -999,7 +995,7 @@ export default function PlaceDetailView({
                           <span>{nearby.rating.toFixed(1)}</span>
                           <span className="text-[#767676] font-normal">({nearby.review_count})</span>
                         </div>
-                        <div className="font-extrabold text-[#000a12]">
+                        <div className="font-semibold text-[#000a12]">
                           {nearbyFee.primary}
                         </div>
                       </div>

@@ -3,7 +3,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, MapPin } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, MapPin, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import styles from './HomeWelcome.module.css';
 
 export interface HeroSlideData {
   id: number | string;
@@ -54,6 +55,7 @@ interface HeroSectionProps {
 export default function HeroSection({ initialSlides = [] }: HeroSectionProps) {
   const [dbSlides, setDbSlides] = useState<HeroSlideData[]>(initialSlides);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [paused, setPaused] = useState(false);
 
   // Fetch latest slides from admin-configured database endpoint
   useEffect(() => {
@@ -86,12 +88,12 @@ export default function HeroSection({ initialSlides = [] }: HeroSectionProps) {
 
   // Slide rotation timer
   useEffect(() => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1 || paused || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
+      if (!document.hidden) setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, [slides.length]);
+  }, [slides.length, paused]);
 
   const activeIndex = currentSlide % slides.length;
   const activeSlide = slides[activeIndex] || SIGIRIYA_MAIN_SLIDE;
@@ -106,114 +108,31 @@ export default function HeroSection({ initialSlides = [] }: HeroSectionProps) {
   };
 
   return (
-    <div className="w-full px-2 sm:px-4 md:px-6 pt-1 sm:pt-2 pb-6 sm:pb-10 max-w-none">
-      <section className="relative w-full h-[calc(100vh-84px)] min-h-[580px] max-h-[860px] rounded-[28px] sm:rounded-[36px] md:rounded-[44px] overflow-hidden isolate shadow-2xl shadow-slate-950/25 group bg-[#0f1b2d]">
-        
-        {/* ━━━ Multi-Photo Destination Carousel with Smooth Crossfade & Ken Burns ━━━ */}
-        <div className="absolute inset-0 z-0 overflow-hidden">
-          {slides.map((place, idx) => (
-            <div
-              key={place.id}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                idx === activeIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-              }`}
-            >
-              <Image
-                src={place.image}
-                alt={place.title}
-                fill
-                priority={idx === 0}
-                sizes="100vw"
-                className={`object-cover object-[center_42%] transition-transform duration-[8000ms] ease-out ${
-                  idx === activeIndex ? 'scale-108' : 'scale-100'
-                }`}
-                unoptimized
-              />
+    <section className={styles.heroWrap} aria-label="Welcome to Sri Lanka">
+      <div className={styles.hero}>
+        <div className={styles.slides} aria-hidden="true">
+          {slides.map((place, index) => <div key={place.id} className={`${styles.slide} ${index === activeIndex ? styles.activeSlide : ''}`}><Image src={place.image} alt="" fill priority={index === 0} sizes="100vw" className={styles.heroPhoto} unoptimized /></div>)}
+        </div>
+        <div className={styles.shade} />
+        <div className={styles.heroInner}>
+          <div className={styles.heroCopy}>
+            <p className={styles.eyebrow}>SRI LANKA TRAVEL GUIDE</p>
+            <h1>Ayubowan</h1>
+            <p className={styles.intro}>Discover Sri Lanka’s beaches, ancient cities and hill country — and plan a journey at your own pace.</p>
+            <div className={styles.actions}><Link href="/destinations" className={styles.primary}>Explore Sri Lanka <ArrowUpRight size={18} /></Link><button type="button" onClick={scrollToInterests} className={styles.secondary}>Find your kind of journey <ArrowDown size={16} /></button></div>
+          </div>
+          <div className={styles.heroBottom}>
+            <div className={styles.location}><MapPin size={16} strokeWidth={1.5} /><div><span>{activeSlide.title}</span><small>{activeSlide.province}</small></div></div>
+            <div className={styles.slideControls}>
+              <span className={styles.slideCount}>{String(activeIndex + 1).padStart(2, '0')}<span> / {String(slides.length).padStart(2, '0')}</span></span>
+              <button type="button" aria-label="Previous hero photo" onClick={() => setCurrentSlide((activeIndex - 1 + slides.length) % slides.length)}><ChevronLeft size={18} /></button>
+              <button type="button" aria-label="Next hero photo" onClick={() => setCurrentSlide((activeIndex + 1) % slides.length)}><ChevronRight size={18} /></button>
+              <button type="button" aria-label={paused ? 'Play slideshow' : 'Pause slideshow'} onClick={() => setPaused(value => !value)}>{paused ? <Play size={13} /> : <Pause size={13} />}</button>
             </div>
-          ))}
-        </div>
-
-        {/* ━━━ Soft Multi-Stop Dark Gradient for Razor-Sharp Text Contrast ━━━ */}
-        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-[#0f1b2d]/45 via-[#0f1b2d]/20 via-60% to-[#0f1b2d]/80 pointer-events-none" />
-
-        {/* ━━━ Hero Centered Content ━━━ */}
-        <div className="relative z-[2] h-full flex flex-col items-center justify-center text-center px-4 sm:px-6 py-8">
-          
-          {/* Top Subtle Pill */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-xs sm:text-[13px] font-bold tracking-wide uppercase mb-4 sm:mb-6 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
-            <span>Sri Lanka Travel Guide</span>
           </div>
-
-          {/* Elegant "Ayubowan" Title */}
-          <h1 className="text-[clamp(3.4rem,11.5vw,8.5rem)] font-black tracking-[-0.03em] leading-[0.95] text-white drop-shadow-[0_12px_44px_rgba(0,0,0,0.65)] mb-3 sm:mb-5 select-none font-['Plus_Jakarta_Sans',system-ui,sans-serif]">
-            <span className="bg-gradient-to-b from-white via-white to-white/90 bg-clip-text text-transparent">
-              Ayubowan
-            </span>
-          </h1>
-
-          {/* Refined Subtitle */}
-          <p className="text-[clamp(0.92rem,1.25vw,1.1rem)] text-white/90 max-w-xl mx-auto leading-relaxed mb-7 sm:mb-9 font-medium drop-shadow-[0_2px_14px_rgba(0,0,0,0.55)]">
-            Discover breathtaking destinations across Sri Lanka with curated tours,
-            local insights, and hassle-free planning all in one platform.
-          </p>
-
-          {/* Hero Action Buttons (Compass icons removed as requested) */}
-          <div className="flex items-center justify-center gap-3 sm:gap-4 flex-wrap">
-            
-            {/* Primary Button: "Find Your Vibe" */}
-            <button
-              type="button"
-              onClick={scrollToInterests}
-              className="inline-flex items-center justify-center font-bold text-xs sm:text-sm px-6 sm:px-8 py-3 sm:py-3.5 rounded-full bg-white text-[#0f1b2d] hover:bg-[#00aa6c] hover:text-white transition-all duration-300 shadow-xl shadow-black/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5 cursor-pointer active:scale-95"
-            >
-              <span>Find Your Vibe</span>
-            </button>
-
-            {/* Outline Button: "Explore Destinations" */}
-            <Link
-              href="/destinations"
-              className="inline-flex items-center justify-center gap-2 font-bold text-xs sm:text-sm px-6 sm:px-8 py-3 sm:py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/40 hover:border-white backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 cursor-pointer active:scale-95"
-            >
-              <span>Explore Destinations</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-
-          </div>
-
         </div>
-
-        {/* ━━━ Bottom Left: Current Sri Lankan Place Pill ━━━ */}
-        <div className="absolute bottom-6 left-6 sm:bottom-8 sm:left-10 z-10 hidden sm:flex items-center gap-2.5 px-4 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-white shadow-lg pointer-events-none">
-          <MapPin className="w-3.5 h-3.5 text-[#3ddc9a] shrink-0" />
-          <span className="text-xs font-bold tracking-wide">
-            {activeSlide.title}
-          </span>
-          {activeSlide.province && (
-            <span className="text-[11px] text-white/70 font-medium">
-              · {activeSlide.province}
-            </span>
-          )}
-        </div>
-
-        {/* ━━━ Bottom Right: Minimalist Slide Indicators ━━━ */}
-        <div className="absolute bottom-5 right-6 sm:bottom-8 sm:right-10 z-10 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/35 backdrop-blur-md border border-white/20 shadow-md">
-          {slides.map((place, idx) => (
-            <button
-              key={place.id}
-              type="button"
-              onClick={() => setCurrentSlide(idx)}
-              aria-label={`Go to slide ${idx + 1}`}
-              className={`transition-all duration-300 rounded-full cursor-pointer ${
-                idx === activeIndex
-                  ? 'w-6 h-2 bg-white'
-                  : 'w-2 h-2 bg-white/40 hover:bg-white/75'
-              }`}
-            />
-          ))}
-        </div>
-
-      </section>
-    </div>
+      </div>
+      <div className={styles.welcomeLine}><span>GO SLOW. LOOK CLOSER. FEEL THE ISLAND.</span><span>SRI LANKA, AT YOUR OWN PACE <ArrowDown size={13} /></span></div>
+    </section>
   );
 }

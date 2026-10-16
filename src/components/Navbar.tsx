@@ -16,6 +16,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [navSearchQuery, setNavSearchQuery] = useState('');
   const pathname = usePathname();
+  const isGuidePage = ['/food', '/culture', '/experiences', '/map'].some(path => pathname === path || pathname?.startsWith(`${path}/`)) || pathname?.startsWith('/places/');
   const { savedCount, setIsDrawerOpen } = useWishlist();
   const { user, openAuthModal, logout } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -67,7 +68,7 @@ export default function Navbar() {
         return;
       }
 
-      if (currentPath.startsWith('/destinations')) {
+      if (currentPath.startsWith('/destinations') || currentPath.startsWith('/places/')) {
         setActiveTab('destinations');
         return;
       }
@@ -190,14 +191,14 @@ export default function Navbar() {
             </Link>
 
             {/* ━━━ "PLAN WITH AI" PILL BUTTON (Shown on extra-large screens to prevent intermediate crowding) ━━━ */}
-            <button
+            {!isGuidePage && (<button
               type="button"
               onClick={() => setAiModalOpen(true)}
               className="hidden xl:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white hover:bg-emerald-50/60 border border-emerald-400 text-[#0f1b2d] font-bold text-xs shadow-[0_2px_8px_rgba(16,185,129,0.12)] hover:border-[#00aa6c] hover:shadow-[0_4px_14px_rgba(16,185,129,0.22)] transition-all cursor-pointer active:scale-95 shrink-0"
             >
               <Sparkles className="w-4 h-4 text-[#00aa6c]" />
               <span>Plan with AI</span>
-            </button>
+            </button>)}
 
             {/* ━━━ TRIPADVISOR COMPACT SEARCH PILL (Appears on scroll) ━━━ */}
             {scrolled && (
@@ -231,7 +232,7 @@ export default function Navbar() {
                 <Link
                   key={tab.id}
                   href={tab.href}
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as typeof activeTab)}
                   className="group relative flex flex-col items-center justify-center h-full px-1 text-[13px] xl:text-[14px] font-bold transition-colors whitespace-nowrap"
                 >
                   <span
@@ -266,7 +267,7 @@ export default function Navbar() {
             </div>
 
             {/* Mobile AI Search Button (Podiyata AI search eka) */}
-            <button
+            {!isGuidePage && pathname !== '/' && (<button
               type="button"
               onClick={() => setAiModalOpen(true)}
               className="sm:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-[#00aa6c] border border-emerald-300 text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer shrink-0"
@@ -275,7 +276,7 @@ export default function Navbar() {
             >
               <Sparkles className="w-3.5 h-3.5 text-[#00aa6c] animate-pulse" />
               <span>AI</span>
-            </button>
+            </button>)}
 
             {/* Saved Wishlist Heart */}
             <button
@@ -388,7 +389,7 @@ export default function Navbar() {
         </div>
 
         {/* ━━━ TIER 2: TRIPADVISOR SUB-NAV ROW (Appears on scroll on home/general pages) ━━━ */}
-        {scrolled && !pathname?.startsWith('/places') && (
+        {scrolled && !isGuidePage && (
           <div className="border-t border-slate-100 py-2.5 overflow-x-auto no-scrollbar flex items-center gap-6 sm:gap-8 text-xs sm:text-[13px] font-bold text-slate-600 animate-in fade-in slide-in-from-top-1 duration-200">
             <button
               type="button"
@@ -518,7 +519,7 @@ export default function Navbar() {
             </div>
 
             {/* Mobile AI Trip Planner Trigger */}
-            <button
+            {!isGuidePage && (<button
               type="button"
               onClick={() => {
                 setMobileOpen(false);
@@ -533,7 +534,7 @@ export default function Navbar() {
               <span className="text-[10px] font-extrabold bg-[#00aa6c] text-white px-2 py-0.5 rounded-full uppercase tracking-wider">
                 Instant
               </span>
-            </button>
+            </button>)}
             <div className="pt-2 px-1">
               {!user ? (
                 <button

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -8,6 +8,8 @@ import Supercluster from 'supercluster';
 import { Place } from '@/types';
 import { Star, MapPin, ArrowRight, Plus, Minus, Navigation, Loader2, Globe } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { categoryIconConfig } from '@/lib/map-markers';
+import styles from './InteractiveMap.module.css';
 
 // Fix Leaflet default marker icons in Next.js
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
@@ -51,48 +53,6 @@ const MAP_STYLES: Record<
 };
 
 // ━━━ 1. DISTINCT CATEGORY ICONS & STYLING (NO COMPASS) ━━━
-const categoryIconConfig: Record<string, { bg1: string; bg2: string; svg: string }> = {
-  'Beaches': {
-    bg1: '#0284c7', bg2: '#38bdf8',
-    // Ocean Waves
-    svg: `<path d="M2 13c2 0 3-1 4-1s2 1 4 1 3-1 4-1 2 1 4 1 3-1 4-1M2 17c2 0 3-1 4-1s2 1 4 1 3-1 4-1 2 1 4 1 3-1 4-1" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/>`
-  },
-  'Mountains': {
-    bg1: '#4338ca', bg2: '#818cf8',
-    // Mountain Peaks
-    svg: `<path d="m8 3 4 8 5-5 5 15H2L8 3z" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`
-  },
-  'Waterfalls': {
-    bg1: '#0891b2', bg2: '#22d3ee',
-    // Water Droplet / Cascades
-    svg: `<path d="M12 2.7l5.7 5.7a8 8 0 1 1-11.4 0z" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`
-  },
-  'Wildlife': {
-    bg1: '#059669', bg2: '#34d399',
-    // Animal Paw Print
-    svg: `<circle cx="11" cy="4" r="2" fill="white"/><circle cx="18" cy="8" r="2" fill="white"/><circle cx="4" cy="8" r="2" fill="white"/><path d="M12 10c-3 0-5 2-5 5 0 2.5 2 4 5 4s5-1.5 5-4c0-3-2-5-5-5z" fill="white"/>`
-  },
-  'Historical': {
-    bg1: '#ea580c', bg2: '#fb923c',
-    // Castle / Rampart
-    svg: `<path d="M3 21h18M5 21V7l7-4 7 4v14M10 10v4M14 10v4" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"/>`
-  },
-  'Ancient Sites': {
-    bg1: '#b45309', bg2: '#f59e0b',
-    // Monument / Classical Pillars
-    svg: `<path d="M4 21h16M4 5h16M7 5v14M12 5v14M17 5v14M2 5l10-3 10 3" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`
-  },
-  'Religious Places': {
-    bg1: '#7c3aed', bg2: '#a78bfa',
-    // Sacred Stupa / Star
-    svg: `<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="white"/>`
-  },
-  'Hidden Gems': {
-    bg1: '#e11d48', bg2: '#fb7185',
-    // Gemstone Diamond
-    svg: `<path d="M6 3h12l4 6-10 12L2 9z" fill="none" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>`
-  }
-};
 
 function createCategoryMarkerIcon(category: string, isSelected = false) {
   const cfg = categoryIconConfig[category] || {
@@ -112,7 +72,7 @@ function createCategoryMarkerIcon(category: string, isSelected = false) {
         border: ${isSelected ? '3.5px' : '2.5px'} solid #ffffff;
         border-radius: 50% 50% 50% 4px;
         transform: rotate(-45deg);
-        box-shadow: 0 10px 22px -3px rgba(0, 0, 0, 0.4), 0 3px 6px -1px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 5px 14px rgba(24, 49, 33, 0.25);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -164,7 +124,7 @@ function createClusterIcon(count: number) {
           border-radius: 50%;
           background: ${ring};
           opacity: 0.25;
-          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
         "></div>
         <div style="
           width: ${size}px;
@@ -177,9 +137,9 @@ function createClusterIcon(count: number) {
           align-items: center;
           justify-content: center;
           font-family: system-ui, -apple-system, sans-serif;
-          font-weight: 900;
+          font-weight: 600;
           font-size: ${size * 0.35}px;
-          box-shadow: 0 12px 24px -4px rgba(2, 132, 199, 0.5), 0 4px 6px -2px rgba(0,0,0,0.2);
+          box-shadow: 0 5px 15px rgba(25, 49, 35, 0.22);
           cursor: pointer;
         ">
           ${count}
@@ -272,8 +232,9 @@ function ClusteredMarkers({
   // Build Supercluster index
   const supercluster = useMemo(() => {
     const sc = new Supercluster<GeoPointProps>({
-      radius: 65,
-      maxZoom: 16,
+      radius: 45,
+      minPoints: 3,
+      maxZoom: 13,
     });
 
     const points: GeoJSON.Feature<GeoJSON.Point, GeoPointProps>[] = places
@@ -358,12 +319,12 @@ function ClusteredMarkers({
                       (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=600&q=80';
                     }}
                   />
-                  
+
                   {/* Overlays */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20 pointer-events-none" />
 
                   {/* Category pill */}
-                  <span className="absolute bottom-2.5 left-2.5 bg-white/95 text-sky-700 backdrop-blur-md px-2.5 py-0.5 rounded-full text-[11px] font-bold shadow-md border border-sky-100">
+                  <span className="absolute bottom-2.5 left-2.5 bg-white/95 text-[#36583e] backdrop-blur-md px-2.5 py-0.5 rounded-full text-[11px] font-bold shadow-md border border-[#dfe5d7]">
                     {place.category}
                   </span>
 
@@ -406,7 +367,7 @@ function ClusteredMarkers({
                   {/* View Details Button */}
                   <a
                     href={`/places/${place.id}`}
-                    className="w-full inline-flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all duration-200 shadow-md shadow-sky-600/25 active:scale-95 cursor-pointer"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-[#294e39] hover:bg-[#203e2e] text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-all duration-200 shadow-md shadow-[#294e39]/10 active:scale-95 cursor-pointer"
                   >
                     <span>View Destination</span>
                     <ArrowRight size={13} />
@@ -487,12 +448,12 @@ function ZoomControls() {
   const map = useMap();
 
   return (
-    <div className="absolute bottom-6 left-4 z-[400] flex flex-col bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+    <div className="absolute bottom-6 left-4 z-[400] flex flex-col bg-white/85 backdrop-blur-md rounded-xl shadow-lg border border-slate-200 overflow-hidden">
       <button
         type="button"
         onClick={() => map.zoomIn()}
         aria-label="Zoom in"
-        className="p-2.5 text-slate-700 hover:text-sky-600 hover:bg-slate-50 transition-colors border-b border-slate-100 cursor-pointer"
+        className="p-2.5 text-slate-700 hover:text-[#36583e] hover:bg-slate-50 transition-colors border-b border-slate-100 cursor-pointer"
       >
         <Plus className="w-4 h-4" />
       </button>
@@ -500,7 +461,7 @@ function ZoomControls() {
         type="button"
         onClick={() => map.zoomOut()}
         aria-label="Zoom out"
-        className="p-2.5 text-slate-700 hover:text-sky-600 hover:bg-slate-50 transition-colors cursor-pointer"
+        className="p-2.5 text-slate-700 hover:text-[#36583e] hover:bg-slate-50 transition-colors cursor-pointer"
       >
         <Minus className="w-4 h-4" />
       </button>
@@ -563,39 +524,42 @@ function MapTopToolbar({
   return (
     <div className="absolute top-2.5 right-2.5 sm:top-4 sm:right-4 z-[400] flex flex-wrap items-center justify-end gap-1.5 sm:gap-2 max-w-[calc(100vw-1.5rem)]">
       {/* 1. Map Layer Switcher */}
-      <div className="flex items-center bg-white/95 backdrop-blur-md rounded-xl p-0.5 sm:p-1 border border-slate-200/90 shadow-md">
+      <div className="flex items-center bg-white/85 backdrop-blur-md rounded-xl p-0.5 sm:p-1 border border-slate-200/90 shadow-md">
         <button
           type="button"
           onClick={() => setMapStyle('streets')}
-          className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer ${
+          aria-pressed={mapStyle === 'streets'}
+          className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-medium transition-all cursor-pointer ${
             mapStyle === 'streets'
-              ? 'bg-sky-600 text-white shadow-xs'
+              ? 'bg-[#294e39] text-white shadow-xs'
               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
-          🗺️ Streets
+          Streets
         </button>
         <button
           type="button"
           onClick={() => setMapStyle('satellite')}
-          className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer ${
+          aria-pressed={mapStyle === 'satellite'}
+          className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-medium transition-all cursor-pointer ${
             mapStyle === 'satellite'
-              ? 'bg-sky-600 text-white shadow-xs'
+              ? 'bg-[#294e39] text-white shadow-xs'
               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
-          🛰️ Sat
+          Satellite
         </button>
         <button
           type="button"
           onClick={() => setMapStyle('terrain')}
-          className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-bold transition-all cursor-pointer ${
+          aria-pressed={mapStyle === 'terrain'}
+          className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-medium transition-all cursor-pointer ${
             mapStyle === 'terrain'
-              ? 'bg-sky-600 text-white shadow-xs'
+              ? 'bg-[#294e39] text-white shadow-xs'
               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
-          ⛰️ Terrain
+          Terrain
         </button>
       </div>
 
@@ -605,9 +569,10 @@ function MapTopToolbar({
           type="button"
           onClick={onResetView}
           title="Reset map view to whole island"
-          className="bg-white/95 hover:bg-slate-50 text-slate-800 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl shadow-md border border-slate-200/90 transition-all hover:scale-105 active:scale-95 text-[11px] sm:text-xs font-bold flex items-center gap-1 sm:gap-1.5 backdrop-blur-md cursor-pointer h-[30px] sm:h-[34px]"
+          aria-label="Show whole island"
+          className="bg-white/85 hover:bg-slate-50 text-slate-800 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl shadow-md border border-slate-200/90 transition-all hover:scale-105 active:scale-95 text-[11px] sm:text-xs font-medium flex items-center gap-1 sm:gap-1.5 backdrop-blur-md cursor-pointer h-[30px] sm:h-[34px]"
         >
-          <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-600" />
+          <Globe className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#36583e]" />
           <span className="hidden sm:inline">Whole Island</span>
         </button>
       )}
@@ -617,29 +582,30 @@ function MapTopToolbar({
         type="button"
         onClick={handleLocateMe}
         disabled={isLocating}
-        title="Find my location (Live GPS)"
-        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl shadow-md border transition-all hover:scale-105 active:scale-95 text-[11px] sm:text-xs font-bold flex items-center gap-1 sm:gap-1.5 backdrop-blur-md cursor-pointer h-[30px] sm:h-[34px] ${
+        title="Find my location"
+        aria-label="Locate me"
+        className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl shadow-md border transition-all hover:scale-105 active:scale-95 text-[11px] sm:text-xs font-medium flex items-center gap-1 sm:gap-1.5 backdrop-blur-md cursor-pointer h-[30px] sm:h-[34px] ${
           userLocation
-            ? 'bg-sky-50 border-sky-300 text-sky-700 ring-2 ring-sky-500/20'
-            : 'bg-white/95 hover:bg-slate-50 border-slate-200/90 text-slate-800'
+            ? 'bg-[#edf3e9] border-[#becdb5] text-[#36583e] ring-2 ring-[#294e39]/20'
+            : 'bg-white/85 hover:bg-slate-50 border-slate-200/90 text-slate-800'
         }`}
       >
         {isLocating ? (
           <>
-            <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin text-sky-600" />
+            <Loader2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 animate-spin text-[#36583e]" />
             <span>Locating...</span>
           </>
         ) : userLocation ? (
           <>
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#edf3e9]0"></span>
             </span>
             <span>My GPS</span>
           </>
         ) : (
           <>
-            <Navigation className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-600 fill-sky-500/20" />
+            <Navigation className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#36583e] fill-sky-500/20" />
             <span>Locate Me</span>
           </>
         )}
@@ -678,7 +644,7 @@ export default function InteractiveMap({
   }, [places]);
 
   return (
-    <div className="relative w-full overflow-hidden bg-slate-900" style={{ height }}>
+    <div className={`${styles.map} relative w-full overflow-hidden bg-[#e7eee2]`} style={{ height }}>
       <MapContainer
         center={center}
         zoom={zoom}
@@ -724,7 +690,7 @@ export default function InteractiveMap({
           <Marker position={userLocation} icon={createUserLocationIcon()}>
             <Popup className="premium-map-popup">
               <div className="p-3 text-center">
-                <div className="font-extrabold text-sm text-slate-900 mb-0.5">
+                <div className="font-semibold text-sm text-slate-900 mb-0.5">
                   📍 You Are Here
                 </div>
                 <div className="text-xs text-slate-500">

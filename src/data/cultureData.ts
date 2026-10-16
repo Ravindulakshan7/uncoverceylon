@@ -54,7 +54,7 @@ export const CULTURE_DATA: CultureHeritageItem[] = [
     preservation: 'UNESCO World Heritage Site (1982)',
     dressCode: 'Light breathable clothing, sunhat & sturdy climbing shoes',
     locations: 'Dambulla · Matale · Central Province',
-    img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=85',
+    img: 'https://images.unsplash.com/photo-1588598198321-9735fd52455b?auto=format&fit=crop&w=1200&q=85',
     seed: 'sigiriya',
     desc: 'Rising 200 meters sheer above central jungle plains, Sigiriya is an audacious 5th-century royal pleasure palace, water garden citadel, and open-air art gallery crowned atop a colossal granite monolith.',
     heritage: "Erected by King Kasyapa (477–495 AD) after usurping the royal throne, Sigiriya served both as an impregnable fortress and an otherworldly aesthetic haven. The sheer granite monolith was sculpted into the likeness of a roaring lion guarding the stairway to the heavens. Visitors climbed through gigantic carved lion paws onto precipitous wooden stairways flanked by the 'Mirror Wall'—polished so brilliantly with egg white and wild bee honey that the monarch could see his reflection as he walked.",

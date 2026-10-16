@@ -39,7 +39,7 @@ export const EXPERIENCES_DATA: IslandExperienceItem[] = [
   {
     id: 1,
     slug: 'world-class-surfing',
-    title: 'World-Class Surfing on Peeling Breaks',
+    title: 'Surfing in Sri Lanka',
     tagline: 'Year-Round Warm Ocean Swells & Bohemian Bays',
     sub: 'Weligama · Hiriketiya · Arugam Bay',
     tag: 'surf',
@@ -71,7 +71,7 @@ export const EXPERIENCES_DATA: IslandExperienceItem[] = [
   {
     id: 2,
     slug: 'blue-highland-train-journey',
-    title: 'Blue Highland Train Journeys',
+    title: 'Hill Country Train Journeys',
     tagline: 'The World’s Most Scenic Railway Through the Clouds',
     sub: 'Kandy to Ella · Nine Arch Bridge',
     tag: 'rail',
@@ -103,7 +103,7 @@ export const EXPERIENCES_DATA: IslandExperienceItem[] = [
   {
     id: 3,
     slug: 'wild-leopard-elephant-safari',
-    title: 'Wild Leopard & Elephant Safaris',
+    title: 'Wildlife Safaris',
     tagline: 'Untamed National Sanctuaries of Yala & Udawalawe',
     sub: 'Yala · Udawalawe · Minneriya',
     tag: 'safari',
@@ -135,7 +135,7 @@ export const EXPERIENCES_DATA: IslandExperienceItem[] = [
   {
     id: 4,
     slug: 'blue-whale-ocean-safari',
-    title: 'Blue Whale & Dolphin Expeditions',
+    title: 'Whale & Dolphin Watching',
     tagline: 'Giants of the Deep Ocean Trench',
     sub: 'Mirissa · Trincomalee · Kalpitiya',
     tag: 'ocean',
@@ -167,7 +167,7 @@ export const EXPERIENCES_DATA: IslandExperienceItem[] = [
   {
     id: 5,
     slug: 'white-water-rafting-kitulgala',
-    title: 'Kitulgala White Water Rafting & Canyoning',
+    title: 'Rafting in Kitulgala',
     tagline: 'Jungle River Rapids & Rainforest Waterfalls',
     sub: 'Kitulgala · Kelani River Valley',
     tag: 'adrenaline',
@@ -199,7 +199,7 @@ export const EXPERIENCES_DATA: IslandExperienceItem[] = [
   {
     id: 6,
     slug: 'knuckles-cloud-forest-trekking',
-    title: 'Knuckles Range Cloud Forest Trekking',
+    title: 'Trekking in the Knuckles Range',
     tagline: 'Misty Ridges, Hidden Cascades & Endemic Wilderness',
     sub: 'Matale & Kandy Borders · Central Highlands',
     tag: 'hiking',
@@ -231,7 +231,7 @@ export const EXPERIENCES_DATA: IslandExperienceItem[] = [
   {
     id: 7,
     slug: 'pigeon-island-marine-snorkeling',
-    title: 'Pigeon Island Marine Coral Snorkeling',
+    title: 'Snorkeling at Pigeon Island',
     tagline: 'Live Coral Reefs, Sea Turtles & Blacktip Reef Sharks',
     sub: 'Nilaveli · Trincomalee · Eastern Coast',
     tag: 'ocean',
@@ -263,7 +263,7 @@ export const EXPERIENCES_DATA: IslandExperienceItem[] = [
   {
     id: 8,
     slug: 'hot-air-ballooning-kandalama',
-    title: 'Hot Air Ballooning Over Ancient Citadels',
+    title: 'Hot Air Ballooning',
     tagline: 'Floating at Sunrise Above Lakes, Jungles & Sigiriya',
     sub: 'Kandalama · Dambulla · Cultural Triangle',
     tag: 'adrenaline',
@@ -295,7 +295,7 @@ export const EXPERIENCES_DATA: IslandExperienceItem[] = [
   {
     id: 9,
     slug: 'ella-rock-little-adams-peak',
-    title: 'Ella Rock & Little Adam’s Peak Treks',
+    title: 'Ella Rock & Little Adam’s Peak',
     tagline: 'Highland Gap Vistas, Tea Trails & Flying Ravana Zipline',
     sub: 'Ella · Badulla District · Uva Province',
     tag: 'hiking',
@@ -327,7 +327,7 @@ export const EXPERIENCES_DATA: IslandExperienceItem[] = [
   {
     id: 10,
     slug: 'traditional-stilt-fishing-koggala',
-    title: 'Traditional Stilt Fishing at Dusk',
+    title: 'Stilt Fishing',
     tagline: 'The Ancient Art of Ritipanna Against Ocean Sunsets',
     sub: 'Koggala · Ahangama · Southern Coastline',
     tag: 'surf',
@@ -359,7 +359,7 @@ export const EXPERIENCES_DATA: IslandExperienceItem[] = [
   {
     id: 11,
     slug: 'adam-peak-midnight-pilgrimage',
-    title: 'Midnight Lantern Pilgrimage of Adam’s Peak',
+    title: 'Adam’s Peak Pilgrimage',
     tagline: '5,500 Steps Through the Night to the Sacred Sunrise',
     sub: 'Nallathanniya · Central Highlands',
     tag: 'hiking',
@@ -391,7 +391,7 @@ export const EXPERIENCES_DATA: IslandExperienceItem[] = [
   {
     id: 12,
     slug: 'minneriya-wild-elephant-gathering',
-    title: 'The Great Elephant Gathering of Minneriya',
+    title: 'Elephants at Minneriya',
     tagline: 'Up to 300 Wild Elephants on Ancient Lake Shores',
     sub: 'Minneriya · Habarana · Cultural Triangle',
     tag: 'safari',

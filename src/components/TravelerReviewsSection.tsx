@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Star, MessageSquareQuote, CheckCircle2, X, PlusCircle, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
+import { Star, MessageSquareQuote, X, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -96,6 +97,7 @@ const DEFAULT_REVIEWS: ReviewItem[] = [
 ];
 
 export default function TravelerReviewsSection() {
+  const [failedAvatars, setFailedAvatars] = useState<Record<string, boolean>>({});
   const { user, openAuthModal } = useAuth();
   const [reviews, setReviews] = useState<ReviewItem[]>(DEFAULT_REVIEWS);
   const [modalOpen, setModalOpen] = useState(false);
@@ -162,7 +164,7 @@ export default function TravelerReviewsSection() {
       } else {
         toast.error(data.error || 'Failed to submit review');
       }
-    } catch (err) {
+    } catch {
       toast.error('Network error. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -177,23 +179,23 @@ export default function TravelerReviewsSection() {
         <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-[#00aa6c] text-xs font-bold mb-2">
             <Star className="w-3.5 h-3.5 fill-[#00aa6c]" />
-            <span>Verified Traveler Stories</span>
+            <span>FROM THE COMMUNITY</span>
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-black text-[#0f1b2d] tracking-tight">
-            Loved by Adventurers Worldwide
+            Stories from the island.
           </h2>
           <p className="text-slate-500 text-xs sm:text-sm font-medium mt-1.5">
-            Real feedback from globetrotters exploring the untamed beauty of Ceylon.
+            Experiences shared by people who have been here.
           </p>
 
-          {/* Rating Summary Bar & "Share Your Experience" Button */}
+          {/* Rating Summary Bar & "Share your story" Button */}
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
             <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-2xs">
               <div className="flex items-center text-amber-400 text-xs">
                 {'★★★★★'}
               </div>
-              <span className="text-xs font-black text-slate-800">4.9 / 5.0</span>
-              <span className="text-[11px] text-slate-400">· Over 1,200+ Reviews</span>
+              <span className="text-xs font-black text-slate-800">{reviews.length ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length).toFixed(1) : '—'} / 5</span>
+              <span className="text-[11px] text-slate-400">· {reviews.length} stories</span>
             </div>
 
             <button
@@ -202,7 +204,7 @@ export default function TravelerReviewsSection() {
               className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#00aa6c] hover:bg-[#008f5a] text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition-all active:scale-95 cursor-pointer"
             >
               <MessageSquareQuote className="w-4 h-4" />
-              <span>Share Your Experience</span>
+              <span>Share your story</span>
             </button>
           </div>
         </div>
@@ -242,8 +244,12 @@ export default function TravelerReviewsSection() {
                 {/* Author Info */}
                 <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    {rev.user_image ? (
-                      <img
+                    {rev.user_image && !failedAvatars[rev.user_image] ? (
+                      <Image
+                        width={32}
+                        height={32}
+                        unoptimized
+                        onError={() => setFailedAvatars(prev => ({ ...prev, [rev.user_image!]: true }))}
                         src={rev.user_image}
                         alt={rev.name}
                         className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover ring-1 ring-emerald-500/40 shrink-0"
@@ -275,7 +281,7 @@ export default function TravelerReviewsSection() {
           {/* Swipe indicator hint for mobile & Arrow controls */}
           <div className="mt-3 flex items-center justify-between text-xs text-slate-400 px-1">
             <span className="text-[11px] font-semibold flex items-center gap-1 text-slate-500">
-              <span>← Swipe horizontally to see more stories →</span>
+              <span>More stories, this way →</span>
             </span>
             <div className="hidden sm:flex items-center gap-1.5">
               <button

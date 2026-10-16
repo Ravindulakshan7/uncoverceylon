@@ -84,7 +84,7 @@ export default function FoodExplorer() {
   };
 
   return (
-    <div className="font-['Plus_Jakarta_Sans',system-ui,-apple-system,sans-serif] text-[#111111] bg-white pb-14 sm:pb-20">
+    <div className="text-[#111111] bg-white pb-14 sm:pb-20">
       <div className="w-full max-w-[1400px] mx-auto px-3.5 sm:px-6">
         
         {/* ============================================
@@ -103,26 +103,6 @@ export default function FoodExplorer() {
              FILTER CHIPS BAR (Scrollable Pinterest-style)
              ============================================ */}
         <div className="-mx-3.5 px-3.5 sm:mx-0 sm:px-0 flex items-center gap-1.5 sm:gap-2 pb-4 sm:pb-7 overflow-x-auto no-scrollbar scroll-smooth">
-          {/* Circular Filters Icon */}
-          <button
-            type="button"
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border border-[#e9e9e9] flex items-center justify-center text-[#111111] flex-shrink-0 bg-white hover:bg-[#f7f7f7] hover:border-[#cfcfcf] transition-all cursor-pointer"
-            aria-label="Filters"
-          >
-            <svg
-              className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-            >
-              <line x1="4" y1="6" x2="20" y2="6" />
-              <line x1="7" y1="12" x2="17" y2="12" />
-              <line x1="10" y1="18" x2="14" y2="18" />
-            </svg>
-          </button>
-
           {/* Category Chips with Counts */}
           {CHIP_CATEGORIES.map((cat) => {
             const isActive = activeFilter === cat.filter;
@@ -145,6 +125,7 @@ export default function FoodExplorer() {
               <button
                 key={cat.filter}
                 type="button"
+                aria-pressed={isActive}
                 onClick={() => {
                   setActiveFilter(cat.filter);
                   setShownCount(PER_PAGE);
@@ -205,7 +186,7 @@ export default function FoodExplorer() {
                         className={`save-btn absolute top-2 right-2 sm:top-2.5 sm:right-2.5 z-10 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-black tracking-wide transition-all duration-200 cursor-pointer active:scale-95 ${
                           isSaved
                             ? '!bg-[#111111] text-white shadow-md !opacity-100 !translate-y-0'
-                            : 'bg-[#ff3347] text-white shadow-[0_3px_10px_rgba(255,51,71,0.35)] hover:bg-[#e11d33] opacity-95 sm:opacity-0 sm:group-hover:opacity-100 translate-y-0 sm:-translate-y-1 sm:group-hover:translate-y-0'
+                            : 'bg-[#ff3347] text-white shadow-[0_3px_10px_rgba(255,51,71,0.35)] hover:bg-[#e11d33] opacity-95 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 translate-y-0 sm:-translate-y-1 sm:group-hover:translate-y-0 focus-visible:translate-y-0'
                         }`}
                       >
                         {isSaved ? 'Saved' : 'Save'}

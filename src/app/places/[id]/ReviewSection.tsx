@@ -81,11 +81,11 @@ export default function ReviewSection({
       {/* ━━━ 1. TRIPADVISOR REVIEWS HEADER ━━━ */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[#f0f0f0]">
         <div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-[#000a12] tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-semibold text-[#000a12] tracking-tight">
             Traveler reviews
           </h2>
           <p className="text-xs sm:text-sm text-[#545454] font-medium">
-            Verified community ratings and tips from recent explorers
+            Ratings and experiences from visitors
           </p>
         </div>
 
@@ -103,7 +103,7 @@ export default function ReviewSection({
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-5 sm:p-6 rounded-xl bg-[#fafafa] border border-[#e0e0e0] items-center">
         {/* Big Score Column */}
         <div className="md:col-span-4 text-center md:border-r md:border-[#e0e0e0] md:pr-6 space-y-1.5">
-          <div className="text-5xl font-extrabold text-[#000a12] tracking-tight leading-none">
+          <div className="text-5xl font-semibold text-[#000a12] tracking-tight leading-none">
             {place.rating.toFixed(1)}
           </div>
           <div className="flex justify-center pt-1">
@@ -196,7 +196,7 @@ export default function ReviewSection({
                       />
                     ) : (
                       <div
-                        className={`w-10 h-10 rounded-full ${avatarColor} text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs`}
+                        className={`w-10 h-10 rounded-full ${avatarColor} text-white font-semibold text-sm flex items-center justify-center shrink-0 shadow-xs`}
                       >
                         {rev.author.charAt(0).toUpperCase()}
                       </div>
@@ -208,7 +208,7 @@ export default function ReviewSection({
                         {rev.user_id && (
                           <span
                             title="Verified Traveler"
-                            className="inline-flex items-center gap-0.5 text-[10px] font-black uppercase tracking-wider text-[#00aa6c] bg-[#e6f7f0] border border-[#a3e6cd] px-1.5 py-0.2 rounded"
+                            className="inline-flex items-center gap-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#00aa6c] bg-[#e6f7f0] border border-[#a3e6cd] px-1.5 py-0.2 rounded"
                           >
                             <ShieldCheck className="w-3 h-3 text-[#00aa6c]" />
                             Verified
@@ -229,7 +229,7 @@ export default function ReviewSection({
                 {/* Review Title & Body */}
                 <div className="space-y-1.5">
                   {title && (
-                    <h4 className="font-extrabold text-[#000a12] text-sm sm:text-base leading-snug">
+                    <h4 className="font-semibold text-[#000a12] text-sm sm:text-base leading-snug">
                       {title}
                     </h4>
                   )}
