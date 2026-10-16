@@ -12,7 +12,7 @@ import AiTripModal from '@/components/AiTripModal';
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [aiModalOpen, setAiModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'destinations' | 'map' | 'about'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'destinations' | 'food' | 'culture' | 'experiences' | 'map' | 'about'>('home');
   const [scrolled, setScrolled] = useState(false);
   const [navSearchQuery, setNavSearchQuery] = useState('');
   const pathname = usePathname();
@@ -49,6 +49,21 @@ export default function Navbar() {
 
       if (currentPath.startsWith('/about')) {
         setActiveTab('about');
+        return;
+      }
+
+      if (currentPath.startsWith('/food')) {
+        setActiveTab('food');
+        return;
+      }
+
+      if (currentPath.startsWith('/culture')) {
+        setActiveTab('culture');
+        return;
+      }
+
+      if (currentPath.startsWith('/experiences')) {
+        setActiveTab('experiences');
         return;
       }
 
@@ -174,40 +189,42 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {/* ━━━ "PLAN WITH AI" PILL BUTTON (Desktop only; available in mobile drawer) ━━━ */}
+            {/* ━━━ "PLAN WITH AI" PILL BUTTON (Shown on extra-large screens to prevent intermediate crowding) ━━━ */}
             <button
               type="button"
               onClick={() => setAiModalOpen(true)}
-              className="hidden md:inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-white hover:bg-emerald-50/60 border border-emerald-400 text-[#0f1b2d] font-bold text-xs sm:text-[13px] shadow-[0_2px_8px_rgba(16,185,129,0.12)] hover:border-[#00aa6c] hover:shadow-[0_4px_14px_rgba(16,185,129,0.22)] transition-all cursor-pointer active:scale-95 shrink-0"
+              className="hidden xl:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white hover:bg-emerald-50/60 border border-emerald-400 text-[#0f1b2d] font-bold text-xs shadow-[0_2px_8px_rgba(16,185,129,0.12)] hover:border-[#00aa6c] hover:shadow-[0_4px_14px_rgba(16,185,129,0.22)] transition-all cursor-pointer active:scale-95 shrink-0"
             >
               <Sparkles className="w-4 h-4 text-[#00aa6c]" />
               <span>Plan with AI</span>
             </button>
 
-            {/* ━━━ TRIPADVISOR COMPACT SEARCH PILL (Appears on scroll right next to logo) ━━━ */}
+            {/* ━━━ TRIPADVISOR COMPACT SEARCH PILL (Appears on scroll) ━━━ */}
             {scrolled && (
               <form
                 onSubmit={handleNavSearchSubmit}
-                className="hidden sm:flex items-center gap-2 bg-white border border-slate-300 hover:border-slate-400 focus-within:!border-[#00aa6c] focus-within:ring-2 focus-within:ring-emerald-500/20 rounded-full px-3.5 py-1.5 w-40 md:w-52 lg:w-64 transition-all shadow-xs animate-in fade-in slide-in-from-left-2 duration-200"
+                className="hidden lg:flex items-center gap-2 bg-white border border-slate-300 hover:border-slate-400 focus-within:!border-[#00aa6c] focus-within:ring-2 focus-within:ring-emerald-500/20 rounded-full px-3.5 py-1.5 w-36 xl:w-52 transition-all shadow-xs animate-in fade-in slide-in-from-left-2 duration-200"
               >
-                <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 <input
                   type="text"
                   placeholder="Search"
                   value={navSearchQuery}
                   onChange={(e) => setNavSearchQuery(e.target.value)}
-                  className="w-full bg-transparent text-xs sm:text-[13px] font-semibold text-[#002b11] placeholder:text-slate-400 outline-none min-w-0"
+                  className="w-full bg-transparent text-xs font-semibold text-[#002b11] placeholder:text-slate-400 outline-none min-w-0"
                 />
               </form>
             )}
           </div>
 
-          {/* ━━━ 3. CENTER / RIGHT NAV LINKS WITH BOTTOM INDICATOR LINE ━━━ */}
-          <div className="hidden md:flex items-center gap-6 lg:gap-8 h-full">
+          {/* ━━━ 3. CENTER / RIGHT NAV LINKS WITH BOTTOM INDICATOR LINE (Hidden on tablets to prevent crowding) ━━━ */}
+          <div className="hidden lg:flex items-center gap-3.5 xl:gap-6 h-full">
             {[
               { id: 'destinations', label: 'Destinations', href: '/destinations' },
+              { id: 'food', label: 'Food & Flavors', href: '/food' },
+              { id: 'culture', label: 'Culture', href: '/culture' },
+              { id: 'experiences', label: 'Experiences', href: '/experiences' },
               { id: 'map', label: 'Map', href: '/map' },
-              { id: 'about', label: 'About', href: '/about' },
             ].map((tab) => {
               const isActive = activeTab === tab.id;
               return (
@@ -215,7 +232,7 @@ export default function Navbar() {
                   key={tab.id}
                   href={tab.href}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className="group relative flex flex-col items-center justify-center h-full px-1 text-[14px] font-bold transition-colors"
+                  className="group relative flex flex-col items-center justify-center h-full px-1 text-[13px] xl:text-[14px] font-bold transition-colors whitespace-nowrap"
                 >
                   <span
                     className={`transition-colors duration-200 py-1 ${
@@ -359,11 +376,11 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* Mobile Menu Hamburger */}
+            {/* Mobile Menu Hamburger (Visible on mobile & tablet < lg) */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Toggle navigation menu"
-              className="md:hidden p-2 rounded-xl text-slate-800 hover:bg-slate-100 cursor-pointer"
+              className="lg:hidden p-2 rounded-xl text-slate-800 hover:bg-slate-100 cursor-pointer"
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -425,9 +442,9 @@ export default function Navbar() {
           </div>
         )}
 
-        {/* ━━━ MOBILE DROPDOWN MENU ━━━ */}
+        {/* ━━━ MOBILE & TABLET DROPDOWN MENU (Available on all screens < lg) ━━━ */}
         {mobileOpen && (
-          <div className="md:hidden border-t border-slate-100 py-3.5 space-y-1.5 bg-white animate-in slide-in-from-top-2 duration-200">
+          <div className="lg:hidden border-t border-slate-100 py-3.5 space-y-1.5 bg-white animate-in slide-in-from-top-2 duration-200">
             <Link
               href="/destinations"
               onClick={() => {
@@ -440,8 +457,44 @@ export default function Navbar() {
               <span className="text-xs text-[#00aa6c] font-semibold">Explore</span>
             </Link>
             <Link
+              href="/food"
+              onClick={() => {
+                setActiveTab('food');
+                setMobileOpen(false);
+              }}
+              className="w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm text-slate-800 hover:bg-slate-50 flex items-center justify-between"
+            >
+              <span>Food &amp; Flavors</span>
+              <span className="text-xs text-amber-600 font-semibold">Street &amp; Curries</span>
+            </Link>
+            <Link
+              href="/culture"
+              onClick={() => {
+                setActiveTab('culture');
+                setMobileOpen(false);
+              }}
+              className="w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm text-slate-800 hover:bg-slate-50 flex items-center justify-between"
+            >
+              <span>Culture &amp; Heritage</span>
+              <span className="text-xs text-blue-600 font-semibold">UNESCO &amp; Temples</span>
+            </Link>
+            <Link
+              href="/experiences"
+              onClick={() => {
+                setActiveTab('experiences');
+                setMobileOpen(false);
+              }}
+              className="w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm text-slate-800 hover:bg-slate-50 flex items-center justify-between"
+            >
+              <span>Island Experiences</span>
+              <span className="text-xs text-emerald-600 font-semibold">Surf, Safaris &amp; Trains</span>
+            </Link>
+            <Link
               href="/map"
-              onClick={() => setMobileOpen(false)}
+              onClick={() => {
+                setActiveTab('map');
+                setMobileOpen(false);
+              }}
               className="w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm text-slate-800 hover:bg-slate-50 flex items-center justify-between"
             >
               <span>Interactive Map</span>
@@ -449,7 +502,10 @@ export default function Navbar() {
             </Link>
             <Link
               href="/about"
-              onClick={() => setMobileOpen(false)}
+              onClick={() => {
+                setActiveTab('about');
+                setMobileOpen(false);
+              }}
               className="w-full text-left px-3.5 py-2.5 rounded-xl font-bold text-sm text-slate-800 hover:bg-slate-50 flex items-center justify-between"
             >
               <span>About Serandib Co.</span>
