@@ -280,12 +280,14 @@ export default function Navbar() {
 
             {/* Saved Wishlist Heart */}
             <button
+              id="navbar-wishlist-btn"
               onClick={() => setIsDrawerOpen(true)}
               className="relative p-2 sm:p-2.5 rounded-full text-slate-700 hover:text-rose-600 hover:bg-slate-100 transition-colors cursor-pointer"
               aria-label="View Saved Destinations"
               title="Saved places"
             >
               <Heart
+                id="navbar-wishlist-heart"
                 className={`w-5 h-5 transition-transform hover:scale-110 ${
                   savedCount > 0 ? 'fill-rose-500 text-rose-500' : ''
                 }`}

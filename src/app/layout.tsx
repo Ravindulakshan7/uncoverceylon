@@ -11,6 +11,7 @@ import { CurrencyProvider } from "@/context/CurrencyContext";
 import { LocationProvider } from "@/context/LocationContext";
 import WishlistDrawer from "@/components/WishlistDrawer";
 import AuthModal from "@/components/AuthModal";
+import FlyingHeartOverlay from "@/components/FlyingHeartOverlay";
 
 export const viewport: Viewport = {
   themeColor: "#0f1b2d",
@@ -226,6 +227,7 @@ export default function RootLayout({
                   <Navbar />
                   <main>{children}</main>
                   <WishlistDrawer />
+                  <FlyingHeartOverlay />
                   <AuthModal />
                   <Footer />
                   <Toaster

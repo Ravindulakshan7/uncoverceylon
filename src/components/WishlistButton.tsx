@@ -22,10 +22,22 @@ export default function WishlistButton({
   const { isSaved, toggleWishlist } = useWishlist();
   const saved = isSaved(placeId);
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    const willSave = !saved;
     toggleWishlist(placeId, placeName);
+    if (willSave && typeof window !== 'undefined') {
+      const rect = e.currentTarget.getBoundingClientRect();
+      window.dispatchEvent(
+        new CustomEvent('fly-heart-to-nav', {
+          detail: {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+          },
+        })
+      );
+    }
   };
 
   if (variant === 'icon') {

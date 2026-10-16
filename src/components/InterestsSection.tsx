@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowUpRight } from 'lucide-react';
 import styles from './HomeWelcome.module.css';
 
 interface InterestsSectionProps {
@@ -43,10 +42,62 @@ export default function InterestsSection({ counts }: InterestsSectionProps) {
     },
   ];
 
-  return <section id="interests" className={styles.interests}>
-    <div className={styles.container}>
-      <div className={styles.interestHeader}><div><p className={styles.eyebrow}>UNCOVER CEYLON BY INTEREST</p><h2>One island.<br /><em>Your kind of journey.</em></h2></div><p>Follow what draws you in. A place to wander, a new flavour, a story to discover or something you have never tried.</p></div>
-      <div className={styles.interestGrid}>{items.map((item, index) => <Link key={item.id} href={item.href} className={styles.interestCard}><div className={styles.interestImage}><Image src={item.image} alt={item.title} fill sizes="(max-width: 700px) 50vw, 300px" unoptimized className={styles.interestPhoto} /><span className={styles.imageNumber}>0{index + 1}</span><span className={styles.cardArrow}><ArrowUpRight size={19} /></span></div><div className={styles.interestMeta}><h3>{item.title}</h3><span>{item.count}</span></div><p>{item.sub}</p></Link>)}</div>
-    </div>
-  </section>;
+  return (
+    <section id="interests" className={styles.interests}>
+      <div className={styles.container}>
+        <div className={styles.interestHeader}>
+          <div>
+            <p className={styles.eyebrow}>UNCOVER CEYLON BY INTEREST</p>
+            <h2>
+              One island.<br />
+              <em>Your kind of journey.</em>
+            </h2>
+          </div>
+          <p>
+            Follow what draws you in. A place to wander, a new flavour, a story to discover or something you have never tried.
+          </p>
+        </div>
+
+        {/* ━━━ Cards with numbers and arrows removed; title & info moved inside box with white font ━━━ */}
+        <div className={styles.interestGrid}>
+          {items.map((item) => (
+            <Link
+              key={item.id}
+              href={item.href}
+              className="group block overflow-hidden rounded-[20px] transition-transform duration-300 hover:-translate-y-1.5 focus:outline-none"
+            >
+              <div className="relative aspect-[4/5] overflow-hidden rounded-[20px] bg-[#dfe4d4] shadow-sm">
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  sizes="(max-width: 700px) 50vw, 300px"
+                  unoptimized
+                  className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.3,1)] group-hover:scale-105"
+                />
+
+                {/* Dark gradient for crisp text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent pointer-events-none" />
+
+                {/* Content placed inside the box with pure white font */}
+                <div className="absolute bottom-0 inset-x-0 p-3.5 sm:p-5 z-10 text-white flex flex-col justify-end">
+                  <div className="flex items-baseline justify-between gap-1.5 mb-1">
+                    <h3 className="text-lg sm:text-[22px] font-extrabold tracking-tight text-white leading-tight">
+                      {item.title}
+                    </h3>
+                    <span className="text-[10px] sm:text-xs font-bold text-white/85 bg-white/20 backdrop-blur-md px-2 py-0.5 rounded-full whitespace-nowrap">
+                      {item.count}
+                    </span>
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-white/85 font-medium line-clamp-2 leading-relaxed">
+                    {item.sub}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }

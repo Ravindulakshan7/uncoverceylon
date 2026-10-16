@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Share2, ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check } from 'lucide-react';
 import { CULTURE_DATA, CultureHeritageItem } from '@/data/cultureData';
 import { useWishlist } from '@/context/WishlistContext';
 
@@ -55,30 +55,21 @@ export default function CultureExplorer() {
   };
 
   // Toggle Save button
-  const handleToggleSave = (e: React.MouseEvent, item: CultureHeritageItem) => {
+  const handleToggleSave = (e: React.MouseEvent<HTMLButtonElement>, item: CultureHeritageItem) => {
     e.preventDefault();
     e.stopPropagation();
+    const willSave = !isCultureSaved(item.id);
     toggleCultureWishlist(item.id, item.title);
-  };
-
-  // Share link
-  const handleShare = async (e: React.MouseEvent, title: string, id: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const url = typeof window !== 'undefined' ? `${window.location.origin}/culture/${id}` : '';
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try {
-        await navigator.share({
-          title: `${title} — Uncover Ceylon`,
-          text: `Explore sacred ${title} in Sri Lanka!`,
-          url,
-        });
-        return;
-      } catch {}
-    }
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(url);
-      triggerToast(`Copied link to "${title}"!`);
+    if (willSave && typeof window !== 'undefined') {
+      const rect = e.currentTarget.getBoundingClientRect();
+      window.dispatchEvent(
+        new CustomEvent('fly-heart-to-nav', {
+          detail: {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+          },
+        })
+      );
     }
   };
 
@@ -190,25 +181,6 @@ export default function CultureExplorer() {
                       >
                         {isSaved ? 'Saved' : 'Save'}
                       </button>
-
-                      {/* Bottom hover action buttons (Desktop only) */}
-                      <div className="card-actions hidden sm:flex absolute bottom-3 left-3 right-3 items-center justify-between z-10 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto">
-                        <span
-                          className="action-pill inline-flex items-center gap-1.5 bg-white text-[#111111] px-3 py-1.5 rounded-full text-xs font-bold shadow-[0_2px_8px_rgba(0,0,0,0.15)] hover:bg-[#111111] hover:text-white transition-colors"
-                        >
-                          <span>Explore</span>
-                          <ArrowUpRight className="w-3.5 h-3.5" />
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={(e) => handleShare(e, item.title, item.id)}
-                          className="icon-round w-8 h-8 rounded-full bg-white text-[#111111] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.15)] hover:bg-[#111111] hover:text-white transition-colors cursor-pointer"
-                          aria-label="Share"
-                        >
-                          <Share2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
                     </div>
 
                     {/* Card Meta */}

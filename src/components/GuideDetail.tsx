@@ -39,9 +39,21 @@ export default function GuideDetail({ title, category, image, description, locat
     }
   };
 
-  const save = () => {
+  const save = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const willSave = !saved;
     onSave();
     setNotice(saved ? 'Removed from saved' : 'Saved for later');
+    if (willSave && typeof window !== 'undefined') {
+      const rect = e.currentTarget.getBoundingClientRect();
+      window.dispatchEvent(
+        new CustomEvent('fly-heart-to-nav', {
+          detail: {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+          },
+        })
+      );
+    }
   };
 
   return (

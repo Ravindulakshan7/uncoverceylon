@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Share2, ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check } from 'lucide-react';
 
 import { FOODS_DATA, FoodDishItem } from '@/data/foodsData';
 import { useWishlist } from '@/context/WishlistContext';
@@ -56,32 +56,25 @@ export default function FoodExplorer() {
   };
 
   // Toggle Save button
-  const handleToggleSave = (e: React.MouseEvent, dish: FoodDishItem) => {
+  const handleToggleSave = (e: React.MouseEvent<HTMLButtonElement>, dish: FoodDishItem) => {
     e.preventDefault();
     e.stopPropagation();
+    const willSave = !isFoodSaved(dish.id);
     toggleFoodWishlist(dish.id, dish.title);
+    if (willSave && typeof window !== 'undefined') {
+      const rect = e.currentTarget.getBoundingClientRect();
+      window.dispatchEvent(
+        new CustomEvent('fly-heart-to-nav', {
+          detail: {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+          },
+        })
+      );
+    }
   };
 
-  // Share dish link
-  const handleShare = async (e: React.MouseEvent, title: string, id: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const url = typeof window !== 'undefined' ? `${window.location.origin}/food/${id}` : '';
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try {
-        await navigator.share({
-          title: `${title} — Uncover Ceylon`,
-          text: `Check out authentic ${title} in Sri Lanka!`,
-          url,
-        });
-        return;
-      } catch {}
-    }
-    if (typeof navigator !== 'undefined' && navigator.clipboard) {
-      navigator.clipboard.writeText(url);
-      triggerToast(`Copied link to "${title}"!`);
-    }
-  };
+
 
   return (
     <div className="text-[#111111] bg-white pb-14 sm:pb-20">
@@ -191,25 +184,6 @@ export default function FoodExplorer() {
                       >
                         {isSaved ? 'Saved' : 'Save'}
                       </button>
-
-                      {/* Bottom hover action buttons (Desktop only) */}
-                      <div className="card-actions hidden sm:flex absolute bottom-3 left-3 right-3 items-center justify-between z-10 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto">
-                        <span
-                          className="action-pill inline-flex items-center gap-1.5 bg-white text-[#111111] px-3 py-1.5 rounded-full text-xs font-bold shadow-[0_2px_8px_rgba(0,0,0,0.15)] hover:bg-[#111111] hover:text-white transition-colors"
-                        >
-                          <span>Visit site</span>
-                          <ArrowUpRight className="w-3.5 h-3.5" />
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={(e) => handleShare(e, dish.title, dish.id)}
-                          className="icon-round w-8 h-8 rounded-full bg-white text-[#111111] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.15)] hover:bg-[#111111] hover:text-white transition-colors cursor-pointer"
-                          aria-label="Share"
-                        >
-                          <Share2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
                     </div>
 
                     {/* Card Meta */}
