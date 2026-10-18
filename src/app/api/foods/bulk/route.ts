@@ -43,21 +43,47 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
+      const cleanTitle = title;
+      const slug = String(item.slug || cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')).trim();
       const tagline = String(item.tagline || '').trim();
       const image = String(item.image || item.img || '').trim();
       const badge = String(item.badge || item.cuisine || 'Must Try').trim();
-      const regions = String(item.regions || item.locations || item.sub || '').trim();
+      const locations = String(item.locations || item.regions || item.sub || '').trim();
+      const tag = String(item.tag || 'curry').toLowerCase().trim();
+      const cuisine = String(item.cuisine || item.badge || 'Sri Lankan').trim();
+      const meal = String(item.meal || 'Lunch / Dinner').trim();
+      const price = String(item.price || '').trim();
+      const spice = String(item.spice || 'Medium to Fiery').trim();
+      const serving = String(item.serving || 'Traditional Service').trim();
+      const heritage = String(item.heritage || desc || '').trim();
+      const ingredients = String(item.ingredients || '').trim();
+      const howToEat = String(item.howToEat || '').trim();
+      const varieties = typeof item.varieties === 'string'
+        ? item.varieties
+        : JSON.stringify(Array.isArray(item.varieties) ? item.varieties : []);
       const sort_order = Number(item.sort_order || item.id || createdCount + 1);
 
       try {
         await prisma.foodItem.create({
           data: {
-            title,
+            title: cleanTitle,
+            slug,
             tagline,
             desc,
             image,
             badge,
-            regions,
+            regions: locations,
+            tag,
+            cuisine,
+            meal,
+            price,
+            spice,
+            serving,
+            locations,
+            heritage,
+            ingredients,
+            howToEat,
+            varieties,
             sort_order,
           },
         });

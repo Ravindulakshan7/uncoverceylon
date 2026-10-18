@@ -17,7 +17,29 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, tagline, desc, image, badge, regions, sort_order, admin_password } = body;
+    const {
+      title,
+      slug,
+      tagline,
+      desc,
+      image,
+      img,
+      badge,
+      regions,
+      tag,
+      cuisine,
+      meal,
+      price,
+      spice,
+      serving,
+      locations,
+      heritage,
+      ingredients,
+      howToEat,
+      varieties,
+      sort_order,
+      admin_password,
+    } = body;
 
     if (!verifyAdminPassword(admin_password)) {
       return NextResponse.json({ error: 'Unauthorized: Invalid admin password' }, { status: 401 });
@@ -27,14 +49,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Title and description are required' }, { status: 400 });
     }
 
+    const cleanTitle = String(title).trim();
+    const cleanSlug = String(
+      slug || cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+    ).trim();
+
+    const cleanImg = String(image || img || '').trim();
+    const cleanLocations = String(locations || regions || '').trim();
+    const cleanVarieties = typeof varieties === 'string'
+      ? varieties
+      : JSON.stringify(Array.isArray(varieties) ? varieties : []);
+
     const newFood = await prisma.foodItem.create({
       data: {
-        title: String(title).trim(),
+        title: cleanTitle,
+        slug: cleanSlug,
         tagline: String(tagline || '').trim(),
         desc: String(desc).trim(),
-        image: String(image || '').trim(),
-        badge: String(badge || 'Must Try').trim(),
-        regions: String(regions || '').trim(),
+        image: cleanImg,
+        badge: String(badge || cuisine || 'Must Try').trim(),
+        regions: cleanLocations,
+        tag: String(tag || 'curry').toLowerCase().trim(),
+        cuisine: String(cuisine || badge || 'Sri Lankan').trim(),
+        meal: String(meal || 'Lunch / Dinner').trim(),
+        price: String(price || '').trim(),
+        spice: String(spice || 'Medium to Fiery').trim(),
+        serving: String(serving || 'Traditional Service').trim(),
+        locations: cleanLocations,
+        heritage: String(heritage || desc || '').trim(),
+        ingredients: String(ingredients || '').trim(),
+        howToEat: String(howToEat || '').trim(),
+        varieties: cleanVarieties,
         sort_order: Number(sort_order) || 0,
       },
     });
@@ -51,7 +96,30 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, title, tagline, desc, image, badge, regions, sort_order, admin_password } = body;
+    const {
+      id,
+      title,
+      slug,
+      tagline,
+      desc,
+      image,
+      img,
+      badge,
+      regions,
+      tag,
+      cuisine,
+      meal,
+      price,
+      spice,
+      serving,
+      locations,
+      heritage,
+      ingredients,
+      howToEat,
+      varieties,
+      sort_order,
+      admin_password,
+    } = body;
 
     if (!verifyAdminPassword(admin_password)) {
       return NextResponse.json({ error: 'Unauthorized: Invalid admin password' }, { status: 401 });
@@ -61,15 +129,38 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'ID, title and description are required' }, { status: 400 });
     }
 
+    const cleanTitle = String(title).trim();
+    const cleanSlug = String(
+      slug || cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+    ).trim();
+
+    const cleanImg = String(image || img || '').trim();
+    const cleanLocations = String(locations || regions || '').trim();
+    const cleanVarieties = typeof varieties === 'string'
+      ? varieties
+      : JSON.stringify(Array.isArray(varieties) ? varieties : []);
+
     const updated = await prisma.foodItem.update({
       where: { id: Number(id) },
       data: {
-        title: String(title).trim(),
+        title: cleanTitle,
+        slug: cleanSlug,
         tagline: String(tagline || '').trim(),
         desc: String(desc).trim(),
-        image: String(image || '').trim(),
-        badge: String(badge || 'Must Try').trim(),
-        regions: String(regions || '').trim(),
+        image: cleanImg,
+        badge: String(badge || cuisine || 'Must Try').trim(),
+        regions: cleanLocations,
+        tag: String(tag || 'curry').toLowerCase().trim(),
+        cuisine: String(cuisine || badge || 'Sri Lankan').trim(),
+        meal: String(meal || 'Lunch / Dinner').trim(),
+        price: String(price || '').trim(),
+        spice: String(spice || 'Medium to Fiery').trim(),
+        serving: String(serving || 'Traditional Service').trim(),
+        locations: cleanLocations,
+        heritage: String(heritage || desc || '').trim(),
+        ingredients: String(ingredients || '').trim(),
+        howToEat: String(howToEat || '').trim(),
+        varieties: cleanVarieties,
         sort_order: Number(sort_order) || 0,
       },
     });

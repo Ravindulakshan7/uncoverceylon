@@ -106,15 +106,27 @@ model ActivityLog {
 }
 
 model FoodItem {
-  id         Int      @id @default(autoincrement())
-  title      String
-  tagline    String   @default("")
-  desc       String   @db.Text
-  image      String   @default("")
-  badge      String   @default("Must Try")
-  regions    String   @default("")
-  sort_order Int      @default(0)
-  created_at DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  slug        String   @default("")
+  title       String
+  tagline     String   @default("")
+  desc        String   @db.Text
+  image       String   @default("")
+  badge       String   @default("Must Try")
+  regions     String   @default("")
+  tag         String   @default("street")
+  cuisine     String   @default("Sri Lankan")
+  meal        String   @default("Lunch / Dinner")
+  price       String   @default("")
+  spice       String   @default("")
+  serving     String   @default("")
+  locations   String   @default("")
+  heritage    String   @default("") @db.Text
+  ingredients String   @default("") @db.Text
+  howToEat    String   @default("") @db.Text
+  varieties   String   @default("[]") @db.Text
+  sort_order  Int      @default(0)
+  created_at  DateTime @default(now())
 
   @@map("food_items")
 }

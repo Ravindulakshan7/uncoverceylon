@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import PlaceCard from '@/components/PlaceCard';
 import FoodExplorer from '@/components/FoodExplorer';
-import { FOODS_DATA } from '@/data/foodsData';
+import { FOODS_DATA, FoodDishItem } from '@/data/foodsData';
 import { Place } from '@/types';
 
 export const revalidate = 60;
@@ -64,15 +64,73 @@ async function getFoodDestinations(): Promise<Place[]> {
   }
 }
 
+async function getFoodItems(): Promise<FoodDishItem[]> {
+  try {
+    const dbFoods = await prisma.foodItem.findMany({
+      orderBy: [{ sort_order: 'asc' }, { id: 'asc' }],
+    });
+
+    if (dbFoods && dbFoods.length > 0) {
+      const mappedDb: FoodDishItem[] = dbFoods.map((dbFood) => {
+        let parsedVarieties: FoodDishItem['varieties'] = [];
+        if (dbFood.varieties) {
+          try {
+            const parsed = typeof dbFood.varieties === 'string' ? JSON.parse(dbFood.varieties) : dbFood.varieties;
+            if (Array.isArray(parsed) && parsed.length > 0) parsedVarieties = parsed;
+          } catch {
+            parsedVarieties = [];
+          }
+        }
+        if (!parsedVarieties || parsedVarieties.length === 0) {
+          parsedVarieties = [{ name: dbFood.title, tag: dbFood.badge || 'Classic', desc: dbFood.desc }];
+        }
+
+        return {
+          id: dbFood.id,
+          slug: dbFood.slug || dbFood.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          title: dbFood.title,
+          tagline: dbFood.tagline || '',
+          sub: dbFood.locations || dbFood.regions || 'Sri Lanka',
+          tag: dbFood.tag || 'curry',
+          cuisine: dbFood.cuisine || dbFood.badge || 'Sri Lankan',
+          meal: dbFood.meal || 'Lunch / Dinner',
+          price: dbFood.price || 'LKR 400 – LKR 1,200',
+          spice: dbFood.spice || 'Medium to Fiery',
+          serving: dbFood.serving || 'Traditional Service',
+          locations: dbFood.locations || dbFood.regions || 'Island-wide',
+          img: dbFood.image || 'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=1000&q=85',
+          seed: `food-${dbFood.id}`,
+          desc: dbFood.desc,
+          heritage: dbFood.heritage || dbFood.desc,
+          varieties: parsedVarieties,
+          ingredients: dbFood.ingredients || '',
+          howToEat: dbFood.howToEat || '',
+        };
+      });
+
+      const dbIds = new Set(mappedDb.map((f) => f.id));
+      const remainingFoods = FOODS_DATA.filter((f) => !dbIds.has(f.id));
+      return [...mappedDb, ...remainingFoods];
+    }
+    return FOODS_DATA;
+  } catch (err) {
+    console.error('Error fetching foods for food explorer:', err);
+    return FOODS_DATA;
+  }
+}
+
 export default async function FoodPage() {
-  const foodPlaces = await getFoodDestinations();
+  const [foodPlaces, allFoods] = await Promise.all([
+    getFoodDestinations(),
+    getFoodItems(),
+  ]);
 
   const jsonLdFood = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: 'Food & Flavors of Sri Lanka',
     description: 'From sizzling street kottu to sweet coconut treacle — taste the island, one bite at a time.',
-    itemListElement: FOODS_DATA.map((f, idx) => ({
+    itemListElement: allFoods.map((f, idx) => ({
       '@type': 'ListItem',
       position: idx + 1,
       name: f.title,
@@ -89,7 +147,7 @@ export default async function FoodPage() {
       />
 
       {/* ━━━ Main Pinterest-Style Food & Flavors Experience (Matching deepseek_html_20261015_381141.html) ━━━ */}
-      <FoodExplorer />
+      <FoodExplorer initialFoods={allFoods} />
 
       {/* ━━━ Foodie Hotspots & Towns (Optional Contextual Destinations) ━━━ */}
       {foodPlaces.length > 0 && (

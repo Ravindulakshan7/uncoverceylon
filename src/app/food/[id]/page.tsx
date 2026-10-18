@@ -15,59 +15,72 @@ interface PageProps {
  */
 async function resolveDish(idParam: string): Promise<FoodDishItem | null> {
   const numId = parseInt(idParam, 10);
+  const normalizedSlug = idParam.toLowerCase().trim();
 
-  // 1. Check FOODS_DATA by numeric ID
+  // 1. Check database first so admin edits & new dishes are live immediately
+  try {
+    const dbFood = await prisma.foodItem.findFirst({
+      where: !isNaN(numId)
+        ? { OR: [{ id: numId }, { slug: normalizedSlug }] }
+        : { OR: [{ slug: normalizedSlug }, { title: { equals: idParam, mode: 'insensitive' } }] },
+    });
+
+    if (dbFood) {
+      let parsedVarieties: FoodDishItem['varieties'] = [];
+      if (dbFood.varieties) {
+        try {
+          const parsed = typeof dbFood.varieties === 'string' ? JSON.parse(dbFood.varieties) : dbFood.varieties;
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            parsedVarieties = parsed;
+          }
+        } catch {
+          parsedVarieties = [];
+        }
+      }
+
+      if (!parsedVarieties || parsedVarieties.length === 0) {
+        parsedVarieties = [{ name: dbFood.title, tag: dbFood.badge || 'Classic', desc: dbFood.desc }];
+      }
+
+      return {
+        id: dbFood.id,
+        slug: dbFood.slug || dbFood.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        title: dbFood.title,
+        tagline: dbFood.tagline || 'Authentic Sri Lankan Taste',
+        sub: dbFood.locations || dbFood.regions || 'Sri Lanka',
+        tag: dbFood.tag || 'curry',
+        cuisine: dbFood.cuisine || dbFood.badge || 'Sri Lankan',
+        meal: dbFood.meal || 'Lunch / Dinner',
+        price: dbFood.price || 'LKR 400 – LKR 1,200',
+        spice: dbFood.spice || 'Medium to Fiery',
+        serving: dbFood.serving || 'Traditional Service',
+        locations: dbFood.locations || dbFood.regions || 'Island-wide',
+        img: dbFood.image || 'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=1000&q=85',
+        seed: `food-${dbFood.id}`,
+        desc: dbFood.desc,
+        heritage: dbFood.heritage || dbFood.desc,
+        varieties: parsedVarieties,
+        ingredients: dbFood.ingredients || 'Fresh local herbs, Ceylon curry powders, coconut extracts, and natural spices.',
+        howToEat: dbFood.howToEat || 'Enjoy fresh and warm with traditional accompaniments. Pair with fresh King Coconut water or Ceylon tea.',
+      };
+    }
+  } catch (err) {
+    console.error('Error fetching food from database:', err);
+  }
+
+  // 2. Fallback to curated static FOODS_DATA
   if (!isNaN(numId)) {
     const foundById = FOODS_DATA.find((f) => f.id === numId);
     if (foundById) return foundById;
   }
 
-  // 2. Check FOODS_DATA by slug
-  const normalizedSlug = idParam.toLowerCase().trim();
   const foundBySlug = FOODS_DATA.find((f) => f.slug.toLowerCase() === normalizedSlug);
   if (foundBySlug) return foundBySlug;
 
-  // 3. Check FOODS_DATA by title normalized
   const foundByTitle = FOODS_DATA.find(
     (f) => f.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === normalizedSlug
   );
   if (foundByTitle) return foundByTitle;
-
-  // 4. Check database fallback
-  if (!isNaN(numId)) {
-    try {
-      const dbFood = await prisma.foodItem.findUnique({
-        where: { id: numId },
-      });
-      if (dbFood) {
-        return {
-          id: dbFood.id,
-          slug: dbFood.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-          title: dbFood.title,
-          tagline: dbFood.tagline || 'Authentic Sri Lankan Taste',
-          sub: dbFood.regions || 'Sri Lanka',
-          tag: 'curry',
-          cuisine: dbFood.badge || 'Sri Lankan',
-          meal: 'Lunch / Dinner',
-          price: 'LKR 400 – LKR 1,200',
-          spice: 'Medium to Fiery',
-          serving: 'Traditional Service',
-          locations: dbFood.regions || 'Island-wide',
-          img: dbFood.image || 'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=1000&q=85',
-          seed: `food-${dbFood.id}`,
-          desc: dbFood.desc,
-          heritage: dbFood.desc,
-          varieties: [
-            { name: dbFood.title, tag: dbFood.badge || 'Classic', desc: dbFood.desc }
-          ],
-          ingredients: 'Fresh local herbs, Ceylon curry powders, coconut extracts, and natural spices.',
-          howToEat: 'Enjoy fresh and warm with traditional accompaniments. Pair with fresh King Coconut water or Ceylon tea.'
-        };
-      }
-    } catch (err) {
-      console.error('Error fetching food from database fallback:', err);
-    }
-  }
 
   return null;
 }

@@ -19,7 +19,15 @@ const CHIP_CATEGORIES = [
 
 const PER_PAGE = 12;
 
-export default function FoodExplorer() {
+interface FoodExplorerProps {
+  initialFoods?: FoodDishItem[];
+}
+
+export default function FoodExplorer({ initialFoods }: FoodExplorerProps) {
+  const foods = useMemo(() => {
+    return initialFoods && initialFoods.length > 0 ? initialFoods : FOODS_DATA;
+  }, [initialFoods]);
+
   const { isFoodSaved, toggleFoodWishlist } = useWishlist();
   const [activeFilter, setActiveFilter] = useState('all');
   const [shownCount, setShownCount] = useState(PER_PAGE);
@@ -28,19 +36,20 @@ export default function FoodExplorer() {
 
   // Compute category counts
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: FOODS_DATA.length };
-    FOODS_DATA.forEach((item) => {
-      counts[item.tag] = (counts[item.tag] || 0) + 1;
+    const counts: Record<string, number> = { all: foods.length };
+    foods.forEach((item) => {
+      const tag = item.tag || 'curry';
+      counts[tag] = (counts[tag] || 0) + 1;
     });
     return counts;
-  }, []);
+  }, [foods]);
 
   // Filtered dishes
   const filteredList = useMemo(() => {
-    return FOODS_DATA.filter(
-      (item) => activeFilter === 'all' || item.tag === activeFilter
+    return foods.filter(
+      (item) => activeFilter === 'all' || (item.tag || 'curry') === activeFilter
     );
-  }, [activeFilter]);
+  }, [foods, activeFilter]);
 
   const displayedList = useMemo(() => {
     return filteredList.slice(0, shownCount);

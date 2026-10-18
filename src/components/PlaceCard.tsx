@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -21,6 +22,16 @@ export default function PlaceCard({ place, index = 0, variant = 'grid' }: PlaceC
   const { t } = useLanguage();
   const { convertFee } = useCurrency();
   const { formatDistanceTo } = useLocation();
+
+  const [showBadges, setShowBadges] = useState(true);
+
+  // Auto-hide badges after a short time (2.8s) so photo is clean, reveal on hover
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowBadges(false);
+    }, 2800);
+    return () => clearTimeout(timer);
+  }, []);
 
   const distanceInfo = formatDistanceTo(place.lat, place.lng, place.distance_km);
 
@@ -63,8 +74,14 @@ export default function PlaceCard({ place, index = 0, variant = 'grid' }: PlaceC
             />
           ) : null}
 
-          {/* Category Tag */}
-          <span className="absolute left-2 top-2 sm:left-3 sm:top-3 bg-white/95 backdrop-blur-xs px-2 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-[11px] font-extrabold text-emerald-800 rounded-md sm:rounded-lg shadow-xs border border-emerald-100/80">
+          {/* Category Tag (Auto-hides after a short time, reveals on hover) */}
+          <span
+            className={`absolute left-2 top-2 sm:left-3 sm:top-3 bg-white/95 backdrop-blur-xs px-2 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-[11px] font-extrabold text-emerald-800 rounded-md sm:rounded-lg shadow-xs border border-emerald-100/80 transition-all duration-700 ease-out z-10 ${
+              showBadges
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 -translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto'
+            }`}
+          >
             {place.category}
           </span>
 
@@ -73,9 +90,15 @@ export default function PlaceCard({ place, index = 0, variant = 'grid' }: PlaceC
             <WishlistButton placeId={place.id} placeName={place.name} variant="icon" />
           </div>
 
-          {/* Seasonality / Best Month Badge (Visible on larger screens to keep mobile card clean) */}
+          {/* Seasonality / Best Month Badge (Auto-hides after a short time, reveals on hover) */}
           {place.best_time && (
-            <span className="hidden sm:flex absolute left-3 bottom-3 bg-black/70 backdrop-blur-md text-white/95 px-3 py-1 text-[10px] font-semibold rounded-lg items-center gap-1 border border-white/15 shadow-xs">
+            <span
+              className={`hidden sm:flex absolute left-3 bottom-3 bg-black/70 backdrop-blur-md text-white/95 px-3 py-1 text-[10px] font-semibold rounded-lg items-center gap-1 border border-white/15 shadow-xs transition-all duration-700 ease-out z-10 ${
+                showBadges
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-1 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto'
+              }`}
+            >
               <span className="text-amber-300">☀️</span>
               <span className="truncate max-w-[160px]">{place.best_time}</span>
             </span>

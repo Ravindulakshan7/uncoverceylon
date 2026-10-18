@@ -76,22 +76,21 @@ export default function InterestsSection({ counts }: InterestsSectionProps) {
                   className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.3,1)] group-hover:scale-105"
                 />
 
-                {/* Dark gradient for crisp text readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent pointer-events-none" />
+                {/* Count pill badge moved to top-right corner */}
+                <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
+                  <span className="text-[10px] sm:text-xs font-bold text-white bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full whitespace-nowrap border border-white/20 shadow-xs">
+                    {item.count}
+                  </span>
+                </div>
 
-                {/* Content placed inside the box with pure white font */}
-                <div className="absolute bottom-0 inset-x-0 p-3.5 sm:p-5 z-10 text-white flex flex-col justify-end">
-                  <div className="flex items-baseline justify-between gap-1.5 mb-1">
-                    <h3 className="text-lg sm:text-[22px] font-extrabold tracking-tight text-white leading-tight">
-                      {item.title}
-                    </h3>
-                    <span className="text-[10px] sm:text-xs font-bold text-white/85 bg-white/20 backdrop-blur-md px-2 py-0.5 rounded-full whitespace-nowrap">
-                      {item.count}
-                    </span>
-                  </div>
-                  <p className="text-[11px] sm:text-xs text-white/85 font-medium line-clamp-2 leading-relaxed">
-                    {item.sub}
-                  </p>
+                {/* Dark gradient for crisp text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent pointer-events-none" />
+
+                {/* Title placed cleanly at the bottom */}
+                <div className="absolute bottom-0 inset-x-0 p-3.5 sm:p-5 z-10 text-white">
+                  <h3 className="text-lg sm:text-[22px] font-extrabold tracking-tight text-white leading-tight">
+                    {item.title}
+                  </h3>
                 </div>
               </div>
             </Link>
