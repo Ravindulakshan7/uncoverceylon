@@ -12,6 +12,7 @@ import { LocationProvider } from "@/context/LocationContext";
 import WishlistDrawer from "@/components/WishlistDrawer";
 import AuthModal from "@/components/AuthModal";
 import FlyingHeartOverlay from "@/components/FlyingHeartOverlay";
+import AiChatAssistant from "@/components/AiChatAssistant";
 
 export const viewport: Viewport = {
   themeColor: "#0f1b2d",
@@ -229,6 +230,7 @@ export default function RootLayout({
                   <WishlistDrawer />
                   <FlyingHeartOverlay />
                   <AuthModal />
+                  <AiChatAssistant />
                   <Footer />
                   <Toaster
                     position="bottom-right"

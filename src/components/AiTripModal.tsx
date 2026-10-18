@@ -123,15 +123,31 @@ export default function AiTripModal({ isOpen, onClose }: AiTripModalProps) {
   const [query, setQuery] = useState('');
   const [activePlan, setActivePlan] = useState<ItineraryResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isAiGenerated, setIsAiGenerated] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleGenerate = (customPrompt?: string) => {
-    const text = customPrompt || query;
+  const handleGenerate = async (customPrompt?: string) => {
+    const text = (customPrompt || query).trim();
+    if (!text) return;
     setIsGenerating(true);
 
-    setTimeout(() => {
-      setIsGenerating(false);
+    try {
+      const res = await fetch('/api/ai/plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: text }),
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success && json.data) {
+        setActivePlan(json.data);
+        setIsAiGenerated(true);
+      } else {
+        throw new Error(json.error || 'Failed to generate');
+      }
+    } catch (err: any) {
+      console.warn('AI fallback triggered:', err?.message);
       const lower = text.toLowerCase();
       if (lower.includes('tea') || lower.includes('ella') || lower.includes('train') || lower.includes('highland')) {
         setActivePlan(SAMPLE_ITINERARIES['3-day-tea']);
@@ -142,7 +158,10 @@ export default function AiTripModal({ isOpen, onClose }: AiTripModalProps) {
       } else {
         setActivePlan(SAMPLE_ITINERARIES['default']);
       }
-    }, 600);
+      setIsAiGenerated(false);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -197,12 +216,12 @@ export default function AiTripModal({ isOpen, onClose }: AiTripModalProps) {
             {isGenerating ? (
               <>
                 <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Crafting...</span>
+                <span>Gemini Planning...</span>
               </>
             ) : (
               <>
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Plan</span>
+                <span>Plan with AI</span>
               </>
             )}
           </button>
@@ -233,11 +252,19 @@ export default function AiTripModal({ isOpen, onClose }: AiTripModalProps) {
         {/* ━━━ ITINERARY RESULT VIEW ━━━ */}
         {activePlan && (
           <div className="mt-6 pt-5 border-t border-slate-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <div className="bg-emerald-50/70 rounded-2xl p-4 mb-5 border border-emerald-100 flex items-center justify-between">
+            <div className="bg-emerald-50/70 rounded-2xl p-4 mb-5 border border-emerald-100 flex items-center justify-between gap-3">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800">
-                  Generated Route
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800">
+                    Generated Route
+                  </span>
+                  {isAiGenerated && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[10px] font-bold shadow-2xs">
+                      <Sparkles className="w-2.5 h-2.5" />
+                      Gemini 2.5 AI
+                    </span>
+                  )}
+                </div>
                 <h4 className="text-base sm:text-lg font-black text-slate-900 mt-0.5">
                   {activePlan.title}
                 </h4>

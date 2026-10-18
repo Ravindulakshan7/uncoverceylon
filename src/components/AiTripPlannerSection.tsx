@@ -118,13 +118,29 @@ export default function AiTripPlannerSection() {
   const [query, setQuery] = useState('');
   const [activePlan, setActivePlan] = useState<ItineraryResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isAiGenerated, setIsAiGenerated] = useState(false);
 
-  const handleGenerate = (customPrompt?: string) => {
-    const text = customPrompt || query;
+  const handleGenerate = async (customPrompt?: string) => {
+    const text = (customPrompt || query).trim();
+    if (!text) return;
     setIsGenerating(true);
 
-    setTimeout(() => {
-      setIsGenerating(false);
+    try {
+      const res = await fetch('/api/ai/plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: text }),
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success && json.data) {
+        setActivePlan(json.data);
+        setIsAiGenerated(true);
+      } else {
+        throw new Error(json.error || 'Failed to generate');
+      }
+    } catch (err: any) {
+      console.warn('AI fallback triggered:', err?.message);
       const lower = text.toLowerCase();
       if (lower.includes('tea') || lower.includes('ella') || lower.includes('train') || lower.includes('highland')) {
         setActivePlan(SAMPLE_ITINERARIES['3-day-tea']);
@@ -135,7 +151,10 @@ export default function AiTripPlannerSection() {
       } else {
         setActivePlan(SAMPLE_ITINERARIES['default']);
       }
-    }, 700);
+      setIsAiGenerated(false);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -246,9 +265,9 @@ export default function AiTripPlannerSection() {
 
             {/* Modal Header */}
             <div className="pr-8 mb-6">
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full mb-2">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>AI Curated Route</span>
+              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full mb-2 border border-emerald-100">
+                <Sparkles className="w-3.5 h-3.5 text-[#00aa6c]" />
+                <span>{isAiGenerated ? 'Gemini 2.5 AI Route' : 'Curated Route'}</span>
                 <span>·</span>
                 <Clock className="w-3.5 h-3.5 ml-1" />
                 <span>{activePlan.duration}</span>
