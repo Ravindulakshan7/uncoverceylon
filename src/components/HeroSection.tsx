@@ -117,17 +117,17 @@ export default function HeroSection({ initialSlides = [] }: HeroSectionProps) {
         <div className={styles.heroInner}>
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>SRI LANKA TRAVEL GUIDE</p>
-            <h1>Ayubowan</h1>
+            <h1>Discover Sri Lanka</h1>
             <p className={styles.intro}>Discover Sri Lanka’s beaches, ancient cities and hill country — and plan a journey at your own pace.</p>
             <div className={styles.actions}><Link href="/destinations" className={styles.primary}>Explore Sri Lanka <ArrowUpRight size={18} /></Link><button type="button" onClick={scrollToInterests} className={styles.secondary}>Find your kind of journey <ArrowDown size={16} /></button></div>
           </div>
           <div className={styles.heroBottom}>
-            <div className={styles.location}><MapPin size={16} strokeWidth={1.5} /><div><span>{activeSlide.title}</span><small>{activeSlide.province}</small></div></div>
+            <div className={styles.location}><MapPin size={13} strokeWidth={1.8} /><div><span>{activeSlide.title}</span><small>{activeSlide.province}</small></div></div>
             <div className={styles.slideControls}>
               <span className={styles.slideCount}>{String(activeIndex + 1).padStart(2, '0')}<span> / {String(slides.length).padStart(2, '0')}</span></span>
-              <button type="button" aria-label="Previous hero photo" onClick={() => setCurrentSlide((activeIndex - 1 + slides.length) % slides.length)}><ChevronLeft size={18} /></button>
-              <button type="button" aria-label="Next hero photo" onClick={() => setCurrentSlide((activeIndex + 1) % slides.length)}><ChevronRight size={18} /></button>
-              <button type="button" aria-label={paused ? 'Play slideshow' : 'Pause slideshow'} onClick={() => setPaused(value => !value)}>{paused ? <Play size={13} /> : <Pause size={13} />}</button>
+              <button type="button" aria-label="Previous hero photo" onClick={() => setCurrentSlide((activeIndex - 1 + slides.length) % slides.length)}><ChevronLeft size={14} /></button>
+              <button type="button" aria-label="Next hero photo" onClick={() => setCurrentSlide((activeIndex + 1) % slides.length)}><ChevronRight size={14} /></button>
+              <button type="button" aria-label={paused ? 'Play slideshow' : 'Pause slideshow'} onClick={() => setPaused(value => !value)}>{paused ? <Play size={11} /> : <Pause size={11} />}</button>
             </div>
           </div>
         </div>

@@ -219,12 +219,9 @@ export default function Navbar() {
           </div>
 
           {/* ━━━ 3. CENTER / RIGHT NAV LINKS WITH BOTTOM INDICATOR LINE (Hidden on tablets to prevent crowding) ━━━ */}
-          <div className="hidden lg:flex items-center gap-3.5 xl:gap-6 h-full">
+          <div className="hidden lg:flex items-center gap-4 xl:gap-8 h-full">
             {[
               { id: 'destinations', label: 'Destinations', href: '/destinations' },
-              { id: 'food', label: 'Food & Flavors', href: '/food' },
-              { id: 'culture', label: 'Culture', href: '/culture' },
-              { id: 'experiences', label: 'Experiences', href: '/experiences' },
               { id: 'map', label: 'Map', href: '/map' },
             ].map((tab) => {
               const isActive = activeTab === tab.id;
