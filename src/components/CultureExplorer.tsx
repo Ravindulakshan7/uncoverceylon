@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Check } from 'lucide-react';
-import { CULTURE_DATA, CultureHeritageItem } from '@/data/cultureData';
+import { CultureHeritageItem } from '@/data/cultureData';
 import { useWishlist } from '@/context/WishlistContext';
 
 const CHIP_CATEGORIES = [
@@ -18,7 +18,15 @@ const CHIP_CATEGORIES = [
 
 const PER_PAGE = 12;
 
-export default function CultureExplorer() {
+interface CultureExplorerProps {
+  initialCultures?: CultureHeritageItem[];
+}
+
+export default function CultureExplorer({ initialCultures }: CultureExplorerProps) {
+  const cultures = useMemo(() => {
+    return initialCultures !== undefined ? initialCultures : [];
+  }, [initialCultures]);
+
   const { isCultureSaved, toggleCultureWishlist } = useWishlist();
   const [activeFilter, setActiveFilter] = useState('all');
   const [shownCount, setShownCount] = useState(PER_PAGE);
@@ -27,19 +35,19 @@ export default function CultureExplorer() {
 
   // Compute category counts
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: CULTURE_DATA.length };
-    CULTURE_DATA.forEach((item) => {
+    const counts: Record<string, number> = { all: cultures.length };
+    cultures.forEach((item) => {
       counts[item.tag] = (counts[item.tag] || 0) + 1;
     });
     return counts;
-  }, []);
+  }, [cultures]);
 
   // Filtered list
   const filteredList = useMemo(() => {
-    return CULTURE_DATA.filter(
+    return cultures.filter(
       (item) => activeFilter === 'all' || item.tag === activeFilter
     );
-  }, [activeFilter]);
+  }, [cultures, activeFilter]);
 
   const displayedList = useMemo(() => {
     return filteredList.slice(0, shownCount);
@@ -142,7 +150,7 @@ export default function CultureExplorer() {
           <div className="culture-masonry columns-2 sm:columns-3 md:columns-3 lg:columns-4 xl:columns-5 gap-2 sm:gap-3.5 lg:gap-4">
             {displayedList.map((item, i) => {
               const isSaved = isCultureSaved(item.id);
-              const [loc] = item.sub.split(' · ');
+              const [loc] = item.sub ? item.sub.split(' · ') : [item.locations || 'Sri Lanka'];
 
               return (
                 <article
@@ -191,7 +199,7 @@ export default function CultureExplorer() {
                       <div className="card-sub text-[10px] sm:text-xs text-[#767676] font-medium flex items-center gap-1 sm:gap-1.5 flex-wrap">
                         <span>{loc}</span>
                         <span className="w-1 h-1 rounded-full bg-[#c8c8c8]" />
-                        <span className="font-semibold text-blue-700">{item.categoryLabel}</span>
+                        <span className="font-semibold text-slate-600">{item.categoryLabel}</span>
                       </div>
                     </div>
                   </Link>

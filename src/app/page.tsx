@@ -2,13 +2,11 @@ import { prisma } from '@/lib/db';
 import HeroSection from '@/components/HeroSection';
 import InterestsSection from '@/components/InterestsSection';
 import HomeDiscovery from '@/components/HomeDiscovery';
-import { CULTURE_DATA } from '@/data/cultureData';
-import { EXPERIENCES_DATA } from '@/data/experiencesData';
 
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [placesCount, topPlacesRaw, heroSlides, dbFoods] = await Promise.all([
+  const [placesCount, topPlacesRaw, heroSlides, dbFoods, cultureCount, expCount] = await Promise.all([
     prisma.place.count().catch(() => 0),
     prisma.place
       .findMany({
@@ -27,13 +25,15 @@ export default async function HomePage() {
         take: 3,
       })
       .catch(() => []),
+    prisma.cultureItem.count().catch(() => 0),
+    prisma.experienceItem.count().catch(() => 0),
   ]);
 
   const interestCounts = {
     destinations: placesCount > 0 ? `${placesCount}+ places` : 'Curated places',
     food: dbFoods.length > 0 ? `${dbFoods.length} dishes` : 'Gastronomy',
-    culture: `${CULTURE_DATA.length} sites`,
-    experiences: `${EXPERIENCES_DATA.length} experiences`,
+    culture: cultureCount > 0 ? `${cultureCount} sites` : 'Heritage',
+    experiences: expCount > 0 ? `${expCount} experiences` : 'Adventures',
   };
 
   const topDestinations = topPlacesRaw.slice(0, 8).map((p) => ({

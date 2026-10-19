@@ -7,8 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useWishlist } from '@/context/WishlistContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { Place } from '@/types';
-import { CULTURE_DATA } from '@/data/cultureData';
-import { EXPERIENCES_DATA } from '@/data/experiencesData';
 import { X, Heart, Trash2, ArrowRight, MapPin, Printer, Utensils, Landmark, Compass } from 'lucide-react';
 import OfflineGuideModal from '@/components/OfflineGuideModal';
 
@@ -35,10 +33,12 @@ export default function WishlistDrawer() {
   const { t } = useLanguage();
   const [allPlaces, setAllPlaces] = useState<Place[]>([]);
   const [allFoods, setAllFoods] = useState<any[]>([]);
+  const [allCultures, setAllCultures] = useState<any[]>([]);
+  const [allExperiences, setAllExperiences] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOfflineModalOpen, setIsOfflineModalOpen] = useState(false);
 
-  // Fetch places and foods when drawer opens to populate wishlist items
+  // Fetch places, foods, culture, and experiences when drawer opens to populate wishlist items
   useEffect(() => {
     if (isDrawerOpen) {
       if (allPlaces.length === 0) {
@@ -59,8 +59,24 @@ export default function WishlistDrawer() {
           })
           .catch(() => undefined);
       }
+      if (allCultures.length === 0) {
+        fetch('/api/culture')
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.cultures) setAllCultures(data.cultures);
+          })
+          .catch(() => undefined);
+      }
+      if (allExperiences.length === 0) {
+        fetch('/api/experiences')
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.experiences) setAllExperiences(data.experiences);
+          })
+          .catch(() => undefined);
+      }
     }
-  }, [isDrawerOpen, allPlaces.length, allFoods.length]);
+  }, [isDrawerOpen, allPlaces.length, allFoods.length, allCultures.length, allExperiences.length]);
 
   const savedPlaces = allPlaces.filter((p) => savedIds.includes(p.id));
   const savedFoods = allFoods
@@ -72,8 +88,22 @@ export default function WishlistDrawer() {
       cuisine: dish.cuisine || dish.badge || 'Sri Lankan',
       meal: dish.meal || 'Dining',
     }));
-  const savedCulture = CULTURE_DATA.filter((c) => savedCultureIds.includes(c.id));
-  const savedExp = EXPERIENCES_DATA.filter((e) => savedExpIds.includes(e.id));
+  const savedCulture = allCultures
+    .filter((c) => savedCultureIds.includes(c.id))
+    .map((item) => ({
+      ...item,
+      img: item.image || item.img || 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=85',
+      sub: item.period || item.sub || 'Sri Lanka',
+      categoryLabel: item.badge || 'Heritage',
+    }));
+  const savedExp = allExperiences
+    .filter((e) => savedExpIds.includes(e.id))
+    .map((item) => ({
+      ...item,
+      img: item.image || item.img || 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=1200&q=85',
+      sub: item.seasons || item.sub || 'Sri Lanka',
+      categoryLabel: item.badge || 'Popular',
+    }));
 
   // Lock body scroll when drawer is open
   useEffect(() => {

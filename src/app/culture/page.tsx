@@ -3,10 +3,11 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import PlaceCard from '@/components/PlaceCard';
 import CultureExplorer from '@/components/CultureExplorer';
-import { CULTURE_DATA } from '@/data/cultureData';
+import { CULTURE_DATA, CultureHeritageItem } from '@/data/cultureData';
 import { Place } from '@/types';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata = {
   title: 'Culture & Heritage — Ancient Kingdoms, Temples & Legends of Sri Lanka',
@@ -65,15 +66,73 @@ async function getHeritageDestinations(): Promise<Place[]> {
   }
 }
 
+async function getCultureItems(): Promise<CultureHeritageItem[]> {
+  try {
+    const dbCultures = await prisma.cultureItem.findMany({
+      orderBy: [{ sort_order: 'asc' }, { id: 'asc' }],
+    });
+
+    if (dbCultures && dbCultures.length > 0) {
+      return dbCultures.map((db) => {
+        const curated = CULTURE_DATA.find((c) => c.id === db.id || c.title.toLowerCase() === db.title.toLowerCase());
+
+        const textToScan = `${db.title} ${db.badge} ${db.tagline}`.toLowerCase();
+        let inferredTag: CultureHeritageItem['tag'] = 'unesco';
+        if (textToScan.includes('unesco')) inferredTag = 'unesco';
+        else if (textToScan.includes('temple') || textToScan.includes('sacred') || textToScan.includes('kovil') || textToScan.includes('tooth')) inferredTag = 'temples';
+        else if (textToScan.includes('fort') || textToScan.includes('citadel') || textToScan.includes('palace') || textToScan.includes('ruin')) inferredTag = 'citadels';
+        else if (textToScan.includes('ritual') || textToScan.includes('dance') || textToScan.includes('perahera')) inferredTag = 'rituals';
+        else if (textToScan.includes('mask') || textToScan.includes('craft') || textToScan.includes('art') || textToScan.includes('carving') || textToScan.includes('batik')) inferredTag = 'crafts';
+        else if (textToScan.includes('peak') || textToScan.includes('pilgrim') || textToScan.includes('pada') || textToScan.includes('mountain')) inferredTag = 'pilgrimage';
+
+        return {
+          id: db.id,
+          slug: curated?.slug || db.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          title: db.title,
+          sinhalaName: curated?.sinhalaName || db.tagline || db.title,
+          tagline: db.tagline || curated?.tagline || 'Ancient Heritage of Sri Lanka',
+          sub: db.period || curated?.sub || 'Sri Lanka',
+          tag: curated?.tag || inferredTag,
+          categoryLabel: db.badge || curated?.categoryLabel || 'Heritage',
+          epoch: db.period || curated?.epoch || 'Ancient Ceylon',
+          badge: db.badge || curated?.badge || 'Heritage',
+          timing: curated?.timing || 'Daytime / Open Daily',
+          entryInfo: curated?.entryInfo || 'Check at site entrance',
+          preservation: curated?.preservation || 'Protected Cultural Monument of Sri Lanka',
+          dressCode: curated?.dressCode || 'Modest attire covering shoulders and knees at sacred sites',
+          locations: db.period || curated?.locations || 'Sri Lanka',
+          img: db.image || curated?.img || 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=85',
+          seed: `culture-${db.id}`,
+          desc: db.desc,
+          heritage: curated?.heritage || db.desc,
+          ancientRoots: curated?.ancientRoots || db.tagline || db.desc,
+          varieties: curated?.varieties && curated.varieties.length > 0 ? curated.varieties : [{ name: db.title, tag: db.badge || 'Heritage', desc: db.desc }],
+          architecturalElements: curated?.architecturalElements || 'Traditional Sri Lankan architectural craftsmanship and historical stonework.',
+          etiquetteTips: curated?.etiquetteTips || 'Remove shoes and headwear when entering sacred enclosures. Avoid turning your back to sacred statues.',
+          nearbySites: curated?.nearbySites,
+        };
+      });
+    }
+
+    return [];
+  } catch (err) {
+    console.error('Error fetching cultures:', err);
+    return [];
+  }
+}
+
 export default async function CulturePage() {
-  const heritagePlaces = await getHeritageDestinations();
+  const [heritagePlaces, allCultures] = await Promise.all([
+    getHeritageDestinations(),
+    getCultureItems(),
+  ]);
 
   const jsonLdCulture = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: 'Culture & Heritage of Sri Lanka',
     description: 'Explore 2,500 years of living history across Sri Lanka: ancient rock citadels, sacred temples, and living traditions.',
-    itemListElement: CULTURE_DATA.map((c, idx) => ({
+    itemListElement: allCultures.map((c, idx) => ({
       '@type': 'ListItem',
       position: idx + 1,
       name: c.title,
@@ -90,7 +149,7 @@ export default async function CulturePage() {
       />
 
       {/* ━━━ Main Pinterest-Style Culture & Heritage Experience ━━━ */}
-      <CultureExplorer />
+      <CultureExplorer initialCultures={allCultures} />
 
       {/* ━━━ Verified Heritage Destinations from Database ━━━ */}
       {heritagePlaces.length > 0 && (

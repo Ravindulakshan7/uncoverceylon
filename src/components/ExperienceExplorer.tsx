@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Check } from 'lucide-react';
-import { EXPERIENCES_DATA, IslandExperienceItem } from '@/data/experiencesData';
+import { IslandExperienceItem } from '@/data/experiencesData';
 import { useWishlist } from '@/context/WishlistContext';
 
 const CHIP_CATEGORIES = [
@@ -18,7 +18,15 @@ const CHIP_CATEGORIES = [
 
 const PER_PAGE = 12;
 
-export default function ExperienceExplorer() {
+interface ExperienceExplorerProps {
+  initialExperiences?: IslandExperienceItem[];
+}
+
+export default function ExperienceExplorer({ initialExperiences }: ExperienceExplorerProps) {
+  const experiences = useMemo(() => {
+    return initialExperiences !== undefined ? initialExperiences : [];
+  }, [initialExperiences]);
+
   const { isExpSaved, toggleExpWishlist } = useWishlist();
   const [activeFilter, setActiveFilter] = useState('all');
   const [shownCount, setShownCount] = useState(PER_PAGE);
@@ -27,19 +35,19 @@ export default function ExperienceExplorer() {
 
   // Compute category counts
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { all: EXPERIENCES_DATA.length };
-    EXPERIENCES_DATA.forEach((item) => {
+    const counts: Record<string, number> = { all: experiences.length };
+    experiences.forEach((item) => {
       counts[item.tag] = (counts[item.tag] || 0) + 1;
     });
     return counts;
-  }, []);
+  }, [experiences]);
 
   // Filtered list
   const filteredList = useMemo(() => {
-    return EXPERIENCES_DATA.filter(
+    return experiences.filter(
       (item) => activeFilter === 'all' || item.tag === activeFilter
     );
-  }, [activeFilter]);
+  }, [experiences, activeFilter]);
 
   const displayedList = useMemo(() => {
     return filteredList.slice(0, shownCount);
@@ -142,7 +150,7 @@ export default function ExperienceExplorer() {
           <div className="experience-masonry columns-2 sm:columns-3 md:columns-3 lg:columns-4 xl:columns-5 gap-2 sm:gap-3.5 lg:gap-4">
             {displayedList.map((item, i) => {
               const isSaved = isExpSaved(item.id);
-              const [loc] = item.sub.split(' · ');
+              const [loc] = item.sub ? item.sub.split(' · ') : [item.locations || 'Sri Lanka'];
 
               return (
                 <article

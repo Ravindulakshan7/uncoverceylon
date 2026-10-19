@@ -3,10 +3,11 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import PlaceCard from '@/components/PlaceCard';
 import ExperienceExplorer from '@/components/ExperienceExplorer';
-import { EXPERIENCES_DATA } from '@/data/experiencesData';
+import { EXPERIENCES_DATA, IslandExperienceItem } from '@/data/experiencesData';
 import { Place } from '@/types';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata = {
   title: 'Island Experiences & Outdoor Adventures — Sri Lanka Travel Guide',
@@ -65,15 +66,71 @@ async function getExperienceDestinations(): Promise<Place[]> {
   }
 }
 
+async function getExperienceItems(): Promise<IslandExperienceItem[]> {
+  try {
+    const dbExperiences = await prisma.experienceItem.findMany({
+      orderBy: [{ sort_order: 'asc' }, { id: 'asc' }],
+    });
+
+    if (dbExperiences && dbExperiences.length > 0) {
+      return dbExperiences.map((db) => {
+        const curated = EXPERIENCES_DATA.find((e) => e.id === db.id || e.title.toLowerCase() === db.title.toLowerCase());
+
+        const textToScan = `${db.title} ${db.badge} ${db.tagline}`.toLowerCase();
+        let inferredTag: IslandExperienceItem['tag'] = 'surf';
+        if (textToScan.includes('surf') || textToScan.includes('wave') || textToScan.includes('beach')) inferredTag = 'surf';
+        else if (textToScan.includes('safari') || textToScan.includes('leopard') || textToScan.includes('elephant') || textToScan.includes('wildlife')) inferredTag = 'safari';
+        else if (textToScan.includes('train') || textToScan.includes('rail') || textToScan.includes('scenic')) inferredTag = 'rail';
+        else if (textToScan.includes('hike') || textToScan.includes('trek') || textToScan.includes('peak') || textToScan.includes('mountain') || textToScan.includes('forest')) inferredTag = 'hiking';
+        else if (textToScan.includes('whale') || textToScan.includes('dolphin') || textToScan.includes('ocean') || textToScan.includes('sea') || textToScan.includes('dive') || textToScan.includes('snorkel')) inferredTag = 'ocean';
+        else if (textToScan.includes('raft') || textToScan.includes('water') || textToScan.includes('adrenaline') || textToScan.includes('thrill')) inferredTag = 'adrenaline';
+
+        return {
+          id: db.id,
+          slug: curated?.slug || db.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          title: db.title,
+          tagline: db.tagline || curated?.tagline || 'Island Adventure in Sri Lanka',
+          sub: db.seasons || curated?.sub || 'Sri Lanka',
+          tag: curated?.tag || inferredTag,
+          categoryLabel: db.badge || curated?.categoryLabel || 'Adventure',
+          season: db.seasons || curated?.season || 'Year-round',
+          badge: db.badge || curated?.badge || 'Popular',
+          timing: curated?.timing || 'Early Morning or Sunset Hours',
+          entryInfo: curated?.entryInfo || 'Inquire with local licensed operators',
+          difficulty: curated?.difficulty || 'All Levels',
+          locations: db.seasons || curated?.locations || 'Sri Lanka',
+          img: db.image || curated?.img || 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=1200&q=85',
+          seed: `exp-${db.id}`,
+          desc: db.desc,
+          heritage: curated?.heritage || db.desc,
+          ancientRoots: curated?.ancientRoots || db.tagline || db.desc,
+          varieties: curated?.varieties && curated.varieties.length > 0 ? curated.varieties : [{ name: db.title, tag: db.badge || 'Popular', desc: db.desc }],
+          gearChecklist: curated?.gearChecklist || 'Comfortable outdoor attire, sturdy footwear, sun protection, hydration.',
+          localSafetyTips: curated?.localSafetyTips || 'Follow certified guides and local weather / safety advisories.',
+          nearbySpots: curated?.nearbySpots,
+        };
+      });
+    }
+
+    return [];
+  } catch (err) {
+    console.error('Error fetching experiences:', err);
+    return [];
+  }
+}
+
 export default async function ExperiencesPage() {
-  const expPlaces = await getExperienceDestinations();
+  const [expPlaces, allExperiences] = await Promise.all([
+    getExperienceDestinations(),
+    getExperienceItems(),
+  ]);
 
   const jsonLdExp = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: 'Top Experiences & Adventures in Sri Lanka',
     description: 'Peeling surf breaks, scenic mountain rail trips, wild leopard safaris, and cloud forest hikes.',
-    itemListElement: EXPERIENCES_DATA.map((e, idx) => ({
+    itemListElement: allExperiences.map((e, idx) => ({
       '@type': 'ListItem',
       position: idx + 1,
       name: e.title,
@@ -90,7 +147,7 @@ export default async function ExperiencesPage() {
       />
 
       {/* ━━━ Main Pinterest-Style Island Experiences ━━━ */}
-      <ExperienceExplorer />
+      <ExperienceExplorer initialExperiences={allExperiences} />
 
       {/* ━━━ Adventure Hotspots from Database ━━━ */}
       {expPlaces.length > 0 && (

@@ -1,38 +1,108 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { EXPERIENCES_DATA, IslandExperienceItem } from '@/data/experiencesData';
+import { prisma } from '@/lib/db';
 import ExperienceDetailClient from '@/components/ExperienceDetailClient';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
 /**
- * Resolve experience item by integer id, slug, or matching title
+ * Resolve experience item by integer id or matching title from database only
  */
 async function resolveExperience(idParam: string): Promise<IslandExperienceItem | null> {
   const numId = parseInt(idParam, 10);
 
-  // 1. Check EXPERIENCES_DATA by numeric ID
-  if (!isNaN(numId)) {
-    const foundById = EXPERIENCES_DATA.find((e) => e.id === numId);
-    if (foundById) return foundById;
+  try {
+    const db = await prisma.experienceItem.findFirst({
+      where: !isNaN(numId)
+        ? { id: numId }
+        : { title: { equals: idParam, mode: 'insensitive' } },
+    });
+
+    if (db) {
+      const curated = EXPERIENCES_DATA.find((e) => e.id === db.id || e.title.toLowerCase() === db.title.toLowerCase());
+      const textToScan = `${db.title} ${db.badge} ${db.tagline}`.toLowerCase();
+      let inferredTag: IslandExperienceItem['tag'] = 'surf';
+      if (textToScan.includes('surf') || textToScan.includes('wave') || textToScan.includes('beach')) inferredTag = 'surf';
+      else if (textToScan.includes('safari') || textToScan.includes('leopard') || textToScan.includes('elephant') || textToScan.includes('wildlife')) inferredTag = 'safari';
+      else if (textToScan.includes('train') || textToScan.includes('rail') || textToScan.includes('scenic')) inferredTag = 'rail';
+      else if (textToScan.includes('hike') || textToScan.includes('trek') || textToScan.includes('peak') || textToScan.includes('mountain') || textToScan.includes('forest')) inferredTag = 'hiking';
+      else if (textToScan.includes('whale') || textToScan.includes('dolphin') || textToScan.includes('ocean') || textToScan.includes('sea') || textToScan.includes('dive') || textToScan.includes('snorkel')) inferredTag = 'ocean';
+      else if (textToScan.includes('raft') || textToScan.includes('water') || textToScan.includes('adrenaline') || textToScan.includes('thrill')) inferredTag = 'adrenaline';
+
+      return {
+        id: db.id,
+        slug: curated?.slug || db.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        title: db.title,
+        tagline: db.tagline || curated?.tagline || 'Island Adventure in Sri Lanka',
+        sub: db.seasons || curated?.sub || 'Sri Lanka',
+        tag: curated?.tag || inferredTag,
+        categoryLabel: db.badge || curated?.categoryLabel || 'Adventure',
+        season: db.seasons || curated?.season || 'Year-round',
+        badge: db.badge || curated?.badge || 'Popular',
+        timing: curated?.timing || 'Early Morning or Sunset Hours',
+        entryInfo: curated?.entryInfo || 'Inquire with local licensed operators',
+        difficulty: curated?.difficulty || 'All Levels',
+        locations: db.seasons || curated?.locations || 'Sri Lanka',
+        img: db.image || curated?.img || 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=1200&q=85',
+        seed: `exp-${db.id}`,
+        desc: db.desc,
+        heritage: curated?.heritage || db.desc,
+        ancientRoots: curated?.ancientRoots || db.tagline || db.desc,
+        varieties: curated?.varieties && curated.varieties.length > 0 ? curated.varieties : [{ name: db.title, tag: db.badge || 'Popular', desc: db.desc }],
+        gearChecklist: curated?.gearChecklist || 'Comfortable outdoor attire, sturdy footwear, sun protection, hydration.',
+        localSafetyTips: curated?.localSafetyTips || 'Follow certified guides and local weather / safety advisories.',
+        nearbySpots: curated?.nearbySpots,
+      };
+    }
+  } catch (err) {
+    console.error('Error fetching experience from DB:', err);
   }
 
-  // 2. Check EXPERIENCES_DATA by slug
-  const normalizedSlug = idParam.toLowerCase().trim();
-  const foundBySlug = EXPERIENCES_DATA.find((e) => e.slug.toLowerCase() === normalizedSlug);
-  if (foundBySlug) return foundBySlug;
-
-  // 3. Check EXPERIENCES_DATA by title normalized
-  const foundByTitle = EXPERIENCES_DATA.find(
-    (e) => e.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === normalizedSlug
-  );
-  if (foundByTitle) return foundByTitle;
-
   return null;
+}
+
+async function getRelatedExperiences(currentId: number): Promise<IslandExperienceItem[]> {
+  try {
+    const raw = await prisma.experienceItem.findMany({
+      where: { id: { not: currentId } },
+      take: 3,
+      orderBy: { sort_order: 'asc' },
+    });
+    return raw.map((db) => {
+      const curated = EXPERIENCES_DATA.find((e) => e.id === db.id || e.title.toLowerCase() === db.title.toLowerCase());
+      return {
+        id: db.id,
+        slug: curated?.slug || db.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        title: db.title,
+        tagline: db.tagline || '',
+        sub: db.seasons || 'Sri Lanka',
+        tag: curated?.tag || 'surf',
+        categoryLabel: db.badge || 'Adventure',
+        season: db.seasons || 'Year-round',
+        badge: db.badge || 'Popular',
+        timing: curated?.timing || '',
+        entryInfo: curated?.entryInfo || '',
+        difficulty: curated?.difficulty || 'All Levels',
+        locations: db.seasons || 'Sri Lanka',
+        img: db.image || curated?.img || 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=1200&q=85',
+        seed: `exp-${db.id}`,
+        desc: db.desc,
+        heritage: db.desc,
+        ancientRoots: db.desc,
+        varieties: [{ name: db.title, tag: db.badge || 'Popular', desc: db.desc }],
+        gearChecklist: '',
+        localSafetyTips: '',
+      };
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -97,8 +167,8 @@ export default async function ExperienceDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  // Pick 3 related items
-  const relatedItems = EXPERIENCES_DATA.filter((e) => e.id !== item.id).slice(0, 3);
+  // Pick 3 related items from database
+  const relatedItems = await getRelatedExperiences(item.id);
 
   // Structured Data (JSON-LD)
   const jsonLdExperience = {
