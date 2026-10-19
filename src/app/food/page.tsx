@@ -6,7 +6,8 @@ import FoodExplorer from '@/components/FoodExplorer';
 import { FOODS_DATA, FoodDishItem } from '@/data/foodsData';
 import { Place } from '@/types';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata = {
   title: 'Food & Flavors — Authentic Sri Lankan Cuisine & Street Food Guide',

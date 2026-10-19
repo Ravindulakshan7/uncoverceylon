@@ -4,7 +4,8 @@ import { FOODS_DATA, FoodDishItem } from '@/data/foodsData';
 import { prisma } from '@/lib/db';
 import FoodDetailClient from '@/components/FoodDetailClient';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface PageProps {
   params: Promise<{ id: string }>;

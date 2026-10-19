@@ -2,7 +2,21 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Landmark, Plus, Edit2, Trash2, Loader2, Image as ImageIcon, RefreshCw, X, Upload } from 'lucide-react';
+import {
+  Landmark,
+  Plus,
+  Edit2,
+  Trash2,
+  Loader2,
+  Image as ImageIcon,
+  RefreshCw,
+  X,
+  Upload,
+  Download,
+  FileCode,
+  Sparkles,
+  CheckCircle2
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface CultureItem {
@@ -28,6 +42,15 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  // JSON Import & Export State
+  const [showJsonModal, setShowJsonModal] = useState(false);
+  const [jsonText, setJsonText] = useState('');
+  const [importingJson, setImportingJson] = useState(false);
+
+  // 1-Click AI Auto-Fill in Modal
+  const [showAiPasteBox, setShowAiPasteBox] = useState(false);
+  const [aiJsonInput, setAiJsonInput] = useState('');
 
   // Form State
   const [form, setForm] = useState({
@@ -70,6 +93,8 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
       period: '',
       sort_order: cultures.length + 1,
     });
+    setShowAiPasteBox(false);
+    setAiJsonInput('');
     setShowModal(true);
   };
 
@@ -84,7 +109,41 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
       period: culture.period,
       sort_order: culture.sort_order,
     });
+    setShowAiPasteBox(false);
+    setAiJsonInput('');
     setShowModal(true);
+  };
+
+  const handleApplyAiJson = () => {
+    if (!aiJsonInput.trim()) {
+      toast.error('Please paste JSON data first!');
+      return;
+    }
+    try {
+      let cleaned = aiJsonInput.trim();
+      if (cleaned.startsWith('```')) {
+        cleaned = cleaned.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+      }
+      const data = JSON.parse(cleaned);
+      const item = Array.isArray(data) ? data[0] : data;
+      if (!item || typeof item !== 'object') {
+        toast.error('Invalid JSON structure.');
+        return;
+      }
+      setForm((prev) => ({
+        ...prev,
+        title: item.title || item.name || prev.title,
+        tagline: item.tagline || prev.tagline,
+        desc: item.desc || item.description || prev.desc,
+        image: item.image || item.image_url || item.img || prev.image,
+        badge: item.badge || prev.badge,
+        period: item.period || item.era || prev.period,
+      }));
+      toast.success('✨ Culture pillar filled in 1 click!');
+      setShowAiPasteBox(false);
+    } catch {
+      toast.error('Invalid JSON format.');
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -178,22 +237,109 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
     }
   };
 
+  // Export JSON
+  const handleExportJson = () => {
+    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
+      JSON.stringify(cultures, null, 2)
+    )}`;
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', jsonString);
+    downloadAnchor.setAttribute('download', `uncover_ceylon_culture_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    toast.success(`Exported ${cultures.length} culture items to JSON!`);
+  };
+
+  // Handle JSON file upload
+  const handleJsonFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.json') && file.type !== 'application/json') {
+      toast.error('Please upload a valid .json file.');
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        const parsed = JSON.parse(content);
+        const count = Array.isArray(parsed) ? parsed.length : 1;
+        setJsonText(JSON.stringify(parsed, null, 2));
+        toast.success(`Loaded "${file.name}" with ${count} culture item(s).`);
+      } catch {
+        toast.error('Invalid JSON file format. Please check syntax.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  // Bulk Import Submit
+  const handleImportJsonSubmit = async () => {
+    if (!jsonText.trim()) {
+      toast.error('Please upload a file or paste JSON code.');
+      return;
+    }
+
+    let parsedData: any;
+    try {
+      parsedData = JSON.parse(jsonText);
+    } catch {
+      toast.error('Invalid JSON syntax. Please check for missing quotes or commas.');
+      return;
+    }
+
+    const itemsToImport = Array.isArray(parsedData) ? parsedData : [parsedData];
+    if (itemsToImport.length === 0) {
+      toast.error('JSON array is empty.');
+      return;
+    }
+
+    setImportingJson(true);
+    try {
+      const res = await fetch('/api/culture/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cultures: itemsToImport,
+          admin_password: adminPassword,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to import JSON culture items');
+
+      toast.success(data.message || `Successfully imported ${data.createdCount} culture items!`);
+      setShowJsonModal(false);
+      setJsonText('');
+      fetchCultures();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error importing culture items.';
+      toast.error(msg);
+    } finally {
+      setImportingJson(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      
       {/* Top Header & Actions - Dark Theme */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#111c2e] p-6 rounded-3xl border border-[#1e324d] shadow-lg">
         <div>
           <h3 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
             <Landmark className="w-5 h-5 text-emerald-400" />
-            <span>Culture & Ancient Heritage ({cultures.length})</span>
+            <span>Culture &amp; Ancient Heritage ({cultures.length})</span>
           </h3>
           <p className="text-xs sm:text-sm text-slate-400 mt-1 font-medium">
             Manage UNESCO monuments, ancient hydraulic ruins, and sacred traditions displayed on <span className="text-[#3ddc9a] font-mono">/culture</span>.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
             type="button"
             onClick={fetchCultures}
@@ -203,6 +349,27 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
+
+          <button
+            type="button"
+            onClick={handleExportJson}
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-[#1e324d] bg-[#162338] hover:bg-[#1e304a] text-slate-200 hover:text-white font-bold text-xs sm:text-sm transition-all cursor-pointer"
+            title="Export culture items to JSON file"
+          >
+            <Download className="w-4 h-4 text-sky-400" />
+            <span>Export JSON</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setShowJsonModal(true)}
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-[#1e324d] bg-[#162338] hover:bg-[#1e304a] text-slate-200 hover:text-white font-bold text-xs sm:text-sm transition-all cursor-pointer"
+            title="Import culture items from JSON file or text"
+          >
+            <FileCode className="w-4 h-4 text-amber-400" />
+            <span>Import JSON</span>
+          </button>
+
           <button
             type="button"
             onClick={openAddModal}
@@ -258,7 +425,7 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
 
                 <div className="p-5">
                   <h4 className="text-lg font-black text-white group-hover:text-[#3ddc9a] transition-colors">{culture.title}</h4>
-                  <p className="text-xs font-bold text-emerald-400 mt-0.5">{culture.tagline}</p>
+                  <p className="text-xs font-bold text-amber-400 mt-0.5">{culture.tagline}</p>
                   <p className="text-xs text-slate-300 mt-2 line-clamp-3 leading-relaxed">{culture.desc}</p>
                   {culture.period && (
                     <div className="mt-3 text-[11px] font-semibold text-slate-400 bg-[#0a111a] border border-[#1e324d] px-2.5 py-1 rounded-lg w-fit">
@@ -275,7 +442,7 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
                     type="button"
                     onClick={() => openEditModal(culture)}
                     className="p-2 rounded-xl text-slate-300 hover:text-[#3ddc9a] hover:bg-[#162338] transition-colors cursor-pointer"
-                    title="Edit culture item"
+                    title="Edit culture pillar"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
@@ -284,7 +451,7 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
                     onClick={() => handleDelete(culture.id)}
                     disabled={deletingId === culture.id}
                     className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition-colors cursor-pointer"
-                    title="Delete culture item"
+                    title="Delete culture pillar"
                   >
                     {deletingId === culture.id ? (
                       <Loader2 className="w-4 h-4 animate-spin text-rose-400" />
@@ -299,7 +466,7 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
         </div>
       )}
 
-      {/* Add / Edit Culture Modal - Dark Theme */}
+      {/* Add / Edit Culture Modal */}
       {showModal && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
           <div
@@ -313,16 +480,50 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
                   {editingCulture ? 'Edit Culture Pillar' : 'Add New Culture Pillar'}
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Enter archaeological details, historical periods, and high-resolution photo.
+                  Add ancient kingdoms, sacred relics, and UNESCO living traditions.
                 </p>
               </div>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-[#162338] transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAiPasteBox(!showAiPasteBox)}
+                  className="px-2.5 py-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-bold transition-all flex items-center gap-1"
+                  title="Toggle 1-Click AI Auto-Fill"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>AI Paste</span>
+                </button>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-[#162338] transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
+
+            {/* Quick AI Paste Box */}
+            {showAiPasteBox && (
+              <div className="mb-4 p-3.5 rounded-2xl bg-[#090f17] border border-[#1e324d] space-y-2">
+                <label className="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">
+                  Paste JSON from AI
+                </label>
+                <textarea
+                  rows={3}
+                  value={aiJsonInput}
+                  onChange={(e) => setAiJsonInput(e.target.value)}
+                  placeholder={`{"title": "Kandyan Esala Perahera", "tagline": "Sacred Tooth Relic Procession", "period": "3rd Century BC", "desc": "..."}`}
+                  className="w-full px-3 py-2 rounded-xl bg-[#0d1624] border border-[#1e324d] text-emerald-400 font-mono text-xs placeholder-slate-600 outline-none resize-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyAiJson}
+                  className="w-full py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-all"
+                >
+                  ⚡ Apply AI Data
+                </button>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -332,10 +533,10 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Sacred Temple of the Tooth"
+                  placeholder="e.g. Ancient Hydraulic Civilization"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a111a] border border-[#1e324d] text-white placeholder-slate-500 focus:border-[#00aa6c] focus:ring-1 focus:ring-[#00aa6c] text-sm outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a111a] border border-[#1e324d] text-white placeholder-slate-500 focus:border-[#00aa6c] text-sm outline-none font-bold"
                 />
               </div>
 
@@ -346,10 +547,10 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Relic of Royal Sovereignty"
+                    placeholder="e.g. Master Engineering of the Kings"
                     value={form.tagline}
                     onChange={(e) => setForm({ ...form, tagline: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a111a] border border-[#1e324d] text-white placeholder-slate-500 focus:border-[#00aa6c] focus:ring-1 focus:ring-[#00aa6c] text-sm outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a111a] border border-[#1e324d] text-white placeholder-slate-500 focus:border-[#00aa6c] text-sm outline-none"
                   />
                 </div>
                 <div>
@@ -358,10 +559,10 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Heritage / Sacred"
+                    placeholder="e.g. UNESCO World Heritage"
                     value={form.badge}
                     onChange={(e) => setForm({ ...form, badge: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a111a] border border-[#1e324d] text-white placeholder-slate-500 focus:border-[#00aa6c] focus:ring-1 focus:ring-[#00aa6c] text-sm outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a111a] border border-[#1e324d] text-white placeholder-slate-500 focus:border-[#00aa6c] text-sm outline-none"
                   />
                 </div>
               </div>
@@ -373,24 +574,24 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
                 <textarea
                   required
                   rows={3}
-                  placeholder="Describe architectural wonders, stone carvings, and Buddhist traditions..."
+                  placeholder="Elaborate on the historical background, sacred significance, and architectural grandeur..."
                   value={form.desc}
                   onChange={(e) => setForm({ ...form, desc: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a111a] border border-[#1e324d] text-white placeholder-slate-500 focus:border-[#00aa6c] focus:ring-1 focus:ring-[#00aa6c] text-sm outline-none resize-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a111a] border border-[#1e324d] text-white placeholder-slate-500 focus:border-[#00aa6c] text-sm outline-none resize-none leading-relaxed"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
-                    Historical Period
+                    Era / Historical Period
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. 16th Century • Kandyan Era"
+                    placeholder="e.g. 5th Century AD"
                     value={form.period}
                     onChange={(e) => setForm({ ...form, period: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a111a] border border-[#1e324d] text-white placeholder-slate-500 focus:border-[#00aa6c] focus:ring-1 focus:ring-[#00aa6c] text-sm outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a111a] border border-[#1e324d] text-white placeholder-slate-500 focus:border-[#00aa6c] text-sm outline-none"
                   />
                 </div>
                 <div>
@@ -401,7 +602,7 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
                     type="number"
                     value={form.sort_order}
                     onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a111a] border border-[#1e324d] text-white placeholder-slate-500 focus:border-[#00aa6c] focus:ring-1 focus:ring-[#00aa6c] text-sm outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a111a] border border-[#1e324d] text-white placeholder-slate-500 focus:border-[#00aa6c] text-sm outline-none"
                   />
                 </div>
               </div>
@@ -421,7 +622,7 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
                   <label className="cursor-pointer px-4 py-2.5 rounded-xl bg-[#162338] hover:bg-[#1e304a] border border-[#1e324d] text-slate-300 hover:text-white flex items-center gap-1.5 text-xs font-bold transition-colors">
                     {uploadingImage ? <Loader2 className="w-4 h-4 animate-spin text-[#00aa6c]" /> : <Upload className="w-4 h-4" />}
                     <span>Upload</span>
-                    <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.heif,.jfif" className="hidden" onChange={handleFileUpload} disabled={uploadingImage} />
+                    <input type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic" className="hidden" onChange={handleFileUpload} disabled={uploadingImage} />
                   </label>
                 </div>
                 {form.image && (
@@ -453,6 +654,93 @@ export default function AdminCultureTab({ adminPassword }: AdminCultureTabProps)
         </div>
       )}
 
+      {/* Bulk JSON Import Modal */}
+      {showJsonModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-[#111c2e] border border-[#1e324d] rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-[#1e324d] flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                  <FileCode className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-white">Import Culture from JSON</h3>
+                  <p className="text-xs text-slate-400">Upload a .json file or paste culture items in JSON format.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowJsonModal(false);
+                  setJsonText('');
+                }}
+                className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-[#162338] transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 overflow-y-auto flex-1">
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-[#0a111a] border border-[#1e324d]">
+                <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#162338] hover:bg-[#1e304a] text-slate-200 hover:text-white text-xs font-bold transition-all border border-[#1e324d]">
+                  <Upload className="w-4 h-4 text-[#00aa6c]" />
+                  <span>Choose JSON File</span>
+                  <input
+                    type="file"
+                    accept=".json,application/json"
+                    onChange={handleJsonFileUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block mb-1.5">
+                  JSON Data (Array of culture items)
+                </label>
+                <textarea
+                  rows={10}
+                  value={jsonText}
+                  onChange={(e) => setJsonText(e.target.value)}
+                  placeholder={`[\n  {\n    "title": "Sacred Tooth Relic & Temple of Kandy",\n    "tagline": "The Living Spiritual Heart of Ceylon",\n    "desc": "Housing the sacred tooth relic of Gautama Buddha...",\n    "image": "https://images.unsplash.com/...",\n    "badge": "UNESCO Heritage",\n    "period": "16th Century AD"\n  }\n]`}
+                  className="w-full px-4 py-3 rounded-2xl bg-[#0a111a] border border-[#1e324d] text-emerald-400 font-mono text-xs placeholder-slate-600 focus:border-[#00aa6c] outline-none leading-relaxed resize-y"
+                />
+              </div>
+
+              <div className="text-xs text-slate-400 bg-[#162338]/50 p-3 rounded-xl border border-[#1e324d] flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#00aa6c] flex-shrink-0 mt-0.5" />
+                <span>
+                  Accepts fields: <code className="text-amber-300 font-mono">title</code>, <code className="text-amber-300 font-mono">tagline</code>, <code className="text-amber-300 font-mono">desc</code>, <code className="text-amber-300 font-mono">image</code>, <code className="text-amber-300 font-mono">badge</code>, and <code className="text-amber-300 font-mono">period</code>.
+                </span>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-[#1e324d] flex items-center justify-end gap-3 bg-[#0d1624]">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowJsonModal(false);
+                  setJsonText('');
+                }}
+                disabled={importingJson}
+                className="px-4 py-2.5 rounded-xl border border-[#1e324d] text-slate-300 font-bold text-xs hover:bg-[#162338] transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleImportJsonSubmit}
+                disabled={importingJson || !jsonText.trim()}
+                className="px-6 py-2.5 rounded-xl bg-[#00aa6c] hover:bg-[#008f5a] text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-emerald-950/40 transition-all cursor-pointer disabled:opacity-50"
+              >
+                {importingJson && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>{importingJson ? 'Importing...' : 'Import Culture Pillars'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
