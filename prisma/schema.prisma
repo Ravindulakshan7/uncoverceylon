@@ -132,29 +132,53 @@ model FoodItem {
 }
 
 model CultureItem {
-  id         Int      @id @default(autoincrement())
-  title      String
-  tagline    String   @default("")
-  desc       String   @db.Text
-  image      String   @default("")
-  badge      String   @default("Heritage")
-  period     String   @default("")
-  sort_order Int      @default(0)
-  created_at DateTime @default(now())
+  id                    Int      @id @default(autoincrement())
+  slug                  String   @default("")
+  title                 String
+  sinhalaName           String   @default("")
+  tagline               String   @default("")
+  desc                  String   @db.Text
+  image                 String   @default("")
+  badge                 String   @default("Heritage")
+  tag                   String   @default("unesco")
+  period                String   @default("")
+  locations             String   @default("")
+  timing                String   @default("")
+  entryInfo             String   @default("")
+  dressCode             String   @default("")
+  preservation          String   @default("")
+  heritage              String   @default("") @db.Text
+  ancientRoots          String   @default("") @db.Text
+  architecturalElements String   @default("") @db.Text
+  etiquetteTips         String   @default("") @db.Text
+  varieties             String   @default("[]") @db.Text
+  sort_order            Int      @default(0)
+  created_at            DateTime @default(now())
 
   @@map("culture_items")
 }
 
 model ExperienceItem {
-  id         Int      @id @default(autoincrement())
-  title      String
-  tagline    String   @default("")
-  desc       String   @db.Text
-  image      String   @default("")
-  badge      String   @default("Popular")
-  seasons    String   @default("")
-  sort_order Int      @default(0)
-  created_at DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  slug            String   @default("")
+  title           String
+  tagline         String   @default("")
+  desc            String   @db.Text
+  image           String   @default("")
+  badge           String   @default("Popular")
+  tag             String   @default("surf")
+  seasons         String   @default("")
+  locations       String   @default("")
+  timing          String   @default("")
+  entryInfo       String   @default("")
+  difficulty      String   @default("")
+  heritage        String   @default("") @db.Text
+  ancientRoots    String   @default("") @db.Text
+  gearChecklist   String   @default("") @db.Text
+  localSafetyTips String   @default("") @db.Text
+  varieties       String   @default("[]") @db.Text
+  sort_order      Int      @default(0)
+  created_at      DateTime @default(now())
 
   @@map("experience_items")
 }

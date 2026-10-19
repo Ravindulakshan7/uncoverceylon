@@ -44,21 +44,49 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
+      const slug = String(item.slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-')).trim();
       const tagline = String(item.tagline || '').trim();
       const image = String(item.image || item.image_url || item.img || '').trim();
-      const badge = String(item.badge || 'Popular').trim();
+      const badge = String(item.badge || item.categoryLabel || 'Popular').trim();
+      const tag = String(item.tag || 'surf').trim();
       const seasons = String(item.seasons || item.season || item.best_time || '').trim();
+      const locations = String(item.locations || item.sub || seasons || '').trim();
+      const timing = String(item.timing || item.bestTime || item.best_time || '').trim();
+      const entryInfo = String(item.entryInfo || item.entry || item.cost || item.price || '').trim();
+      const difficulty = String(item.difficulty || 'All Levels').trim();
+      const heritage = String(item.heritage || item.whatToExpect || item.what_to_expect || desc).trim();
+      const ancientRoots = String(item.ancientRoots || item.localKnowledge || item.insider_tips || tagline || '').trim();
+      const gearChecklist = String(item.gearChecklist || item.whatToBring || item.gear || '').trim();
+      const localSafetyTips = String(item.localSafetyTips || item.safety || item.tips || '').trim();
+
+      const varietiesString = Array.isArray(item.varieties)
+        ? JSON.stringify(item.varieties)
+        : typeof item.varieties === 'string'
+        ? item.varieties
+        : '[]';
+
       const sort_order = Number(item.sort_order || item.id || createdCount + 1);
 
       try {
         await prisma.experienceItem.create({
           data: {
             title,
+            slug,
             tagline,
             desc,
             image,
             badge,
+            tag,
             seasons,
+            locations,
+            timing,
+            entryInfo,
+            difficulty,
+            heritage,
+            ancientRoots,
+            gearChecklist,
+            localSafetyTips,
+            varieties: varietiesString,
             sort_order,
           },
         });

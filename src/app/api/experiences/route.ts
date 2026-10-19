@@ -17,7 +17,27 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, tagline, desc, image, badge, seasons, sort_order, admin_password } = body;
+    const {
+      title,
+      slug,
+      tagline,
+      desc,
+      image,
+      badge,
+      tag,
+      seasons,
+      locations,
+      timing,
+      entryInfo,
+      difficulty,
+      heritage,
+      ancientRoots,
+      gearChecklist,
+      localSafetyTips,
+      varieties,
+      sort_order,
+      admin_password,
+    } = body;
 
     if (!verifyAdminPassword(admin_password)) {
       return NextResponse.json({ error: 'Unauthorized: Invalid admin password' }, { status: 401 });
@@ -27,14 +47,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Title and description are required' }, { status: 400 });
     }
 
+    const varietiesString = Array.isArray(varieties)
+      ? JSON.stringify(varieties)
+      : typeof varieties === 'string'
+      ? varieties
+      : '[]';
+
     const newExperience = await prisma.experienceItem.create({
       data: {
         title: String(title).trim(),
+        slug: String(slug || '').trim(),
         tagline: String(tagline || '').trim(),
         desc: String(desc).trim(),
         image: String(image || '').trim(),
         badge: String(badge || 'Popular').trim(),
+        tag: String(tag || 'surf').trim(),
         seasons: String(seasons || '').trim(),
+        locations: String(locations || '').trim(),
+        timing: String(timing || '').trim(),
+        entryInfo: String(entryInfo || '').trim(),
+        difficulty: String(difficulty || '').trim(),
+        heritage: String(heritage || '').trim(),
+        ancientRoots: String(ancientRoots || '').trim(),
+        gearChecklist: String(gearChecklist || '').trim(),
+        localSafetyTips: String(localSafetyTips || '').trim(),
+        varieties: varietiesString,
         sort_order: Number(sort_order) || 0,
       },
     });
@@ -51,7 +88,28 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, title, tagline, desc, image, badge, seasons, sort_order, admin_password } = body;
+    const {
+      id,
+      title,
+      slug,
+      tagline,
+      desc,
+      image,
+      badge,
+      tag,
+      seasons,
+      locations,
+      timing,
+      entryInfo,
+      difficulty,
+      heritage,
+      ancientRoots,
+      gearChecklist,
+      localSafetyTips,
+      varieties,
+      sort_order,
+      admin_password,
+    } = body;
 
     if (!verifyAdminPassword(admin_password)) {
       return NextResponse.json({ error: 'Unauthorized: Invalid admin password' }, { status: 401 });
@@ -61,15 +119,32 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'ID, title and description are required' }, { status: 400 });
     }
 
+    const varietiesString = Array.isArray(varieties)
+      ? JSON.stringify(varieties)
+      : typeof varieties === 'string'
+      ? varieties
+      : '[]';
+
     const updated = await prisma.experienceItem.update({
       where: { id: Number(id) },
       data: {
         title: String(title).trim(),
+        slug: String(slug || '').trim(),
         tagline: String(tagline || '').trim(),
         desc: String(desc).trim(),
         image: String(image || '').trim(),
         badge: String(badge || 'Popular').trim(),
+        tag: String(tag || 'surf').trim(),
         seasons: String(seasons || '').trim(),
+        locations: String(locations || '').trim(),
+        timing: String(timing || '').trim(),
+        entryInfo: String(entryInfo || '').trim(),
+        difficulty: String(difficulty || '').trim(),
+        heritage: String(heritage || '').trim(),
+        ancientRoots: String(ancientRoots || '').trim(),
+        gearChecklist: String(gearChecklist || '').trim(),
+        localSafetyTips: String(localSafetyTips || '').trim(),
+        varieties: varietiesString,
         sort_order: Number(sort_order) || 0,
       },
     });
@@ -106,6 +181,6 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true, message: 'Experience item deleted successfully' });
   } catch (error) {
     console.error('DELETE /api/experiences error:', error);
-    return NextResponse.json({ error: 'Failed to delete experience' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to delete experience item' }, { status: 500 });
   }
 }

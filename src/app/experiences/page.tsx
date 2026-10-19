@@ -85,28 +85,44 @@ async function getExperienceItems(): Promise<IslandExperienceItem[]> {
         else if (textToScan.includes('whale') || textToScan.includes('dolphin') || textToScan.includes('ocean') || textToScan.includes('sea') || textToScan.includes('dive') || textToScan.includes('snorkel')) inferredTag = 'ocean';
         else if (textToScan.includes('raft') || textToScan.includes('water') || textToScan.includes('adrenaline') || textToScan.includes('thrill')) inferredTag = 'adrenaline';
 
+        let parsedVarieties: any[] = [];
+        if (db.varieties) {
+          try {
+            const parsed = JSON.parse(db.varieties);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              parsedVarieties = parsed;
+            }
+          } catch {}
+        }
+        if (parsedVarieties.length === 0 && curated?.varieties && curated.varieties.length > 0) {
+          parsedVarieties = curated.varieties;
+        }
+        if (parsedVarieties.length === 0) {
+          parsedVarieties = [{ name: db.title, tag: db.badge || 'Popular', desc: db.desc }];
+        }
+
         return {
           id: db.id,
-          slug: curated?.slug || db.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          slug: db.slug || curated?.slug || db.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
           title: db.title,
           tagline: db.tagline || curated?.tagline || 'Island Adventure in Sri Lanka',
-          sub: db.seasons || curated?.sub || 'Sri Lanka',
-          tag: curated?.tag || inferredTag,
+          sub: db.locations || db.seasons || curated?.sub || 'Sri Lanka',
+          tag: (db.tag as any) || curated?.tag || inferredTag,
           categoryLabel: db.badge || curated?.categoryLabel || 'Adventure',
           season: db.seasons || curated?.season || 'Year-round',
           badge: db.badge || curated?.badge || 'Popular',
-          timing: curated?.timing || 'Early Morning or Sunset Hours',
-          entryInfo: curated?.entryInfo || 'Inquire with local licensed operators',
-          difficulty: curated?.difficulty || 'All Levels',
-          locations: db.seasons || curated?.locations || 'Sri Lanka',
+          timing: db.timing || curated?.timing || 'Early Morning or Sunset Hours',
+          entryInfo: db.entryInfo || curated?.entryInfo || 'Inquire with local licensed operators',
+          difficulty: db.difficulty || curated?.difficulty || 'All Levels',
+          locations: db.locations || db.seasons || curated?.locations || 'Sri Lanka',
           img: db.image || curated?.img || 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=1200&q=85',
           seed: `exp-${db.id}`,
           desc: db.desc,
-          heritage: curated?.heritage || db.desc,
-          ancientRoots: curated?.ancientRoots || db.tagline || db.desc,
-          varieties: curated?.varieties && curated.varieties.length > 0 ? curated.varieties : [{ name: db.title, tag: db.badge || 'Popular', desc: db.desc }],
-          gearChecklist: curated?.gearChecklist || 'Comfortable outdoor attire, sturdy footwear, sun protection, hydration.',
-          localSafetyTips: curated?.localSafetyTips || 'Follow certified guides and local weather / safety advisories.',
+          heritage: db.heritage || curated?.heritage || db.desc,
+          ancientRoots: db.ancientRoots || curated?.ancientRoots || db.tagline || db.desc,
+          varieties: parsedVarieties,
+          gearChecklist: db.gearChecklist || curated?.gearChecklist || 'Comfortable outdoor attire, sturdy footwear, sun protection, hydration.',
+          localSafetyTips: db.localSafetyTips || curated?.localSafetyTips || 'Follow certified guides and local weather / safety advisories.',
           nearbySpots: curated?.nearbySpots,
         };
       });

@@ -36,30 +36,46 @@ async function resolveCulture(idParam: string): Promise<CultureHeritageItem | nu
       else if (textToScan.includes('mask') || textToScan.includes('craft') || textToScan.includes('art') || textToScan.includes('carving') || textToScan.includes('batik')) inferredTag = 'crafts';
       else if (textToScan.includes('peak') || textToScan.includes('pilgrim') || textToScan.includes('pada') || textToScan.includes('mountain')) inferredTag = 'pilgrimage';
 
+      let parsedVarieties: any[] = [];
+      if (db.varieties) {
+        try {
+          const parsed = JSON.parse(db.varieties);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            parsedVarieties = parsed;
+          }
+        } catch {}
+      }
+      if (parsedVarieties.length === 0 && curated?.varieties && curated.varieties.length > 0) {
+        parsedVarieties = curated.varieties;
+      }
+      if (parsedVarieties.length === 0) {
+        parsedVarieties = [{ name: db.title, tag: db.badge || 'Heritage', desc: db.desc }];
+      }
+
       return {
         id: db.id,
-        slug: curated?.slug || db.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        slug: db.slug || curated?.slug || db.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
         title: db.title,
-        sinhalaName: curated?.sinhalaName || db.tagline || db.title,
+        sinhalaName: db.sinhalaName || curated?.sinhalaName || db.tagline || db.title,
         tagline: db.tagline || curated?.tagline || 'Ancient Heritage of Sri Lanka',
-        sub: db.period || curated?.sub || 'Sri Lanka',
-        tag: curated?.tag || inferredTag,
+        sub: db.locations || db.period || curated?.sub || 'Sri Lanka',
+        tag: (db.tag as any) || curated?.tag || inferredTag,
         categoryLabel: db.badge || curated?.categoryLabel || 'Heritage',
         epoch: db.period || curated?.epoch || 'Ancient Ceylon',
         badge: db.badge || curated?.badge || 'Heritage',
-        timing: curated?.timing || 'Daytime / Open Daily',
-        entryInfo: curated?.entryInfo || 'Check at site entrance',
-        preservation: curated?.preservation || 'Protected Cultural Monument of Sri Lanka',
-        dressCode: curated?.dressCode || 'Modest attire covering shoulders and knees at sacred sites',
-        locations: db.period || curated?.locations || 'Sri Lanka',
+        timing: db.timing || curated?.timing || 'Daytime / Open Daily',
+        entryInfo: db.entryInfo || curated?.entryInfo || 'Check at site entrance',
+        preservation: db.preservation || curated?.preservation || 'Protected Cultural Monument of Sri Lanka',
+        dressCode: db.dressCode || curated?.dressCode || 'Modest attire covering shoulders and knees at sacred sites',
+        locations: db.locations || db.period || curated?.locations || 'Sri Lanka',
         img: db.image || curated?.img || 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=85',
         seed: `culture-${db.id}`,
         desc: db.desc,
-        heritage: curated?.heritage || db.desc,
-        ancientRoots: curated?.ancientRoots || db.tagline || db.desc,
-        varieties: curated?.varieties && curated.varieties.length > 0 ? curated.varieties : [{ name: db.title, tag: db.badge || 'Heritage', desc: db.desc }],
-        architecturalElements: curated?.architecturalElements || 'Traditional Sri Lankan architectural craftsmanship and historical stonework.',
-        etiquetteTips: curated?.etiquetteTips || 'Remove shoes and headwear when entering sacred enclosures. Avoid turning your back to sacred statues.',
+        heritage: db.heritage || curated?.heritage || db.desc,
+        ancientRoots: db.ancientRoots || curated?.ancientRoots || db.tagline || db.desc,
+        varieties: parsedVarieties,
+        architecturalElements: db.architecturalElements || curated?.architecturalElements || 'Traditional Sri Lankan architectural craftsmanship and historical stonework.',
+        etiquetteTips: db.etiquetteTips || curated?.etiquetteTips || 'Remove shoes and headwear when entering sacred enclosures. Avoid turning your back to sacred statues.',
         nearbySites: curated?.nearbySites,
       };
     }

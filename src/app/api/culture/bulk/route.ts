@@ -44,21 +44,53 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
+      const slug = String(item.slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-')).trim();
+      const sinhalaName = String(item.sinhalaName || item.sinhala_name || '').trim();
       const tagline = String(item.tagline || '').trim();
       const image = String(item.image || item.image_url || item.img || '').trim();
-      const badge = String(item.badge || 'Heritage').trim();
-      const period = String(item.period || item.era || '').trim();
+      const badge = String(item.badge || item.categoryLabel || 'Heritage').trim();
+      const tag = String(item.tag || 'unesco').trim();
+      const period = String(item.period || item.epoch || item.era || '').trim();
+      const locations = String(item.locations || item.sub || period || '').trim();
+      const timing = String(item.timing || item.bestTime || item.best_time || '').trim();
+      const entryInfo = String(item.entryInfo || item.entry || item.entry_info || '').trim();
+      const dressCode = String(item.dressCode || item.dress_code || '').trim();
+      const preservation = String(item.preservation || item.conservation || '').trim();
+      const heritage = String(item.heritage || item.history || desc).trim();
+      const ancientRoots = String(item.ancientRoots || item.origins || tagline || '').trim();
+      const architecturalElements = String(item.architecturalElements || item.architecture || '').trim();
+      const etiquetteTips = String(item.etiquetteTips || item.etiquette || item.tips || '').trim();
+      
+      const varietiesString = Array.isArray(item.varieties)
+        ? JSON.stringify(item.varieties)
+        : typeof item.varieties === 'string'
+        ? item.varieties
+        : '[]';
+
       const sort_order = Number(item.sort_order || item.id || createdCount + 1);
 
       try {
         await prisma.cultureItem.create({
           data: {
             title,
+            slug,
+            sinhalaName,
             tagline,
             desc,
             image,
             badge,
+            tag,
             period,
+            locations,
+            timing,
+            entryInfo,
+            dressCode,
+            preservation,
+            heritage,
+            ancientRoots,
+            architecturalElements,
+            etiquetteTips,
+            varieties: varietiesString,
             sort_order,
           },
         });
