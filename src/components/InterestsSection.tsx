@@ -76,12 +76,6 @@ export default function InterestsSection({ counts }: InterestsSectionProps) {
                   className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.3,1)] group-hover:scale-105"
                 />
 
-                {/* Count pill badge moved to top-right corner */}
-                <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10">
-                  <span className="text-[10px] sm:text-xs font-bold text-white bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full whitespace-nowrap border border-white/20 shadow-xs">
-                    {item.count}
-                  </span>
-                </div>
 
                 {/* Dark gradient for crisp text readability */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent pointer-events-none" />
