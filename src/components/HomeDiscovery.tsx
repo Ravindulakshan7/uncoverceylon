@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { ArrowDown, ArrowRight, ArrowUpRight, ChevronLeft, ChevronRight, MapPin, Star, Sun, Train, Compass } from 'lucide-react';
 import type { TopDestination } from './TopDestinationsSection';
 import TravelerReviewsSection from './TravelerReviewsSection';
-import { FOODS_DATA } from '@/data/foodsData';
 import styles from './HomeDiscovery.module.css';
 
 type Province = { name: string; count: number; image: string; placeName: string };
@@ -25,14 +24,32 @@ function Photo({ src, alt, sizes = '(max-width: 700px) 100vw, 50vw' }: { src: st
 }
 function Eyebrow({ children }: { children: React.ReactNode }) { return <p className={styles.eyebrow}>{children}</p>; }
 
-export default function HomeDiscovery({ destinations, provinces }: { destinations: TopDestination[]; provinces: Province[] }) {
+type FlavorItem = {
+  id: number;
+  title: string;
+  cuisine?: string;
+  badge?: string;
+  desc: string;
+  img?: string;
+  image?: string;
+};
+
+export default function HomeDiscovery({
+  destinations,
+  provinces,
+  flavors: propFlavors,
+}: {
+  destinations: TopDestination[];
+  provinces: Province[];
+  flavors?: FlavorItem[];
+}) {
   const rail = useRef<HTMLDivElement>(null);
   const [routeIndex, setRouteIndex] = useState(2);
   const [coast, setCoast] = useState<'south' | 'east'>('south');
   const route = routes[routeIndex];
   const coastPhoto = destinations.find(place => /beach/i.test(place.tagline)) || destinations[0];
   const hillPhoto = provinces.find(province => province.name === 'Uva' && province.image) || provinces.find(province => province.name === 'Central');
-  const flavors = [FOODS_DATA[0], FOODS_DATA[2], FOODS_DATA[4]].filter(Boolean);
+  const flavors = propFlavors !== undefined ? propFlavors : [];
   return <div className={styles.discovery}>
     {!!destinations.length && <section id="top-destinations" className={styles.section}>
       <div className={styles.container}>
@@ -52,7 +69,9 @@ export default function HomeDiscovery({ destinations, provinces }: { destination
 
     <section className={styles.section} id="seasons"><div className={`${styles.container} ${styles.seasonGrid}`}><div><Eyebrow>CHOOSE YOUR COAST</Eyebrow><h2>A good time<br /><em>to get away.</em></h2><p className={styles.bodyCopy}>The best coast for your trip changes with the seasons. Use this as a starting point and check the local forecast before you go.</p><Link href="/destinations?category=Beaches" className={styles.textLink}>Find your beach <ArrowUpRight size={17} /></Link></div><div className={styles.seasonPanel}><div role="group" aria-label="Choose a coast" className={styles.coastTabs}><button onClick={() => setCoast('south')} aria-pressed={coast === 'south'} className={coast === 'south' ? styles.activeCoast : ''}>South & west</button><button onClick={() => setCoast('east')} aria-pressed={coast === 'east'} className={coast === 'east' ? styles.activeCoast : ''}>East coast</button></div><div aria-live="polite" className={styles.seasonBody}><Sun size={34} strokeWidth={1} /><p className={styles.seasonMonths}>{coast === 'south' ? 'November — April' : 'May — September'}</p><h3>{coast === 'south' ? 'For days on the southern shore.' : 'For an east-coast escape.'}</h3><p>{coast === 'south' ? 'Explore Galle, Weligama and Mirissa during the generally drier part of the year along the south and west.' : 'Look towards Arugam Bay, Trincomalee and Nilaveli when planning a beach trip during these months.'}</p><div className={styles.seasonNote}>Seasonal guide · Weather and sea conditions vary.</div></div></div></div></section>
 
-    <section className={`${styles.section} ${styles.foodSection}`} id="flavors"><div className={styles.container}><div className={styles.sectionHead}><div><Eyebrow>COME HUNGRY</Eyebrow><h2>A taste of<br /><em>life on the island.</em></h2></div><div className={styles.headAside}><p>Breakfast at a little local spot. Tea in the afternoon. Something worth stopping for.</p><Link href="/food" className={styles.textLink}>Explore food & flavours <ArrowUpRight size={17} /></Link></div></div><div className={styles.foodGrid}>{flavors.map((dish) => <Link href={`/food/${dish.id}`} key={dish.id} className={styles.foodCard}><div className={styles.foodImage}><Photo src={dish.img} alt={dish.title} sizes="(max-width: 700px) 90vw, 400px" /></div><div className={styles.foodMeta}><span>{dish.cuisine}</span><ArrowUpRight size={18} /></div><h3>{dish.title}</h3><p>{dish.desc}</p></Link>)}</div></div></section>
+    {flavors.length > 0 && (
+      <section className={`${styles.section} ${styles.foodSection}`} id="flavors"><div className={styles.container}><div className={styles.sectionHead}><div><Eyebrow>COME HUNGRY</Eyebrow><h2>A taste of<br /><em>life on the island.</em></h2></div><div className={styles.headAside}><p>Breakfast at a little local spot. Tea in the afternoon. Something worth stopping for.</p><Link href="/food" className={styles.textLink}>Explore food & flavours <ArrowUpRight size={17} /></Link></div></div><div className={styles.foodGrid}>{flavors.map((dish) => <Link href={`/food/${dish.id}`} key={dish.id} className={styles.foodCard}><div className={styles.foodImage}><Photo src={dish.img || dish.image || ''} alt={dish.title} sizes="(max-width: 700px) 90vw, 400px" /></div><div className={styles.foodMeta}><span>{dish.cuisine || dish.badge || 'Sri Lankan'}</span><ArrowUpRight size={18} /></div><h3>{dish.title}</h3><p>{dish.desc}</p></Link>)}</div></div></section>
+    )}
 
     <div className={styles.reviews}><TravelerReviewsSection /></div>
 

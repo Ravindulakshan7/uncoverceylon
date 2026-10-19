@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { FOODS_DATA, FoodDishItem } from '@/data/foodsData';
+import { FoodDishItem } from '@/data/foodsData';
 import { prisma } from '@/lib/db';
 import FoodDetailClient from '@/components/FoodDetailClient';
 
@@ -12,13 +12,12 @@ interface PageProps {
 }
 
 /**
- * Resolve dish by integer id, slug, or matching title
+ * Resolve dish by integer id, slug, or matching title from database only
  */
 async function resolveDish(idParam: string): Promise<FoodDishItem | null> {
   const numId = parseInt(idParam, 10);
   const normalizedSlug = idParam.toLowerCase().trim();
 
-  // 1. Check database first so admin edits & new dishes are live immediately
   try {
     const dbFood = await prisma.foodItem.findFirst({
       where: !isNaN(numId)
@@ -69,21 +68,51 @@ async function resolveDish(idParam: string): Promise<FoodDishItem | null> {
     console.error('Error fetching food from database:', err);
   }
 
-  // 2. Fallback to curated static FOODS_DATA
-  if (!isNaN(numId)) {
-    const foundById = FOODS_DATA.find((f) => f.id === numId);
-    if (foundById) return foundById;
-  }
-
-  const foundBySlug = FOODS_DATA.find((f) => f.slug.toLowerCase() === normalizedSlug);
-  if (foundBySlug) return foundBySlug;
-
-  const foundByTitle = FOODS_DATA.find(
-    (f) => f.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === normalizedSlug
-  );
-  if (foundByTitle) return foundByTitle;
-
   return null;
+}
+
+async function getRelatedDishes(currentId: number): Promise<FoodDishItem[]> {
+  try {
+    const raw = await prisma.foodItem.findMany({
+      where: { id: { not: currentId } },
+      take: 3,
+      orderBy: { sort_order: 'asc' },
+    });
+    return raw.map((dbFood) => {
+      let parsedVarieties: FoodDishItem['varieties'] = [];
+      if (dbFood.varieties) {
+        try {
+          const parsed = typeof dbFood.varieties === 'string' ? JSON.parse(dbFood.varieties) : dbFood.varieties;
+          if (Array.isArray(parsed) && parsed.length > 0) parsedVarieties = parsed;
+        } catch {
+          parsedVarieties = [];
+        }
+      }
+      return {
+        id: dbFood.id,
+        slug: dbFood.slug || dbFood.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        title: dbFood.title,
+        tagline: dbFood.tagline || '',
+        sub: dbFood.locations || dbFood.regions || 'Sri Lanka',
+        tag: dbFood.tag || 'curry',
+        cuisine: dbFood.cuisine || dbFood.badge || 'Sri Lankan',
+        meal: dbFood.meal || 'Lunch / Dinner',
+        price: dbFood.price || 'LKR 400 – LKR 1,200',
+        spice: dbFood.spice || 'Medium to Fiery',
+        serving: dbFood.serving || 'Traditional Service',
+        locations: dbFood.locations || dbFood.regions || 'Island-wide',
+        img: dbFood.image || 'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=1000&q=85',
+        seed: `food-${dbFood.id}`,
+        desc: dbFood.desc,
+        heritage: dbFood.heritage || dbFood.desc,
+        varieties: parsedVarieties,
+        ingredients: dbFood.ingredients || '',
+        howToEat: dbFood.howToEat || '',
+      };
+    });
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -147,8 +176,8 @@ export default async function FoodDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  // Pick 3 related dishes
-  const relatedDishes = FOODS_DATA.filter((f) => f.id !== dish.id).slice(0, 3);
+  // Pick 3 related dishes from database
+  const relatedDishes = await getRelatedDishes(dish.id);
 
   // Structured Data (JSON-LD)
   const jsonLdRecipe = {

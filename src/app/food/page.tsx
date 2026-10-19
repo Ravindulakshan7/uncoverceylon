@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import PlaceCard from '@/components/PlaceCard';
 import FoodExplorer from '@/components/FoodExplorer';
-import { FOODS_DATA, FoodDishItem } from '@/data/foodsData';
+import { FoodDishItem } from '@/data/foodsData';
 import { Place } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -109,14 +109,12 @@ async function getFoodItems(): Promise<FoodDishItem[]> {
         };
       });
 
-      const dbIds = new Set(mappedDb.map((f) => f.id));
-      const remainingFoods = FOODS_DATA.filter((f) => !dbIds.has(f.id));
-      return [...mappedDb, ...remainingFoods];
+      return mappedDb;
     }
-    return FOODS_DATA;
+    return [];
   } catch (err) {
     console.error('Error fetching foods for food explorer:', err);
-    return FOODS_DATA;
+    return [];
   }
 }
 

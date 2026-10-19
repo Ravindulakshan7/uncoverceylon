@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useWishlist } from '@/context/WishlistContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { Place } from '@/types';
-import { FOODS_DATA } from '@/data/foodsData';
 import { CULTURE_DATA } from '@/data/cultureData';
 import { EXPERIENCES_DATA } from '@/data/experiencesData';
 import { X, Heart, Trash2, ArrowRight, MapPin, Printer, Utensils, Landmark, Compass } from 'lucide-react';
@@ -35,25 +34,44 @@ export default function WishlistDrawer() {
 
   const { t } = useLanguage();
   const [allPlaces, setAllPlaces] = useState<Place[]>([]);
+  const [allFoods, setAllFoods] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOfflineModalOpen, setIsOfflineModalOpen] = useState(false);
 
-  // Fetch places when drawer opens to populate wishlist items
+  // Fetch places and foods when drawer opens to populate wishlist items
   useEffect(() => {
-    if (isDrawerOpen && allPlaces.length === 0) {
-      setLoading(true);
-      fetch('/api/places')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.places) setAllPlaces(data.places);
-        })
-        .catch(() => undefined)
-        .finally(() => setLoading(false));
+    if (isDrawerOpen) {
+      if (allPlaces.length === 0) {
+        setLoading(true);
+        fetch('/api/places')
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.places) setAllPlaces(data.places);
+          })
+          .catch(() => undefined)
+          .finally(() => setLoading(false));
+      }
+      if (allFoods.length === 0) {
+        fetch('/api/foods')
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.foods) setAllFoods(data.foods);
+          })
+          .catch(() => undefined);
+      }
     }
-  }, [isDrawerOpen, allPlaces.length]);
+  }, [isDrawerOpen, allPlaces.length, allFoods.length]);
 
   const savedPlaces = allPlaces.filter((p) => savedIds.includes(p.id));
-  const savedFoods = FOODS_DATA.filter((f) => savedFoodIds.includes(f.id));
+  const savedFoods = allFoods
+    .filter((f) => savedFoodIds.includes(f.id))
+    .map((dish) => ({
+      ...dish,
+      img: dish.image || dish.img || 'https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=1000&q=85',
+      sub: dish.locations || dish.regions || dish.sub || 'Sri Lanka',
+      cuisine: dish.cuisine || dish.badge || 'Sri Lankan',
+      meal: dish.meal || 'Dining',
+    }));
   const savedCulture = CULTURE_DATA.filter((c) => savedCultureIds.includes(c.id));
   const savedExp = EXPERIENCES_DATA.filter((e) => savedExpIds.includes(e.id));
 

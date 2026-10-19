@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Check } from 'lucide-react';
 
-import { FOODS_DATA, FoodDishItem } from '@/data/foodsData';
+import { FoodDishItem } from '@/data/foodsData';
 import { useWishlist } from '@/context/WishlistContext';
 
 
@@ -25,7 +25,7 @@ interface FoodExplorerProps {
 
 export default function FoodExplorer({ initialFoods }: FoodExplorerProps) {
   const foods = useMemo(() => {
-    return initialFoods && initialFoods.length > 0 ? initialFoods : FOODS_DATA;
+    return initialFoods !== undefined ? initialFoods : [];
   }, [initialFoods]);
 
   const { isFoodSaved, toggleFoodWishlist } = useWishlist();

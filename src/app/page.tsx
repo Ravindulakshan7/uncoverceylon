@@ -2,14 +2,13 @@ import { prisma } from '@/lib/db';
 import HeroSection from '@/components/HeroSection';
 import InterestsSection from '@/components/InterestsSection';
 import HomeDiscovery from '@/components/HomeDiscovery';
-import { FOODS_DATA } from '@/data/foodsData';
 import { CULTURE_DATA } from '@/data/cultureData';
 import { EXPERIENCES_DATA } from '@/data/experiencesData';
 
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [placesCount, topPlacesRaw, heroSlides] = await Promise.all([
+  const [placesCount, topPlacesRaw, heroSlides, dbFoods] = await Promise.all([
     prisma.place.count().catch(() => 0),
     prisma.place
       .findMany({
@@ -22,11 +21,17 @@ export default async function HomePage() {
         orderBy: { sort_order: 'asc' },
       })
       .catch(() => []),
+    prisma.foodItem
+      .findMany({
+        orderBy: [{ sort_order: 'asc' }, { id: 'asc' }],
+        take: 3,
+      })
+      .catch(() => []),
   ]);
 
   const interestCounts = {
     destinations: placesCount > 0 ? `${placesCount}+ places` : 'Curated places',
-    food: `${FOODS_DATA.length} dishes`,
+    food: dbFoods.length > 0 ? `${dbFoods.length} dishes` : 'Gastronomy',
     culture: `${CULTURE_DATA.length} sites`,
     experiences: `${EXPERIENCES_DATA.length} experiences`,
   };
@@ -51,14 +56,18 @@ export default async function HomePage() {
       {/* ━━━ 2. UNCOVER CEYLON BY INTEREST (4 Cards Grid) ━━━ */}
       <InterestsSection counts={interestCounts} />
 
-      <HomeDiscovery destinations={topDestinations} provinces={[
-        'Southern', 'Central', 'Uva', 'Eastern', 'Western', 'North Central', 'Northern', 'North Western', 'Sabaragamuwa',
-      ].map(name => {
-        const places = topPlacesRaw.filter(place => place.province.replace(/ Province$/i, '').trim() === name);
-        const preferred = name === 'Central' ? /sigiriya rock/i : name === 'Uva' ? /nine arch/i : /beach|national park|fort/i;
-        const photo = places.find(place => preferred.test(place.name) && place.image_url) || places.find(place => place.image_url && !place.image_url.includes('icon') && !place.image_url.endsWith('.svg'));
-        return { name, count: places.length, image: photo?.image_url || '', placeName: photo?.name || '' };
-      })} />
+      <HomeDiscovery
+        destinations={topDestinations}
+        flavors={dbFoods}
+        provinces={[
+          'Southern', 'Central', 'Uva', 'Eastern', 'Western', 'North Central', 'Northern', 'North Western', 'Sabaragamuwa',
+        ].map(name => {
+          const places = topPlacesRaw.filter(place => place.province.replace(/ Province$/i, '').trim() === name);
+          const preferred = name === 'Central' ? /sigiriya rock/i : name === 'Uva' ? /nine arch/i : /beach|national park|fort/i;
+          const photo = places.find(place => preferred.test(place.name) && place.image_url) || places.find(place => place.image_url && !place.image_url.includes('icon') && !place.image_url.endsWith('.svg'));
+          return { name, count: places.length, image: photo?.image_url || '', placeName: photo?.name || '' };
+        })}
+      />
     </div>
   );
 }
