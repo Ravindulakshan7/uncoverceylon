@@ -1,5 +1,6 @@
 'use client';
 
+import BrandMark from '@/components/BrandMark';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Heart, ArrowUp, MapPin, ExternalLink } from 'lucide-react';
@@ -23,25 +24,7 @@ export default function Footer() {
           {/* Brand Column (2 cols on lg) */}
           <div className="lg:col-span-2 space-y-6">
             <Link href="/" className="inline-flex items-center gap-2.5 group">
-              {/* TripAdvisor-style Binocular / Compass Icon */}
-              <div className="flex items-center shrink-0">
-                <svg
-                  className="w-7 h-7 text-white transition-transform group-hover:scale-105"
-                  viewBox="0 0 36 36"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle cx="11" cy="18" r="9" stroke="white" strokeWidth="3" />
-                  <circle cx="11" cy="18" r="4.5" fill="#00aa6c" />
-                  <circle cx="11" cy="18" r="2" fill="white" />
-                  <circle cx="25" cy="18" r="9" stroke="white" strokeWidth="3" />
-                  <circle cx="25" cy="18" r="4.5" fill="#00aa6c" />
-                  <circle cx="25" cy="18" r="2" fill="white" />
-                  <path d="M17 14C17.5 12.5 18.5 12.5 19 14" stroke="white" strokeWidth="2.8" strokeLinecap="round" />
-                  <path d="M7 10L10 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-                  <path d="M29 10L26 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-                </svg>
-              </div>
+              <BrandMark className="h-12 w-12" surface />
               <div>
                 <span className="font-medium text-2xl tracking-[-0.03em] text-white block leading-none">
                   Uncoverceylon

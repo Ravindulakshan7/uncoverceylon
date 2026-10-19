@@ -1,19 +1,9 @@
 'use client';
 
+import BrandMark from '@/components/BrandMark';
 import React, { useState, useRef, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import {
-  Sparkles,
-  MessageSquare,
-  X,
-  Send,
-  RotateCcw,
-  Compass,
-  MapPin,
-  Bot,
-  User,
-  ExternalLink,
-} from 'lucide-react';
+import { X, Send, RotateCcw } from 'lucide-react';
 
 interface ChatMsg {
   id: string;
@@ -107,7 +97,7 @@ export default function AiChatAssistant() {
       } else {
         throw new Error(data.error || 'Failed to get reply');
       }
-    } catch (err: any) {
+    } catch {
       setMessages((prev) => [
         ...prev,
         {
@@ -138,10 +128,10 @@ export default function AiChatAssistant() {
             setHasInteracted(true);
           }}
           aria-label="Ask Serandib AI Travel Concierge"
-          className="fixed bottom-5 right-4 sm:right-6 z-[9990] flex items-center gap-2 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-full bg-[#002b11] hover:bg-[#00421a] text-white shadow-[0_8px_25px_rgba(0,43,17,0.45)] border border-emerald-500/40 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer group"
+          className="fixed bottom-5 right-4 sm:right-6 z-[9990] flex items-center gap-2 pl-2 pr-4 py-2 rounded-full bg-[#002b11] hover:bg-[#00421a] text-white shadow-[0_8px_25px_rgba(0,43,17,0.45)] border border-emerald-500/40 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer group"
         >
           <div className="relative flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-emerald-400 group-hover:rotate-12 transition-transform" />
+            <BrandMark className="h-10 w-10" surface />
             {!hasInteracted && (
               <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
             )}
@@ -159,9 +149,7 @@ export default function AiChatAssistant() {
           {/* Header */}
           <div className="bg-[#002b11] text-white px-4 py-3.5 flex items-center justify-between border-b border-emerald-950/40">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300">
-                <Compass className="w-4 h-4 animate-spin" style={{ animationDuration: '20s' }} />
-              </div>
+              <BrandMark className="h-10 w-10" surface />
               <div>
                 <div className="flex items-center gap-1.5">
                   <h4 className="text-sm font-bold tracking-tight">Serandib AI</h4>
@@ -203,8 +191,8 @@ export default function AiChatAssistant() {
                   className={`flex gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}
                 >
                   {!isUser && (
-                    <div className="w-6 h-6 rounded-full bg-[#002b11] text-emerald-300 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
-                      <Sparkles className="w-3 h-3" />
+                    <div className="flex items-center justify-center shrink-0 mt-0.5">
+                      <BrandMark className="h-7 w-7" surface />
                     </div>
                   )}
 
@@ -233,8 +221,8 @@ export default function AiChatAssistant() {
             {/* Loading typing bubble */}
             {isLoading && (
               <div className="flex items-center gap-2 text-slate-500">
-                <div className="w-6 h-6 rounded-full bg-[#002b11] text-emerald-300 flex items-center justify-center shrink-0 shadow-2xs">
-                  <Sparkles className="w-3 h-3 animate-spin" />
+                <div className="flex items-center justify-center shrink-0">
+                  <BrandMark className="h-7 w-7" surface />
                 </div>
                 <div className="bg-white border border-slate-200/80 px-3.5 py-2 rounded-2xl rounded-bl-xs flex items-center gap-1.5 shadow-2xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '0ms' }} />

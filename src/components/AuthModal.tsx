@@ -1,5 +1,6 @@
 'use client';
 
+import BrandMark from '@/components/BrandMark';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { X, Mail, Lock, User, Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
@@ -116,18 +117,7 @@ export default function AuthModal() {
            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         {view === 'main' && (
           <div className="p-7 sm:p-10 flex flex-col items-center text-center">
-            {/* Top Owl Logo Circle */}
-            <div className="w-16 h-16 rounded-full bg-[#00aa6c] text-[#002b11] flex items-center justify-center shadow-lg mb-6 shadow-[#00aa6c]/20">
-              <svg className="w-10 h-7" viewBox="0 0 36 24" fill="none">
-                <circle cx="11" cy="12" r="8" stroke="#002b11" strokeWidth="2.5" fill="#fff" />
-                <circle cx="25" cy="12" r="8" stroke="#002b11" strokeWidth="2.5" fill="#fff" />
-                <circle cx="11" cy="12" r="3.5" fill="#002b11" />
-                <circle cx="25" cy="12" r="3.5" fill="#002b11" />
-                <path d="M18 10L18 14" stroke="#002b11" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="11" cy="12" r="1.5" fill="#fff" />
-                <circle cx="25" cy="12" r="1.5" fill="#fff" />
-              </svg>
-            </div>
+            <BrandMark className="h-20 w-20 mb-6" surface />
 
             {/* Headline */}
             <h3 className="text-2xl sm:text-[26px] font-black tracking-tight text-[#0f1b2d] leading-[1.2] max-w-[320px] mb-2">

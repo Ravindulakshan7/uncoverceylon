@@ -1,5 +1,6 @@
 'use client';
 
+import BrandMark from '@/components/BrandMark';
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -164,25 +165,7 @@ export default function Navbar() {
               onClick={() => setActiveTab('home')}
               className="group flex items-center gap-2.5 transition-transform active:scale-95 py-1 shrink-0"
             >
-              {/* TripAdvisor-style Binocular / Compass Icon */}
-              <div className="flex items-center shrink-0">
-                <svg
-                  className="w-8 h-8 sm:w-9 sm:h-9 text-[#002b11] transition-transform group-hover:scale-105"
-                  viewBox="0 0 36 36"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle cx="11" cy="18" r="9" stroke="#002b11" strokeWidth="3" />
-                  <circle cx="11" cy="18" r="4.5" fill="#00aa6c" />
-                  <circle cx="11" cy="18" r="2" fill="#002b11" />
-                  <circle cx="25" cy="18" r="9" stroke="#002b11" strokeWidth="3" />
-                  <circle cx="25" cy="18" r="4.5" fill="#00aa6c" />
-                  <circle cx="25" cy="18" r="2" fill="#002b11" />
-                  <path d="M17 14C17.5 12.5 18.5 12.5 19 14" stroke="#002b11" strokeWidth="2.8" strokeLinecap="round" />
-                  <path d="M7 10L10 12" stroke="#002b11" strokeWidth="2.5" strokeLinecap="round" />
-                  <path d="M29 10L26 12" stroke="#002b11" strokeWidth="2.5" strokeLinecap="round" />
-                </svg>
-              </div>
+              <BrandMark className="h-10 w-10 sm:h-11 sm:w-11" priority />
 
               {/* Logo Text: Solid #002b11, Bold Trip-Sans style */}
               <span className="text-[20px] sm:text-[23px] font-black tracking-[-0.04em] text-[#002b11] shrink-0">

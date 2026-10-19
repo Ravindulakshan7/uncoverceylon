@@ -1,79 +1,46 @@
-// scripts/generate-pwa-icons.js
+// Generate every brand/app icon from the supplied artwork without redrawing it.
 const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
+const root = path.join(__dirname, '..');
+const iconsDir = path.join(root, 'public', 'icons');
+const brandDir = path.join(root, 'public', 'brand');
+const source = path.join(brandDir, 'logo-source.png');
+fs.mkdirSync(iconsDir, { recursive: true });
 
-const iconsDir = path.join(__dirname, '..', 'public', 'icons');
-if (!fs.existsSync(iconsDir)) {
-  fs.mkdirSync(iconsDir, { recursive: true });
+async function squareIcon(size, safeArea = 0.8) {
+  const markSize = Math.round(size * safeArea);
+  const mark = await sharp(source).trim().resize(markSize, markSize, { fit: 'contain', background: '#00000000' }).png().toBuffer();
+  return sharp({ create: { width: size, height: size, channels: 4, background: '#F5F3EC' } })
+    .composite([{ input: mark, gravity: 'centre' }]).png().toBuffer();
 }
-
-// Crisp SVG of the UncoverCeylon brand mark
-const svgIcon = `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#07111e"/>
-      <stop offset="50%" stop-color="#0a1d37"/>
-      <stop offset="100%" stop-color="#0369a1"/>
-    </linearGradient>
-    <linearGradient id="gem" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38bdf8"/>
-      <stop offset="100%" stop-color="#0284c7"/>
-    </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="12" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-  </defs>
-  
-  <!-- Outer Rounded Container -->
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-  <rect x="16" y="16" width="480" height="480" rx="96" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="4"/>
-  
-  <!-- Island Mountain Silhouette Outline -->
-  <path d="M120 340 L210 210 L280 290 L340 180 L410 340 Z" fill="rgba(2, 132, 199, 0.25)"/>
-  
-  <!-- Modern Geometric UC Monogram -->
-  <g filter="url(#glow)">
-    <!-- 'U' Monogram -->
-    <path d="M170 170 L170 260 C170 295 198 322 232 322 L236 322 C270 322 298 295 298 260 L298 170" 
-          fill="none" stroke="#ffffff" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- Ceylon Sapphire Dot -->
-    <circle cx="340" cy="200" r="24" fill="url(#gem)" stroke="#ffffff" stroke-width="6"/>
-  </g>
-  
-  <!-- Sun / Dawn Aura -->
-  <circle cx="256" cy="130" r="14" fill="#fbbf24" opacity="0.9"/>
-</svg>
-`;
-
-fs.writeFileSync(path.join(iconsDir, 'icon.svg'), svgIcon.trim());
-console.log('Created icon.svg');
 
 async function buildIcons() {
-  const buffer = Buffer.from(svgIcon);
-
-  // 192x192 PNG
-  await sharp(buffer)
-    .resize(192, 192)
-    .png()
-    .toFile(path.join(iconsDir, 'icon-192.png'));
-  console.log('Created icon-192.png');
-
-  // 512x512 PNG
-  await sharp(buffer)
-    .resize(512, 512)
-    .png()
-    .toFile(path.join(iconsDir, 'icon-512.png'));
-  console.log('Created icon-512.png');
-
-  // 512x512 Maskable PNG
-  await sharp(buffer)
-    .resize(512, 512)
-    .png()
-    .toFile(path.join(iconsDir, 'icon-maskable-512.png'));
-  console.log('Created icon-maskable-512.png');
+  await sharp(source).trim().resize(512, 512, { fit: 'contain', background: '#00000000' }).png().toFile(path.join(brandDir, 'uncover-ceylon.png'));
+  for (const size of [192, 512]) fs.writeFileSync(path.join(iconsDir, `icon-${size}.png`), await squareIcon(size));
+  // Keep all artwork inside the maskable icon safe zone.
+  fs.writeFileSync(path.join(iconsDir, 'icon-maskable-512.png'), await squareIcon(512, 0.66));
+  fs.writeFileSync(path.join(iconsDir, 'favicon-32.png'), await squareIcon(32, 0.88));
+  fs.writeFileSync(path.join(iconsDir, 'apple-touch-icon.png'), await squareIcon(180));
+  const icon = await squareIcon(512);
+  fs.writeFileSync(path.join(iconsDir, 'icon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512"><image width="512" height="512" href="data:image/png;base64,${icon.toString('base64')}"/></svg>`);
+  // ICO container with PNG frames, supported by modern browsers and Windows.
+  const frames = await Promise.all([16, 32, 48].map(size => squareIcon(size, 0.88)));
+  const header = Buffer.alloc(6 + 16 * frames.length);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(frames.length, 4);
+  let offset = header.length;
+  frames.forEach((frame, index) => {
+    const entry = 6 + index * 16;
+    header[entry] = [16, 32, 48][index];
+    header[entry + 1] = [16, 32, 48][index];
+    header.writeUInt16LE(1, entry + 4);
+    header.writeUInt16LE(32, entry + 6);
+    header.writeUInt32LE(frame.length, entry + 8);
+    header.writeUInt32LE(offset, entry + 12);
+    offset += frame.length;
+  });
+  fs.writeFileSync(path.join(root, 'src', 'app', 'favicon.ico'), Buffer.concat([header, ...frames]));
+  console.log('Generated website logo, favicon, Apple and PWA icons from the supplied artwork.');
 }
-
-buildIcons().catch(console.error);
+buildIcons().catch(error => { console.error(error); process.exitCode = 1; });

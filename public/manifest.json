@@ -4,8 +4,8 @@
   "description": "Curated travel guide, hidden gems, and offline maps across all 9 provinces of Sri Lanka by Serandib Co.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#07111e",
-  "theme_color": "#07111e",
+  "background_color": "#F5F3EC",
+  "theme_color": "#294E39",
   "orientation": "portrait-primary",
   "categories": ["travel", "navigation", "lifestyle"],
   "icons": [

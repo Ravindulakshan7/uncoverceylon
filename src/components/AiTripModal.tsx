@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import BrandMark from '@/components/BrandMark';
 import { Sparkles, Compass, X, Clock, MapPin, CheckCircle2, ArrowRight } from 'lucide-react';
 
 interface ItineraryResult {
@@ -181,7 +182,7 @@ export default function AiTripModal({ isOpen, onClose }: AiTripModalProps) {
         {/* Modal Header */}
         <div className="pr-8 mb-5">
           <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full mb-2 border border-emerald-100">
-            <Sparkles className="w-3.5 h-3.5 text-[#00aa6c] animate-pulse" />
+            <BrandMark className="h-7 w-7" />
             <span>Ceylon AI Trip Planner</span>
           </div>
           <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">

@@ -1,5 +1,6 @@
 'use client';
 
+import BrandMark from '@/components/BrandMark';
 import { useState, useEffect, useMemo } from 'react';
 import { Place, Review, ActivityLog } from '@/types';
 import Link from 'next/link';
@@ -1121,7 +1122,7 @@ export default function AdminPage() {
           <div className="bg-[#111c2e] border border-[#1e324d] rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/60">
             <div className="flex flex-col items-center mb-8">
               <div className="w-16 h-16 rounded-2xl bg-[#00aa6c]/15 border border-[#00aa6c]/30 flex items-center justify-center mb-4 shadow-lg shadow-emerald-950/40">
-                <ShieldCheck className="w-8 h-8 text-[#3ddc9a]" />
+                <BrandMark className="h-16 w-16" surface />
               </div>
               <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-2">
                 Admin Workspace
@@ -1190,7 +1191,8 @@ export default function AdminPage() {
           
           {/* Logo & Workspace Tag */}
           <div className="flex items-center gap-3.5">
-            <Link href="/" className="flex items-center gap-1 group">
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <BrandMark className="h-10 w-10" surface />
               <span className="text-white font-black text-xl tracking-tight">
                 Uncover<span className="text-[#00aa6c]">Ceylon</span>
               </span>
